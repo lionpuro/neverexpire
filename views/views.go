@@ -25,7 +25,7 @@ func Home(w http.ResponseWriter) error {
 
 func parseTemplate(name string) *viewTemplate {
 	tmpl := template.Must(template.New("base.html").ParseFS(templateFS, templatePath("base.html"), templatePath(name)))
-	tmpl = template.Must(tmpl.ParseFS(templateFS, templatePath("components/*.html")))
+	tmpl = template.Must(tmpl.ParseFS(templateFS, templatePath("components/*.html"), templatePath("layouts/*.html")))
 	return &viewTemplate{template: tmpl}
 }
 

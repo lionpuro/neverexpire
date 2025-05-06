@@ -11,19 +11,7 @@
 		<title>{{ block "title" . }} TrackCert {{ end }}</title>
 	</head>
 	<body>
-		<div class="flex flex-col min-h-full">
-			<header class="flex px-4 py-3">
-				<nav hx-boost="true" hx-target="body" hx-swap="innerHTML show:none" class="flex w-full">
-					<a href="/" class="flex items-center text-xl font-bold tracking-tight mx-2">
-						<span class="text-base-900">Track</span>
-						<span class="text-base-500 ml-0.25">Cert</span>
-					</a>
-				</nav>
-			</header>
-			<div id="content" class="flex flex-col p-6 sm:p-8 grow">
-				{{ block "content" . }}
-				{{ end }}
-			</div>
-		</div>
+		{{ block "page" . }}
+		{{ end }}
 	</body>
 </html>
