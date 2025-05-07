@@ -7,12 +7,21 @@ import (
 	"github.com/lionpuro/trackcert/views"
 )
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
+func handleHomePage(s *SessionStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.Error(w, "Not found", http.StatusNotFound)
+			return
+		}
+		user, _ := s.GetUser(r)
+		if err := views.Home(w, user); err != nil {
+			log.Printf(err.Error())
+		}
 	}
-	if err := views.Home(w); err != nil {
+}
+
+func handleLoginPage(w http.ResponseWriter, r *http.Request) {
+	if err := views.Login(w); err != nil {
 		log.Printf(err.Error())
 	}
 }

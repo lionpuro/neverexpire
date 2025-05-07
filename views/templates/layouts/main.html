@@ -6,7 +6,11 @@
 					<span class="text-base-900">Track</span>
 					<span class="text-base-500 ml-0.25">Cert</span>
 				</a>
-				<a href="/signin" class="ml-auto bg-base-900 text-base-white font-medium rounded-xs px-3 py-1.5">Sign in</a>
+				{{ if .User }}
+					<a href="/logout" class="ml-auto bg-red-500 text-base-white font-medium rounded-xs px-3 py-1.5">Log out</a>
+				{{ else }}
+					<a href="/login" class="ml-auto bg-base-900 text-base-white font-medium rounded-xs px-3 py-1.5">Log in</a>
+				{{ end }}
 			</nav>
 		</header>
 		<div id="content" class="flex flex-col p-6 sm:p-8 grow">

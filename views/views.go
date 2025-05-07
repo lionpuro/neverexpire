@@ -6,6 +6,8 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+
+	"github.com/lionpuro/trackcert/model"
 )
 
 //go:embed templates
@@ -16,11 +18,16 @@ type viewTemplate struct {
 }
 
 var (
-	home   = parseTemplate("home.html")
+	home  = parseTemplate("home.html")
+	login = parseTemplate("login.html")
 )
 
-func Home(w http.ResponseWriter) error {
-	return home.render(w, nil)
+func Home(w http.ResponseWriter, user *model.SessionUser) error {
+	return home.render(w, map[string]any{"User": user})
+}
+
+func Login(w http.ResponseWriter) error {
+	return login.render(w, nil)
 }
 
 func parseTemplate(name string) *viewTemplate {
