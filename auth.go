@@ -48,13 +48,27 @@ func newGoogleClient() (*AuthClient, error) {
 	return client, nil
 }
 
-func handleAuth(a *AuthClient) http.HandlerFunc {
+func handleAuth(a *AuthClient, s *SessionStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		state, err := generateRandomState()
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+
+		sess, err := s.GetSession(r)
+		if err != nil {
+			log.Printf("get session: %v", err)
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
+
+		sess.Values["state"] = state
+		if err := sess.Save(r, w); err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
 		url := a.config.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 	}
@@ -62,6 +76,18 @@ func handleAuth(a *AuthClient) http.HandlerFunc {
 
 func handleAuthCallback(a *AuthClient, s *SessionStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		sess, err := s.GetSession(r)
+		if err != nil {
+			log.Printf("get session: %v", err)
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
+
+		if r.FormValue("state") != sess.Values["state"] {
+			http.Error(w, "Invalid state parameter.", http.StatusBadRequest)
+			return
+		}
+
 		code := r.URL.Query().Get("code")
 		tkn, err := a.config.Exchange(r.Context(), code)
 		if err != nil {
@@ -86,11 +112,7 @@ func handleAuthCallback(a *AuthClient, s *SessionStore) http.HandlerFunc {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
-		sess, err := s.GetSession(r)
-		if err != nil {
-			log.Printf("get session: %v", err)
-			return
-		}
+
 		sess.Values["user"] = model.SessionUser{ID: user.ID, Email: user.Email}
 		if err := sess.Save(r, w); err != nil {
 			log.Printf("save session: %v", err)

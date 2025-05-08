@@ -32,7 +32,7 @@ func newServer() (*http.Server, error) {
 	r.HandleFunc("GET /", handleHomePage(sessions))
 	r.HandleFunc("GET /login", handleLoginPage)
 	r.HandleFunc("GET /logout", handleLogout(sessions))
-	r.HandleFunc("GET /auth/google/login", handleAuth(googleAuth))
+	r.HandleFunc("GET /auth/google/login", handleAuth(googleAuth, sessions))
 	r.HandleFunc("GET /auth/google/callback", handleAuthCallback(googleAuth, sessions))
 	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("static"))))
 
