@@ -16,11 +16,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Listening on %s...\n", srv.Addr)
-	log.Fatal(srv.ListenAndServe())
+	fmt.Printf("Listening on %s...\n", srv.httpServer.Addr)
+	log.Fatal(srv.httpServer.ListenAndServe())
 }
 
-func newServer() (*http.Server, error) {
+type Server struct {
+	DB         *db.Service
+	Sessions   *SessionStore
+	Auth       *AuthService
+	httpServer *http.Server
+}
+
+func newServer() (*Server, error) {
 	conn := fmt.Sprintf(
 		"postgres://%s:%s@localhost:%s/%s?sslmode=disable",
 		os.Getenv("POSTGRES_USER"),
@@ -38,22 +45,28 @@ func newServer() (*http.Server, error) {
 		return nil, err
 	}
 
-	googleAuth, err := newGoogleClient()
+	auth, err := newAuthService()
 	if err != nil {
 		return nil, err
 	}
 
+	s := &Server{
+		DB:       dbService,
+		Sessions: sessions,
+		Auth:     auth,
+	}
+
 	r := http.NewServeMux()
-	r.HandleFunc("GET /", handleHomePage(sessions))
-	r.HandleFunc("GET /login", handleLoginPage)
-	r.HandleFunc("GET /logout", handleLogout(sessions))
-	r.HandleFunc("GET /auth/google/login", handleAuth(googleAuth, sessions))
-	r.HandleFunc("GET /auth/google/callback", handleAuthCallback(googleAuth, sessions, dbService))
+	r.HandleFunc("GET /", s.handleHomePage())
+	r.HandleFunc("GET /login", s.handleLoginPage)
+	r.HandleFunc("GET /logout", s.handleLogout())
+	r.HandleFunc("GET /auth/google/login", s.handleAuth(s.Auth.GoogleClient))
+	r.HandleFunc("GET /auth/google/callback", s.handleAuthCallback(s.Auth.GoogleClient))
 	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("static"))))
 
-	srv := &http.Server{
+	s.httpServer = &http.Server{
 		Addr:    ":3000",
 		Handler: r,
 	}
-	return srv, nil
+	return s, nil
 }

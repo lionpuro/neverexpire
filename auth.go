@@ -10,7 +10,6 @@ import (
 	"os"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/lionpuro/trackcert/db"
 	"github.com/lionpuro/trackcert/model"
 	"golang.org/x/oauth2"
 )
@@ -20,28 +19,38 @@ const (
 	userContextKey     = "user"
 )
 
+type AuthService struct {
+	GoogleClient *AuthClient
+}
+
 type AuthClient struct {
 	config       *oauth2.Config
 	oidcProvider *oidc.Provider
 }
 
-func newGoogleClient() (*AuthClient, error) {
-	provider, err := oidc.NewProvider(
-		context.Background(),
-		"https://accounts.google.com",
-	)
+func newAuthService() (*AuthService, error) {
+	googleProvider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new google provider: %v", err)
 	}
-
-	conf := &oauth2.Config{
+	googleClient, err := newAuthClient(googleProvider, &oauth2.Config{
 		ClientID:     os.Getenv("OAUTH_GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("OAUTH_GOOGLE_CALLBACK_URL"),
 		Scopes:       []string{oidc.ScopeOpenID, "email"},
-		Endpoint:     provider.Endpoint(),
+		Endpoint:     googleProvider.Endpoint(),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("new google client: %v", err)
 	}
 
+	s := &AuthService{
+		GoogleClient: googleClient,
+	}
+	return s, nil
+}
+
+func newAuthClient(provider *oidc.Provider, conf *oauth2.Config) (*AuthClient, error) {
 	client := &AuthClient{
 		config:       conf,
 		oidcProvider: provider,
@@ -49,7 +58,7 @@ func newGoogleClient() (*AuthClient, error) {
 	return client, nil
 }
 
-func handleAuth(a *AuthClient, s *SessionStore) http.HandlerFunc {
+func (s *Server) handleAuth(a *AuthClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		state, err := generateRandomState()
 		if err != nil {
@@ -57,7 +66,7 @@ func handleAuth(a *AuthClient, s *SessionStore) http.HandlerFunc {
 			return
 		}
 
-		sess, err := s.GetSession(r)
+		sess, err := s.Sessions.GetSession(r)
 		if err != nil {
 			log.Printf("get session: %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
@@ -75,9 +84,9 @@ func handleAuth(a *AuthClient, s *SessionStore) http.HandlerFunc {
 	}
 }
 
-func handleAuthCallback(a *AuthClient, s *SessionStore, db *db.Service) http.HandlerFunc {
+func (s *Server) handleAuthCallback(a *AuthClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sess, err := s.GetSession(r)
+		sess, err := s.Sessions.GetSession(r)
 		if err != nil {
 			log.Printf("get session: %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
@@ -114,7 +123,7 @@ func handleAuthCallback(a *AuthClient, s *SessionStore, db *db.Service) http.Han
 			return
 		}
 
-		if err := db.CreateUser(r.Context(), user.ID, user.Email); err != nil {
+		if err := s.DB.CreateUser(r.Context(), user.ID, user.Email); err != nil {
 			log.Printf("%v", err)
 			http.Error(w, "Error registering user", http.StatusInternalServerError)
 			return
@@ -130,9 +139,9 @@ func handleAuthCallback(a *AuthClient, s *SessionStore, db *db.Service) http.Han
 	}
 }
 
-func handleLogout(s *SessionStore) http.HandlerFunc {
+func (s *Server) handleLogout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sess, err := s.GetSession(r)
+		sess, err := s.Sessions.GetSession(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
