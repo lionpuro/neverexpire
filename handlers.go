@@ -15,8 +15,19 @@ func (s *Server) handleHomePage() http.HandlerFunc {
 		}
 		user, _ := s.Sessions.GetUser(r)
 		if err := views.Home(w, user); err != nil {
-			log.Printf(err.Error())
+			log.Printf("render template: %v", err)
 		}
+	}
+}
+
+func (s *Server) handleAccountPage(w http.ResponseWriter, r *http.Request) {
+	user, err := s.Sessions.GetUser(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	if err := views.Account(w, user); err != nil {
+		log.Printf("render template: %v", err)
 	}
 }
 

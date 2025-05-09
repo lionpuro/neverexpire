@@ -19,11 +19,16 @@ type viewTemplate struct {
 
 var (
 	home    = parseTemplate("home.html", "layouts/main.html")
+	account = parseTemplate("account.html", "layouts/main.html")
 	login   = parseTemplate("login.html", "layouts/auth.html")
 )
 
 func Home(w http.ResponseWriter, user *model.SessionUser) error {
 	return home.render(w, map[string]any{"User": user})
+}
+
+func Account(w http.ResponseWriter, user *model.SessionUser) error {
+	return account.render(w, map[string]any{"User": user})
 }
 
 func Login(w http.ResponseWriter) error {
