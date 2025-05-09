@@ -18,8 +18,8 @@ type viewTemplate struct {
 }
 
 var (
-	home  = parseTemplate("home.html")
-	login = parseTemplate("login.html")
+	home    = parseTemplate("home.html", "layouts/main.html")
+	login   = parseTemplate("login.html", "layouts/auth.html")
 )
 
 func Home(w http.ResponseWriter, user *model.SessionUser) error {
@@ -30,9 +30,13 @@ func Login(w http.ResponseWriter) error {
 	return login.render(w, nil)
 }
 
-func parseTemplate(name string) *viewTemplate {
-	tmpl := template.Must(template.New("base.html").ParseFS(templateFS, templatePath("base.html"), templatePath(name)))
-	tmpl = template.Must(tmpl.ParseFS(templateFS, templatePath("components/*.html"), templatePath("layouts/*.html")))
+func parseTemplate(templates ...string) *viewTemplate {
+	patterns := []string{templatePath("base.html")}
+	for _, t := range templates {
+		patterns = append(patterns, templatePath(t))
+	}
+	tmpl := template.Must(template.New("base.html").ParseFS(templateFS, patterns...))
+	tmpl = template.Must(tmpl.ParseFS(templateFS, templatePath("components/*.html")))
 	return &viewTemplate{template: tmpl}
 }
 
