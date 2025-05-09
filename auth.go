@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/lionpuro/trackcert/db"
 	"github.com/lionpuro/trackcert/model"
 	"golang.org/x/oauth2"
 )
@@ -74,7 +75,7 @@ func handleAuth(a *AuthClient, s *SessionStore) http.HandlerFunc {
 	}
 }
 
-func handleAuthCallback(a *AuthClient, s *SessionStore) http.HandlerFunc {
+func handleAuthCallback(a *AuthClient, s *SessionStore, db *db.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sess, err := s.GetSession(r)
 		if err != nil {
@@ -113,6 +114,11 @@ func handleAuthCallback(a *AuthClient, s *SessionStore) http.HandlerFunc {
 			return
 		}
 
+		if err := db.CreateUser(r.Context(), user.ID, user.Email); err != nil {
+			log.Printf("%v", err)
+			http.Error(w, "Error registering user", http.StatusInternalServerError)
+			return
+		}
 		sess.Values["user"] = model.SessionUser{ID: user.ID, Email: user.Email}
 		if err := sess.Save(r, w); err != nil {
 			log.Printf("save session: %v", err)

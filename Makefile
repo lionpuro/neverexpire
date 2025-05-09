@@ -1,4 +1,8 @@
-.PHONY: setup build run fmt
+include .env
+
+DATABASE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_HOST_PORT}/${POSTGRES_DB}?sslmode=disable
+
+.PHONY: setup build run fmt create-migration migrate-up migrate-down
 
 setup:
 	mkdir -p .tools
@@ -18,3 +22,17 @@ dev:
 
 fmt:
 	@gofmt -l -s -w .
+
+create-migration:
+	@read -p "Enter the sequence name: " SEQ; \
+		docker run -u 1000:1000 --rm -v ./migrations:/migrations migrate/migrate \
+			create -ext sql -dir /migrations -seq $${SEQ}
+
+migrate-up:
+	@docker run --rm -v ./migrations:/migrations --network host migrate/migrate \
+		-path=/migrations -database "${DATABASE}" up
+
+migrate-down:
+	@read -p "Number of migrations you want to rollback (default: 1): " NUM; NUM=$${NUM:-1}; \
+		docker run --rm -it -v ./migrations:/migrations --network host migrate/migrate \
+			-path=/migrations -database "${DATABASE}" down $${NUM}
