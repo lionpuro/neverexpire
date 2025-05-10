@@ -32,7 +32,6 @@ func newSessionStore() (*SessionStore, error) {
 		SameSite: 4,
 	})
 
-	gob.Register(map[string]interface{}{})
 	gob.Register(model.SessionUser{})
 
 	return &SessionStore{store}, err
