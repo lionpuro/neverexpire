@@ -41,15 +41,35 @@ func (s *SessionStore) GetSession(r *http.Request) (*sessions.Session, error) {
 	return s.store.Get(r, "user-session")
 }
 
-func (s *SessionStore) GetUser(r *http.Request) (*model.SessionUser, error) {
+func (s *SessionStore) GetUser(r *http.Request) (model.SessionUser, error) {
 	sess, err := s.GetSession(r)
 	if err != nil {
-		return nil, err
+		return model.SessionUser{}, err
 	}
 	val := sess.Values["user"]
 	user, ok := val.(model.SessionUser)
 	if !ok {
-		return nil, fmt.Errorf("invalid session data")
+		return model.SessionUser{}, fmt.Errorf("invalid session data")
 	}
-	return &user, nil
+	return user, nil
+}
+
+func (s *Server) sessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		user, err := s.Sessions.GetUser(r)
+		if err == nil {
+			ctx = withUserCtx(r.Context(), user)
+		}
+		next(w, r.WithContext(ctx))
+	}
+}
+
+func withUserCtx(ctx context.Context, user model.SessionUser) context.Context {
+	return context.WithValue(ctx, userContextKey, user)
+}
+
+func getUserCtx(ctx context.Context) (model.SessionUser, bool) {
+	u, ok := ctx.Value(userContextKey).(model.SessionUser)
+	return u, ok
 }

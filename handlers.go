@@ -13,7 +13,11 @@ func (s *Server) handleHomePage() http.HandlerFunc {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
 		}
-		user, _ := s.Sessions.GetUser(r)
+		u, ok := getUserCtx(r.Context())
+		user := &u
+		if !ok {
+			user = nil
+		}
 		if err := views.Home(w, user); err != nil {
 			log.Printf("render template: %v", err)
 		}
@@ -21,8 +25,10 @@ func (s *Server) handleHomePage() http.HandlerFunc {
 }
 
 func (s *Server) handleAccountPage(w http.ResponseWriter, r *http.Request) {
-	user, err := s.Sessions.GetUser(r)
-	if err != nil {
+	u, ok := getUserCtx(r.Context())
+	user := &u
+	if !ok {
+		user = nil
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
