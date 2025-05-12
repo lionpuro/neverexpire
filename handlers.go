@@ -10,7 +10,7 @@ import (
 func (s *Server) handleHomePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
-			http.Error(w, "Not found", http.StatusNotFound)
+			handleErrorPage(w, r, http.StatusNotFound, "Page not found")
 			return
 		}
 		u, ok := getUserCtx(r.Context())
@@ -40,5 +40,11 @@ func (s *Server) handleAccountPage(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 	if err := views.Login(w); err != nil {
 		log.Printf(err.Error())
+	}
+}
+
+func handleErrorPage(w http.ResponseWriter, r *http.Request, code int, msg string) {
+	if err := views.Error(w, code, msg); err != nil {
+		log.Printf("render template: %v", err)
 	}
 }
