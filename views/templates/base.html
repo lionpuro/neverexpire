@@ -1,3 +1,4 @@
+{{ define "base" }}
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -7,11 +8,12 @@
 		<link rel="stylesheet" href="/static/css/global.css"/>
 		<link rel="icon" href="/static/favicon.ico"/>
 		<meta name="description" content="" />
-		<script src="/static/scripts/htmx.min.js" defer></script>
 		<title>{{ block "title" . }} TrackCert {{ end }}</title>
+		<script src="/static/scripts/htmx.min.js" defer></script>
 	</head>
 	<body>
 		{{ block "body" . }}
 		{{ end }}
 	</body>
 </html>
+{{ end }}
