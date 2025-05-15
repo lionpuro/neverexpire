@@ -12,20 +12,18 @@ import (
 	"github.com/lionpuro/trackcert/views"
 )
 
-func (s *Server) handleHomePage() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			handleErrorPage(w, r, "Page not found", http.StatusNotFound)
-			return
-		}
-		u, ok := getUserCtx(r.Context())
-		user := &u
-		if !ok {
-			user = nil
-		}
-		if err := views.Home(w, user); err != nil {
-			log.Printf("render template: %v", err)
-		}
+func (s *Server) handleHomePage(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		handleErrorPage(w, r, "Page not found", http.StatusNotFound)
+		return
+	}
+	u, ok := getUserCtx(r.Context())
+	user := &u
+	if !ok {
+		user = nil
+	}
+	if err := views.Home(w, user); err != nil {
+		log.Printf("render template: %v", err)
 	}
 }
 

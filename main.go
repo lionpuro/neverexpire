@@ -58,7 +58,7 @@ func newServer() (*Server, error) {
 
 	r := http.NewServeMux()
 
-	r.HandleFunc("GET /", s.sessionMiddleware(s.handleHomePage()))
+	r.HandleFunc("GET /", s.sessionMiddleware(s.handleHomePage))
 	r.HandleFunc("GET /domains", s.sessionMiddleware(s.handleDomains))
 	r.HandleFunc("GET /domains/new", s.sessionMiddleware(s.handleNewDomainPage))
 	r.HandleFunc("POST /domains", s.sessionMiddleware(s.handleCreateDomain))
@@ -67,7 +67,7 @@ func newServer() (*Server, error) {
 
 	r.HandleFunc("GET /account", s.sessionMiddleware(s.handleAccountPage))
 	r.HandleFunc("GET /login", s.sessionMiddleware(s.handleLoginPage))
-	r.HandleFunc("GET /logout", s.handleLogout())
+	r.HandleFunc("GET /logout", s.handleLogout)
 	r.HandleFunc("GET /auth/google/login", s.handleAuth(s.Auth.GoogleClient))
 	r.HandleFunc("GET /auth/google/callback", s.handleAuthCallback(s.Auth.GoogleClient))
 	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("static"))))

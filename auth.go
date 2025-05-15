@@ -139,21 +139,19 @@ func (s *Server) handleAuthCallback(a *AuthClient) http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleLogout() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		sess, err := s.Sessions.GetSession(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		sess.Options.MaxAge = -1
-		if err := sess.Save(r, w); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
+	sess, err := s.Sessions.GetSession(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+	sess.Options.MaxAge = -1
+	if err := sess.Save(r, w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
 func (a *AuthClient) verifyToken(ctx context.Context, token *oauth2.Token) (*oidc.IDToken, error) {
