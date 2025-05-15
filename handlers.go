@@ -17,10 +17,9 @@ func (s *Server) handleHomePage(w http.ResponseWriter, r *http.Request) {
 		handleErrorPage(w, r, "Page not found", http.StatusNotFound)
 		return
 	}
-	u, ok := getUserCtx(r.Context())
-	user := &u
-	if !ok {
-		user = nil
+	var user *model.SessionUser
+	if u, ok := getUserCtx(r.Context()); ok {
+		user = &u
 	}
 	if err := views.Home(w, user); err != nil {
 		log.Printf("render template: %v", err)
@@ -28,14 +27,8 @@ func (s *Server) handleHomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAccountPage(w http.ResponseWriter, r *http.Request) {
-	u, ok := getUserCtx(r.Context())
-	user := &u
-	if !ok {
-		user = nil
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-	if err := views.Account(w, user); err != nil {
+	user, _ := getUserCtx(r.Context())
+	if err := views.Account(w, &user); err != nil {
 		log.Printf("render template: %v", err)
 	}
 }
@@ -48,13 +41,9 @@ func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleDomain(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	u, ok := getUserCtx(r.Context())
-	if !ok {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return
-	}
+	user, _ := getUserCtx(r.Context())
 
-	domain, err := s.DB.DomainByID(r.Context(), id, u.ID)
+	domain, err := s.DB.DomainByID(r.Context(), id, user.ID)
 	if err != nil {
 		errCode := http.StatusInternalServerError
 		errMsg := "Error retrieving domain data"
@@ -75,12 +64,12 @@ func (s *Server) handleDomain(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		domain.CertificateInfo = *info
-		if err := s.DB.UpdateDomainInfo(domain.ID, u.ID, *info); err != nil {
+		if err := s.DB.UpdateDomainInfo(domain.ID, user.ID, *info); err != nil {
 			log.Printf("update domain: %v", err)
 			handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 			return
 		}
-		d, err := s.DB.DomainByID(r.Context(), id, u.ID)
+		d, err := s.DB.DomainByID(r.Context(), id, user.ID)
 		if err != nil {
 			errCode := http.StatusInternalServerError
 			errMsg := "Something went wrong"
@@ -94,36 +83,28 @@ func (s *Server) handleDomain(w http.ResponseWriter, r *http.Request) {
 		}
 		domain = d
 	}
-	if err := views.Domain(w, &u, domain); err != nil {
+	if err := views.Domain(w, &user, domain); err != nil {
 		log.Printf("render template: %v", err)
 	}
 }
 
 func (s *Server) handleDomains(w http.ResponseWriter, r *http.Request) {
-	u, ok := getUserCtx(r.Context())
-	if !ok {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return
-	}
-	domains, err := s.DB.Domains(r.Context(), u.ID)
+	user, _ := getUserCtx(r.Context())
+	domains, err := s.DB.Domains(r.Context(), user.ID)
 	if err != nil {
 		log.Printf("get domains: %v", err)
 		handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
-	if err := views.Domains(w, &u, domains); err != nil {
+	if err := views.Domains(w, &user, domains); err != nil {
 		log.Printf("render template: %v", err)
 	}
 }
 
 func (s *Server) handleDeleteDomain(w http.ResponseWriter, r *http.Request) {
-	u, ok := getUserCtx(r.Context())
-	if !ok {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return
-	}
 	id := r.PathValue("id")
-	if err := s.DB.DeleteDomain(id, u.ID); err != nil {
+	user, _ := getUserCtx(r.Context())
+	if err := s.DB.DeleteDomain(id, user.ID); err != nil {
 		log.Printf("delete domain: %v", err)
 		http.Error(w, "Error deleting domain", http.StatusInternalServerError)
 		return
@@ -137,11 +118,7 @@ func (s *Server) handleDeleteDomain(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleCreateDomain(w http.ResponseWriter, r *http.Request) {
-	u, ok := getUserCtx(r.Context())
-	if !ok {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return
-	}
+	user, _ := getUserCtx(r.Context())
 	val := r.FormValue("domain")
 	input := strings.ReplaceAll(strings.TrimSpace(val), "https://", "")
 	if len(input) == 0 {
@@ -155,7 +132,7 @@ func (s *Server) handleCreateDomain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	domain := model.Domain{
-		UserID:          u.ID,
+		UserID:          user.ID,
 		DomainName:      input,
 		CertificateInfo: *cert,
 	}
@@ -171,12 +148,8 @@ func (s *Server) handleCreateDomain(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleNewDomainPage(w http.ResponseWriter, r *http.Request) {
-	u, ok := getUserCtx(r.Context())
-	if !ok {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return
-	}
-	if err := views.NewDomain(w, &u); err != nil {
+	user, _ := getUserCtx(r.Context())
+	if err := views.NewDomain(w, &user); err != nil {
 		log.Printf("render template: %v", err)
 	}
 }
