@@ -3,6 +3,7 @@ package views
 import (
 	"bytes"
 	"embed"
+	"fmt"
 	"html/template"
 	"net/http"
 	"path/filepath"
@@ -20,6 +21,9 @@ type viewTemplate struct {
 var (
 	home      = parse("layouts/main.html", "home.html")
 	errorPage = parse("layouts/main.html", "error.html")
+	domains   = parse("layouts/main.html", "domains/index.html")
+	domain    = parse("layouts/main.html", "domains/details.html")
+	newDomain = parse("layouts/main.html", "domains/new.html")
 	account   = parse("layouts/main.html", "account.html")
 	login     = parse("layouts/auth.html", "login.html")
 )
@@ -32,6 +36,18 @@ func Error(w http.ResponseWriter, code int, msg string) error {
 	return errorPage.render(w, map[string]any{"User": nil, "Code": code, "Message": msg})
 }
 
+func Domains(w http.ResponseWriter, user *model.SessionUser, dmains []model.Domain) error {
+	return domains.render(w, map[string]any{"User": user, "Domains": dmains})
+}
+
+func Domain(w http.ResponseWriter, user *model.SessionUser, d model.Domain) error {
+	return domain.render(w, map[string]any{"User": user, "Domain": d})
+}
+
+func NewDomain(w http.ResponseWriter, user *model.SessionUser) error {
+	return newDomain.render(w, map[string]any{"User": user})
+}
+
 func Account(w http.ResponseWriter, user *model.SessionUser) error {
 	return account.render(w, map[string]any{"User": user})
 }
@@ -41,12 +57,19 @@ func Login(w http.ResponseWriter) error {
 }
 
 func parse(templates ...string) *viewTemplate {
+	funcs := template.FuncMap{
+		"datef":          datef,
+		"sprintf":        fmt.Sprintf,
+		"cn":             cn,
+		"statusClass":    statusClass,
+		"withAttributes": withAttributes,
+	}
 	patterns := []string{templatePath("base.html"), templatePath("components/*.html")}
 	for _, t := range templates {
 		patterns = append(patterns, templatePath(t))
 	}
 	name := filepath.Base(templates[0])
-	tmpl := template.Must(template.New(name).ParseFS(templateFS, patterns...))
+	tmpl := template.Must(template.New(name).Funcs(funcs).ParseFS(templateFS, patterns...))
 	return &viewTemplate{template: tmpl}
 }
 

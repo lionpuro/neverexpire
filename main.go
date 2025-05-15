@@ -57,7 +57,14 @@ func newServer() (*Server, error) {
 	}
 
 	r := http.NewServeMux()
+
 	r.HandleFunc("GET /", s.sessionMiddleware(s.handleHomePage()))
+	r.HandleFunc("GET /domains", s.sessionMiddleware(s.handleDomains))
+	r.HandleFunc("GET /domains/new", s.sessionMiddleware(s.handleNewDomainPage))
+	r.HandleFunc("POST /domains", s.sessionMiddleware(s.handleCreateDomain))
+	r.HandleFunc("GET /domains/{id}", s.sessionMiddleware(s.handleDomain))
+	r.HandleFunc("DELETE /domains/{id}", s.sessionMiddleware(s.handleDeleteDomain))
+
 	r.HandleFunc("GET /account", s.sessionMiddleware(s.handleAccountPage))
 	r.HandleFunc("GET /login", s.sessionMiddleware(s.handleLoginPage))
 	r.HandleFunc("GET /logout", s.handleLogout())

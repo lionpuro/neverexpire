@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -23,4 +24,8 @@ func NewService(dbConn string) (*Service, error) {
 		DB: pool,
 	}
 	return s, nil
+}
+
+func newContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 10*time.Second)
 }

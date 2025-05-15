@@ -1,0 +1,13 @@
+{{ define "title" }} Add domain {{ end }}
+{{ define "content" }}
+<div class="flex flex-col max-w-3xl gap-4 w-full mx-auto">
+	{{ template "h1" withAttributes
+		"Text" "Add domain"
+	}}
+	<form class="flex flex-col gap-4" hx-post="/domains">
+		<span class="text-base-600">Enter a domain you want to track.</span>
+		<textarea id="domain" name="domain" placeholder="example.com" rows="2" class="border border-base-200 p-3 rounded-md focus:outline-2 outline-blue-500 -outline-offset-2"></textarea>
+		<button type="submit" class="w-fit text-base-white bg-primary-500 font-medium px-4 py-1.5 rounded-md">Track</button>
+	</form>
+</div>
+{{ end }}

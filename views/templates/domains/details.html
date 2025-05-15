@@ -1,0 +1,58 @@
+{{ define "li" }}
+<li class="contents">
+	<span class="font-semibold text-base-800">
+		{{ .key }}
+	</span>
+	<span class="font-medium text-base-600"
+		{{ if .id }} id={{ .id }} {{ end }}
+	>
+		{{ .val }}
+	</span>
+</li>
+{{ end }}
+
+{{ define "content" }}
+	<div class="flex flex-col max-w-3xl w-full mx-auto gap-6">
+		<div class="flex flex-col gap-1">
+			<h1 class="font-semibold text-xl text-base-800">
+				{{ .Domain.DomainName }}
+			</h1>
+			<span class="text-base-500 font-medium">{{ .Domain.IP }}</span>
+		</div>
+		<ul class="grid grid-cols-2 gap-2">
+			<li class="contents">
+				<span class="font-semibold text-base-800">Status</span>
+				<span class={{ statusClass .Domain.Status | cn "w-fit rounded-full flex justify-center items-center px-3 py-0.5 text-sm font-medium" }}>
+					{{ .Domain.Status }}
+				</span>
+			</li>
+			{{ template "li" withAttributes
+				"key" "Issuer"
+				"val" .Domain.Issuer
+			}}
+			{{ template "li" withAttributes
+				"key" "Expires"
+				"val" (datef .Domain.Expires "2006-01-02 15:04:05")
+			}}
+			{{ template "li" withAttributes
+				"key" "Latency"
+				"val" (sprintf "%d ms" .Domain.Latency)
+			}}
+			{{ template "li" withAttributes
+				"key" "DNS"
+				"val" .Domain.DNSNames
+			}}
+			{{ template "li" withAttributes
+				"id" "last-checked"
+				"key" "Last checked"
+				"val" ((.Domain.CheckedAt.Format "2006-01-02 15:04:05") | sprintf "%s UTC")
+			}}
+		</ul>
+		<button
+			hx-delete="/domains/{{.Domain.ID}}"
+			class="w-fit px-4 py-1.5 rounded-md bg-danger-dark text-base-white font-medium"
+		>
+			Delete
+		</button>
+	</div>
+{{ end }}
