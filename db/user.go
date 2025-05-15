@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/lionpuro/trackcert/model"
@@ -23,14 +22,12 @@ func (s *Service) UserByID(ctx context.Context, id string) (model.User, error) {
 	return user, nil
 }
 
-func (s *Service) CreateUser(ctx context.Context, id, email string) error {
+func (s *Service) CreateUser(id, email string) error {
+	ctx, cancel := newContext()
+	defer cancel()
 	_, err := s.DB.Exec(ctx, `
 		INSERT INTO users (id, email) VALUES ($1, $2)
 		ON CONFLICT DO NOTHING
 	`, id, email)
-	if err != nil {
-		return fmt.Errorf("create user: %v", err)
-	}
-
-	return nil
+	return err
 }

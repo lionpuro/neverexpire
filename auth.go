@@ -123,7 +123,7 @@ func (s *Server) handleAuthCallback(a *AuthClient) http.HandlerFunc {
 			return
 		}
 
-		if err := s.DB.CreateUser(r.Context(), user.ID, user.Email); err != nil {
+		if err := s.DB.CreateUser(user.ID, user.Email); err != nil {
 			log.Printf("%v", err)
 			http.Error(w, "Error registering user", http.StatusInternalServerError)
 			return
