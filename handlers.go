@@ -17,7 +17,7 @@ func (s *Server) handleHomePage(w http.ResponseWriter, r *http.Request) {
 		handleErrorPage(w, r, "Page not found", http.StatusNotFound)
 		return
 	}
-	var user *model.SessionUser
+	var user *model.User
 	if u, ok := getUserCtx(r.Context()); ok {
 		user = &u
 	}

@@ -32,7 +32,7 @@ func newSessionStore() (*SessionStore, error) {
 		SameSite: 4,
 	})
 
-	gob.Register(model.SessionUser{})
+	gob.Register(model.User{})
 
 	return &SessionStore{store}, err
 }
@@ -41,15 +41,15 @@ func (s *SessionStore) GetSession(r *http.Request) (*sessions.Session, error) {
 	return s.store.Get(r, "user-session")
 }
 
-func (s *SessionStore) GetUser(r *http.Request) (model.SessionUser, error) {
+func (s *SessionStore) GetUser(r *http.Request) (model.User, error) {
 	sess, err := s.GetSession(r)
 	if err != nil {
-		return model.SessionUser{}, err
+		return model.User{}, err
 	}
 	val := sess.Values["user"]
-	user, ok := val.(model.SessionUser)
+	user, ok := val.(model.User)
 	if !ok {
-		return model.SessionUser{}, fmt.Errorf("invalid session data")
+		return model.User{}, fmt.Errorf("invalid session data")
 	}
 	return user, nil
 }
@@ -65,11 +65,11 @@ func (s *Server) sessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func withUserCtx(ctx context.Context, user model.SessionUser) context.Context {
+func withUserCtx(ctx context.Context, user model.User) context.Context {
 	return context.WithValue(ctx, userContextKey, user)
 }
 
-func getUserCtx(ctx context.Context) (model.SessionUser, bool) {
-	u, ok := ctx.Value(userContextKey).(model.SessionUser)
+func getUserCtx(ctx context.Context) (model.User, bool) {
+	u, ok := ctx.Value(userContextKey).(model.User)
 	return u, ok
 }

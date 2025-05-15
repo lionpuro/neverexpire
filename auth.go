@@ -128,7 +128,7 @@ func (s *Server) handleAuthCallback(a *AuthClient) http.HandlerFunc {
 			http.Error(w, "Error registering user", http.StatusInternalServerError)
 			return
 		}
-		sess.Values["user"] = model.SessionUser{ID: user.ID, Email: user.Email}
+		sess.Values["user"] = model.User{ID: user.ID, Email: user.Email}
 		if err := sess.Save(r, w); err != nil {
 			log.Printf("save session: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)

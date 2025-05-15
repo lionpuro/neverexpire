@@ -28,7 +28,7 @@ var (
 	login     = parse("layouts/auth.html", "login.html")
 )
 
-func Home(w http.ResponseWriter, user *model.SessionUser) error {
+func Home(w http.ResponseWriter, user *model.User) error {
 	return home.render(w, map[string]any{"User": user})
 }
 
@@ -36,19 +36,19 @@ func Error(w http.ResponseWriter, code int, msg string) error {
 	return errorPage.render(w, map[string]any{"User": nil, "Code": code, "Message": msg})
 }
 
-func Domains(w http.ResponseWriter, user *model.SessionUser, dmains []model.Domain) error {
+func Domains(w http.ResponseWriter, user *model.User, dmains []model.Domain) error {
 	return domains.render(w, map[string]any{"User": user, "Domains": dmains})
 }
 
-func Domain(w http.ResponseWriter, user *model.SessionUser, d model.Domain) error {
+func Domain(w http.ResponseWriter, user *model.User, d model.Domain) error {
 	return domain.render(w, map[string]any{"User": user, "Domain": d})
 }
 
-func NewDomain(w http.ResponseWriter, user *model.SessionUser) error {
+func NewDomain(w http.ResponseWriter, user *model.User) error {
 	return newDomain.render(w, map[string]any{"User": user})
 }
 
-func Account(w http.ResponseWriter, user *model.SessionUser) error {
+func Account(w http.ResponseWriter, user *model.User) error {
 	return account.render(w, map[string]any{"User": user})
 }
 
