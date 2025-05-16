@@ -32,7 +32,7 @@
 					</div>
 					<div class="max-sm:contents sm:col-start-2 md:col-start-3 flex items-center text-base-700 px-1 py-2 bg-base-white">
 						<span class="sm:hidden text-base-800 font-medium py-0.5">Expires</span>
-						<span class="font-medium text-sm max-sm:py-0.5">
+						<span class="date font-medium text-sm max-sm:py-0.5">
 							{{ datef $domain.Expires "2006-01-02" }}
 						</span>
 					</div>
@@ -44,7 +44,9 @@
 					</div>
 					<div class="max-sm:contents sm:col-start-4 md:col-start-5 flex items-center text-base-700 px-1 py-2 bg-base-white">
 						<span class="sm:hidden text-base-800 font-medium py-0.5">Last checked</span>
-						<span class="text-sm font-medium max-sm:py-0.5">{{ datef $domain.CheckedAt "2006-01-02 15:04:05" }}</span>
+						<span class="datetime text-sm font-medium max-sm:py-0.5">
+							{{ datef $domain.CheckedAt "2006-01-02 15:04:05" }}
+						</span>
 					</div>
 					<div class="max-sm:col-span-2 sm:col-start-5 md:col-start-6 max-sm:mt-2 flex items-center text-base-700 sm:px-1 sm:py-2 bg-base-white">
 						<a
@@ -64,6 +66,24 @@
 				</div>
 			{{ end }}
 		</div>
+		<script>
+			(() => {
+				const datetimes = document.querySelectorAll(".datetime");
+				datetimes.forEach(d => {
+					const str = new Date(d.textContent+" UTC").toLocaleString(window.navigator.language);
+					if (str !== "Invalid Date") {
+						d.textContent = str;
+					}
+				});
+				const dates = document.querySelectorAll(".date");
+				dates.forEach(d => {
+					const str = new Date(d.textContent+" UTC").toLocaleDateString(window.navigator.language);
+					if (str !== "Invalid Date") {
+						d.textContent = str;
+					}
+				});
+			})();
+		</script>
 	{{ else }}
 		<div class="text-base-600">No tracked domains</div>
 	{{ end }}

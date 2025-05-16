@@ -55,4 +55,16 @@
 			Delete
 		</button>
 	</div>
+	<script>
+		(() => {
+			const d = new Date("{{.Domain.CheckedAt.String}}");
+			const el = document.querySelector("#last-checked");
+			if (!el) return;
+			const str = d.toLocaleString(window.navigator.language);
+			if (str === "Invalid Date") {
+				return;
+			}
+			el.textContent = str;
+		})();
+	</script>
 {{ end }}
