@@ -1,14 +1,15 @@
-{{ define "title" }} TrackCerts {{ end }}
+{{ define "title" }}TrackCerts{{ end }}
 {{ define "content" }}
 	<div class="flex flex-col max-w-3xl w-full mx-auto">
 		<h1 class="font-bold text-xl text-base-900 mb-8">Account</h1>
-		<span class="text-lg font-bold text-base-900">
-			Email
-		</span>
+		<span class="text-lg font-bold text-base-900">Email</span>
 		<div class="text-base-700">
 			{{ .User.Email }}
 		</div>
-		<a href="/logout" class="mt-8 ml-auto bg-red-500/85 text-base-white font-medium rounded-md px-3 py-1.5">
+		<a
+			href="/logout"
+			class="mt-8 ml-auto bg-red-500/85 text-base-white font-medium rounded-md px-3 py-1.5"
+		>
 			Log out
 		</a>
 	</div>

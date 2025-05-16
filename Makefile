@@ -22,6 +22,7 @@ dev:
 
 fmt:
 	@gofmt -l -s -w .
+	@npx prettier . --write
 
 create-migration:
 	@read -p "Enter the sequence name: " SEQ; \

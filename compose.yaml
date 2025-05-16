@@ -27,13 +27,14 @@ services:
         condition: service_healthy
     volumes:
       - ./migrations:/migrations
-    command: [
-      "-path",
-      "/migrations/",
-      "-database",
-      "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_DOCKER_PORT}/${POSTGRES_DB}?sslmode=disable",
-      "up"
-    ]
+    command:
+      [
+        "-path",
+        "/migrations/",
+        "-database",
+        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_DOCKER_PORT}/${POSTGRES_DB}?sslmode=disable",
+        "up",
+      ]
 
 volumes:
   redis:
