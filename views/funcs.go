@@ -4,6 +4,8 @@ import (
 	"log"
 	"strings"
 	"time"
+
+	"github.com/lionpuro/trackcerts/certs"
 )
 
 func cn(classnames ...string) string {
@@ -25,9 +27,11 @@ func datef(t time.Time, layout string) string {
 
 func statusClass(status string) string {
 	switch status {
-	case "invalid":
+	case certs.StatusOffline:
+		return "text-base-900 bg-[#cacaca]"
+	case certs.StatusInvalid:
 		return "text-danger-dark bg-danger-light"
-	case "expiring":
+	case certs.StatusExpiring:
 		return "text-warning-dark bg-warning-light"
 	default:
 		return "text-healthy-dark bg-healthy-light"

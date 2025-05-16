@@ -143,8 +143,8 @@ func (s *Server) handleCreateDomain(w http.ResponseWriter, r *http.Request) {
 	}
 	cert, err := certs.FetchCert(r.Context(), input)
 	if err != nil {
-		log.Printf("query certificates: %v", err)
-		if err := views.NewDomain(w, &user, input, fmt.Errorf("Host not found")); err != nil {
+		log.Printf("fetch certificate: %v", err)
+		if err := views.NewDomain(w, &user, input, fmt.Errorf("Error retrieving certificate")); err != nil {
 			log.Printf("render template: %v", err)
 		}
 		return

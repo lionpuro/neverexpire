@@ -12,6 +12,7 @@ create table if not exists domains (
 	issued_by   text,
 	dns_names   text,
 	ip_address  text,
+	status      text,
 	expires_at  timestamp,
 	checked_at  timestamp,
 	latency     int,

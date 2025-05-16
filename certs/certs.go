@@ -33,6 +33,15 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 				}
 				return
 			}
+			if strings.Contains(err.Error(), "no such host") {
+				result <- model.CertificateInfo{
+					Status:    StatusOffline,
+					Issuer:    "n/a",
+					CheckedAt: start,
+					Error:     err,
+				}
+				return
+			}
 			errch <- err
 			return
 		}
