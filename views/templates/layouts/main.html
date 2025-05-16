@@ -20,6 +20,11 @@
 				</div>
 			</nav>
 		</header>
+		<div id="error-container">
+			{{ if .Error }}
+				{{ template "error-banner" .Error }}
+			{{ end }}
+		</div>
 		<div id="content" class="flex flex-col p-6 sm:p-8 grow">
 			{{ block "content" . }}
 			{{ end }}

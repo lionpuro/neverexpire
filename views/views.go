@@ -19,33 +19,38 @@ type viewTemplate struct {
 }
 
 var (
-	home      = parse("layouts/main.html", "home.html")
-	errorPage = parse("layouts/main.html", "error.html")
-	domains   = parse("layouts/main.html", "domains/index.html")
-	domain    = parse("layouts/main.html", "domains/details.html")
-	newDomain = parse("layouts/main.html", "domains/new.html")
-	account   = parse("layouts/main.html", "account.html")
-	login     = parse("layouts/auth.html", "login.html")
+	home        = parse("layouts/main.html", "home.html")
+	errorPage   = parse("layouts/main.html", "error.html")
+	domains     = parse("layouts/main.html", "domains/index.html")
+	domain      = parse("layouts/main.html", "domains/details.html")
+	newDomain   = parse("layouts/main.html", "domains/new.html")
+	account     = parse("layouts/main.html", "account.html")
+	login       = parse("layouts/auth.html", "login.html")
+	errorBanner = parse("partials/error-banner.html")
 )
 
-func Home(w http.ResponseWriter, user *model.User) error {
-	return home.render(w, map[string]any{"User": user})
+func Home(w http.ResponseWriter, user *model.User, err error) error {
+	return home.render(w, map[string]any{"Error": err, "User": user})
 }
 
 func Error(w http.ResponseWriter, code int, msg string) error {
 	return errorPage.render(w, map[string]any{"User": nil, "Code": code, "Message": msg})
 }
 
-func Domains(w http.ResponseWriter, user *model.User, dmains []model.Domain) error {
-	return domains.render(w, map[string]any{"User": user, "Domains": dmains})
+func Domains(w http.ResponseWriter, user *model.User, dmains []model.Domain, err error) error {
+	return domains.render(w, map[string]any{"User": user, "Domains": dmains, "Error": err})
 }
 
-func Domain(w http.ResponseWriter, user *model.User, d model.Domain) error {
-	return domain.render(w, map[string]any{"User": user, "Domain": d})
+func Domain(w http.ResponseWriter, user *model.User, d model.Domain, err error) error {
+	return domain.render(w, map[string]any{"User": user, "Domain": d, "Error": err})
 }
 
-func NewDomain(w http.ResponseWriter, user *model.User) error {
-	return newDomain.render(w, map[string]any{"User": user})
+func NewDomain(w http.ResponseWriter, user *model.User, inputValue string, err error) error {
+	data := map[string]any{"User": user, "InputValue": inputValue, "Error": err}
+	if inputValue == "" {
+		data["InputValue"] = nil
+	}
+	return newDomain.render(w, data)
 }
 
 func Account(w http.ResponseWriter, user *model.User) error {
@@ -54,6 +59,10 @@ func Account(w http.ResponseWriter, user *model.User) error {
 
 func Login(w http.ResponseWriter) error {
 	return login.render(w, nil)
+}
+
+func ErrorBanner(w http.ResponseWriter, err error) error {
+	return errorBanner.render(w, map[string]any{"Error": err})
 }
 
 func parse(templates ...string) *viewTemplate {

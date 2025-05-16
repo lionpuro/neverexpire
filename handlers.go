@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -21,7 +22,7 @@ func (s *Server) handleHomePage(w http.ResponseWriter, r *http.Request) {
 	if u, ok := getUserCtx(r.Context()); ok {
 		user = &u
 	}
-	if err := views.Home(w, user); err != nil {
+	if err := views.Home(w, user, nil); err != nil {
 		log.Printf("render template: %v", err)
 	}
 }
@@ -60,6 +61,10 @@ func (s *Server) handleDomain(w http.ResponseWriter, r *http.Request) {
 		info, err := certs.FetchCert(r.Context(), domain.DomainName)
 		if err != nil {
 			log.Printf("get domain: %v", err)
+			if isHXrequest(r) {
+				hxError(w, fmt.Errorf("Error fetching certificate"))
+				return
+			}
 			handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 			return
 		}
@@ -83,7 +88,7 @@ func (s *Server) handleDomain(w http.ResponseWriter, r *http.Request) {
 		}
 		domain = d
 	}
-	if err := views.Domain(w, &user, domain); err != nil {
+	if err := views.Domain(w, &user, domain, nil); err != nil {
 		log.Printf("render template: %v", err)
 	}
 }
@@ -96,7 +101,7 @@ func (s *Server) handleDomains(w http.ResponseWriter, r *http.Request) {
 		handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
-	if err := views.Domains(w, &user, domains); err != nil {
+	if err := views.Domains(w, &user, domains, nil); err != nil {
 		log.Printf("render template: %v", err)
 	}
 }
@@ -106,7 +111,11 @@ func (s *Server) handleDeleteDomain(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserCtx(r.Context())
 	if err := s.DB.DeleteDomain(id, user.ID); err != nil {
 		log.Printf("delete domain: %v", err)
-		http.Error(w, "Error deleting domain", http.StatusInternalServerError)
+		if !isHXrequest(r) {
+			handleErrorPage(w, r, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		hxError(w, fmt.Errorf("Error deleting domain"))
 		return
 	}
 	if isHXrequest(r) {
@@ -122,13 +131,22 @@ func (s *Server) handleCreateDomain(w http.ResponseWriter, r *http.Request) {
 	val := r.FormValue("domain")
 	input := strings.ReplaceAll(strings.TrimSpace(val), "https://", "")
 	if len(input) == 0 {
-		http.Redirect(w, r, "/domains/new", http.StatusBadRequest)
+		e := fmt.Errorf("Please enter a valid domain name")
+		if isHXrequest(r) {
+			hxError(w, e)
+			return
+		}
+		if err := views.NewDomain(w, &user, "", e); err != nil {
+			log.Printf("render template: %v", err)
+		}
 		return
 	}
 	cert, err := certs.FetchCert(r.Context(), input)
 	if err != nil {
 		log.Printf("query certificates: %v", err)
-		http.Error(w, "Host not found", http.StatusBadRequest)
+		if err := views.NewDomain(w, &user, input, fmt.Errorf("Host not found")); err != nil {
+			log.Printf("render template: %v", err)
+		}
 		return
 	}
 	domain := model.Domain{
@@ -139,17 +157,21 @@ func (s *Server) handleCreateDomain(w http.ResponseWriter, r *http.Request) {
 
 	if err := s.DB.CreateDomain(domain); err != nil {
 		log.Printf("create domain: %v", err)
-		http.Error(w, "Error adding domain", http.StatusInternalServerError)
+		hxError(w, fmt.Errorf("Error adding domain"))
 		return
 	}
 
-	w.Header().Set("HX-Redirect", "/domains")
+	if isHXrequest(r) {
+		w.Header().Set("HX-Redirect", "/domains")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 	http.Redirect(w, r, "/domains", http.StatusOK)
 }
 
 func (s *Server) handleNewDomainPage(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserCtx(r.Context())
-	if err := views.NewDomain(w, &user); err != nil {
+	if err := views.NewDomain(w, &user, "", nil); err != nil {
 		log.Printf("render template: %v", err)
 	}
 }
@@ -157,6 +179,13 @@ func (s *Server) handleNewDomainPage(w http.ResponseWriter, r *http.Request) {
 func handleErrorPage(w http.ResponseWriter, r *http.Request, msg string, code int) {
 	if err := views.Error(w, code, msg); err != nil {
 		log.Printf("render template: %v", err)
+	}
+}
+
+func hxError(w http.ResponseWriter, err error) {
+	w.Header().Set("HX-Retarget", "#error-container")
+	if err := views.ErrorBanner(w, err); err != nil {
+		log.Printf("render error: %v", err)
 	}
 }
 

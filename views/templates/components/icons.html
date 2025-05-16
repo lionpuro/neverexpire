@@ -31,3 +31,37 @@
 	height={{$size}}
 ><title>eye</title><path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" /></svg>
 {{ end }}
+
+{{ define "icon-alert" }}
+{{ $size := "24" }}
+{{ if .size }}
+	{{ $size = .size }}
+{{ end }}
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	viewBox="0 0 24 24"
+	style="fill:currentColor;"
+	width={{$size}}
+	height={{$size}}
+	{{ if .class }}
+	class={{.class}}
+	{{ end }}
+><title>alert-circle</title><path d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>
+{{ end }}
+
+{{ define "icon-close" }}
+{{ $size := "24" }}
+{{ if .size }}
+	{{ $size = .size }}
+{{ end }}
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	viewBox="0 0 24 24"
+	style="fill:currentColor;"
+	width={{$size}}
+	height={{$size}}
+	{{ if .class }}
+	class={{.class}}
+	{{ end }}
+><title>close</title><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
+{{ end }}
