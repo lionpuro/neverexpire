@@ -1,6 +1,7 @@
 package views
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -36,6 +37,16 @@ func statusClass(status string) string {
 	default:
 		return "text-healthy-dark bg-healthy-light"
 	}
+}
+
+func statusText(status string, expires time.Time) string {
+	switch status {
+	case certs.StatusOffline:
+		return status
+	case certs.StatusInvalid:
+		return "expired"
+	}
+	return fmt.Sprintf("%d days", certs.DaysLeft(expires))
 }
 
 // Use with caution

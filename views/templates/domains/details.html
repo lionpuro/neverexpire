@@ -28,7 +28,7 @@
 				<span
 					class="{{ statusClass .Domain.Status | cn "w-fit rounded-full flex justify-center items-center px-3 py-0.5 text-sm font-medium" }}"
 				>
-					{{ .Domain.Status }}
+					{{ statusText .Domain.Status .Domain.Expires }}
 				</span>
 			</li>
 			{{ template "li" withAttributes

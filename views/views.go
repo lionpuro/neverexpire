@@ -71,6 +71,7 @@ func parse(templates ...string) *viewTemplate {
 		"sprintf":        fmt.Sprintf,
 		"cn":             cn,
 		"statusClass":    statusClass,
+		"statusText":     statusText,
 		"withAttributes": withAttributes,
 	}
 	patterns := []string{templatePath("base.html"), templatePath("components/*.html")}
