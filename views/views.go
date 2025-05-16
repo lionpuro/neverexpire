@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/lionpuro/trackcert/model"
+	"github.com/lionpuro/trackcerts/model"
 )
 
 //go:embed templates

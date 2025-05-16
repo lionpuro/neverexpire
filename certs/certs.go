@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lionpuro/trackcert/model"
+	"github.com/lionpuro/trackcerts/model"
 )
 
 const (

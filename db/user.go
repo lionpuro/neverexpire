@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/lionpuro/trackcert/model"
+	"github.com/lionpuro/trackcerts/model"
 )
 
 func (s *Service) UserByID(ctx context.Context, id string) (model.User, error) {

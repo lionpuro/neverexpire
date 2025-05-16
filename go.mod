@@ -1,4 +1,4 @@
-module github.com/lionpuro/trackcert
+module github.com/lionpuro/trackcerts
 
 go 1.24.2
 

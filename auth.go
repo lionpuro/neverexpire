@@ -10,7 +10,7 @@ import (
 	"os"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/lionpuro/trackcert/model"
+	"github.com/lionpuro/trackcerts/model"
 	"golang.org/x/oauth2"
 )
 

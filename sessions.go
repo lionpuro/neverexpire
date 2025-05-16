@@ -8,8 +8,8 @@ import (
 	"os"
 
 	"github.com/gorilla/sessions"
-	"github.com/lionpuro/trackcert/model"
-	"github.com/lionpuro/trackcert/redisstore"
+	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/trackcerts/redisstore"
 	"github.com/redis/go-redis/v9"
 )
 

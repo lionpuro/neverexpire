@@ -3,8 +3,8 @@ package db
 import (
 	"context"
 
-	"github.com/lionpuro/trackcert/certs"
-	"github.com/lionpuro/trackcert/model"
+	"github.com/lionpuro/trackcerts/certs"
+	"github.com/lionpuro/trackcerts/model"
 )
 
 func (s *Service) DomainByID(ctx context.Context, id, userID string) (model.Domain, error) {

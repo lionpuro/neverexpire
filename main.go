@@ -7,7 +7,7 @@ import (
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/lionpuro/trackcert/db"
+	"github.com/lionpuro/trackcerts/db"
 )
 
 func main() {

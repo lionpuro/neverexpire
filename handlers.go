@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/lionpuro/trackcert/certs"
-	"github.com/lionpuro/trackcert/model"
-	"github.com/lionpuro/trackcert/views"
+	"github.com/lionpuro/trackcerts/certs"
+	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/trackcerts/views"
 )
 
 func (s *Server) handleHomePage(w http.ResponseWriter, r *http.Request) {
