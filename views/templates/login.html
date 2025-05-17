@@ -1,13 +1,15 @@
 {{ define "title" }}Log in - TrackCerts{{ end }}
 {{ define "content" }}
-	<div class="mx-auto w-full max-w-sm flex flex-col">
-		<h1 class="text-2xl font-bold text-base-900 mx-auto mb-6">Log in</h1>
+	<div class="mx-auto w-full max-w-xs flex flex-col">
+		<a href="/" hx-boost="true" class="flex justify-center mb-6">
+			{{ template "logo" }}
+		</a>
 		<a
 			href="/auth/google/login"
 			class="border-base-200 text-base-900 flex justify-center gap-2 rounded-md border px-3 py-1.5 font-medium"
 		>
 			{{ template "icon-google" }}
-			Continue with Google
+			Sign in with Google
 		</a>
 	</div>
 {{ end }}
