@@ -156,8 +156,14 @@ func (s *Server) handleCreateDomain(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.DB.CreateDomain(domain); err != nil {
-		log.Printf("create domain: %v", err)
-		hxError(w, fmt.Errorf("Error adding domain"))
+		e := fmt.Errorf("Error adding domain")
+		str := `duplicate key value violates unique constraint "unique_domain_per_user"`
+		if strings.Contains(err.Error(), str) {
+			e = fmt.Errorf("Already tracking %s", domain.DomainName)
+		} else {
+			log.Printf("create domain: %v", err)
+		}
+		hxError(w, e)
 		return
 	}
 
