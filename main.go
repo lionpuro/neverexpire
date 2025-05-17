@@ -58,16 +58,20 @@ func newServer() (*Server, error) {
 
 	r := http.NewServeMux()
 
-	r.HandleFunc("GET /", s.sessionMiddleware(s.handleHomePage))
-	r.HandleFunc("GET /domains", s.sessionMiddleware(s.requireAuth(s.handleDomains)))
-	r.HandleFunc("GET /domains/new", s.sessionMiddleware(s.requireAuth(s.handleNewDomainPage)))
-	r.HandleFunc("POST /domains", s.sessionMiddleware(s.requireAuth(s.handleCreateDomain)))
-	r.HandleFunc("GET /domains/{id}", s.sessionMiddleware(s.requireAuth(s.handleDomain)))
-	r.HandleFunc("DELETE /domains/{id}", s.sessionMiddleware(s.requireAuth(s.handleDeleteDomain)))
+	register := func(p string, h http.HandlerFunc) {
+		r.HandleFunc(p, s.sessionMiddleware(h))
+	}
 
-	r.HandleFunc("GET /account", s.sessionMiddleware(s.requireAuth(s.handleAccountPage)))
-	r.HandleFunc("GET /login", s.sessionMiddleware(s.handleLoginPage))
-	r.HandleFunc("GET /logout", s.handleLogout)
+	register("GET /", s.handleHomePage)
+	register("GET /domains", s.requireAuth(s.handleDomains))
+	register("GET /domains/new", s.requireAuth(s.handleNewDomainPage))
+	register("POST /domains", s.requireAuth(s.handleCreateDomain))
+	register("GET /domains/{id}", s.requireAuth(s.handleDomain))
+	register("DELETE /domains/{id}", s.requireAuth(s.handleDeleteDomain))
+	register("GET /account", s.requireAuth(s.handleAccountPage))
+	register("GET /login", s.handleLoginPage)
+	register("GET /logout", s.handleLogout)
+
 	r.HandleFunc("GET /auth/google/login", s.handleAuth(s.Auth.GoogleClient))
 	r.HandleFunc("GET /auth/google/callback", s.handleAuthCallback(s.Auth.GoogleClient))
 	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("static"))))
@@ -77,4 +81,7 @@ func newServer() (*Server, error) {
 		Handler: r,
 	}
 	return s, nil
+}
+
+func routeGroup(middleware ...http.Handler) {
 }
