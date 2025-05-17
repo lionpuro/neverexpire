@@ -119,7 +119,7 @@ func (s *Server) handleDeleteDomain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isHXrequest(r) {
-		w.Header().Set("HX-Redirect", "/domains")
+		w.Header().Set("HX-Location", "/domains")
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
@@ -168,7 +168,7 @@ func (s *Server) handleCreateDomain(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isHXrequest(r) {
-		w.Header().Set("HX-Redirect", "/domains")
+		w.Header().Set("HX-Location", "/domains")
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}

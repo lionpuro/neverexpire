@@ -4,7 +4,12 @@
 		{{ template "h1" withAttributes
 			"Text" "Add domain"
 		}}
-		<form class="flex flex-col gap-4" hx-post="/domains" hx-target="body">
+		<form
+			class="flex flex-col gap-4"
+			action="/domains"
+			method="POST"
+			hx-boost="true"
+		>
 			<span class="text-base-600">Enter a domain you want to track.</span>
 			{{/* prettier-ignore-start */}}
 			<textarea
