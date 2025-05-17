@@ -36,7 +36,7 @@ func (s *Server) handleAccountPage(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 	if err := views.Login(w); err != nil {
-		log.Printf(err.Error())
+		log.Printf("render template: %v", err)
 	}
 }
 
