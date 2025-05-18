@@ -40,56 +40,63 @@ func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) handleDomain(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	user, _ := getUserCtx(r.Context())
+func (s *Server) handleDomain(partial bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		user, _ := getUserCtx(r.Context())
 
-	domain, err := s.DB.DomainByID(r.Context(), id, user.ID)
-	if err != nil {
-		errCode := http.StatusInternalServerError
-		errMsg := "Error retrieving domain data"
-		if err == pgx.ErrNoRows {
-			errCode = http.StatusNotFound
-			errMsg = "Domain not found"
-		}
-		log.Printf("get domain: %v", err)
-		handleErrorPage(w, r, errMsg, errCode)
-		return
-	}
-
-	if domain.CheckedAt.Before(time.Now().UTC().Add(-time.Minute)) {
-		info, err := certs.FetchCert(r.Context(), domain.DomainName)
-		if err != nil {
-			log.Printf("get domain: %v", err)
-			if isHXrequest(r) {
-				hxError(w, fmt.Errorf("Error fetching certificate"))
-				return
-			}
-			handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
-			return
-		}
-		domain.CertificateInfo = *info
-		if err := s.DB.UpdateDomainInfo(domain.ID, user.ID, *info); err != nil {
-			log.Printf("update domain: %v", err)
-			handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
-			return
-		}
-		d, err := s.DB.DomainByID(r.Context(), id, user.ID)
+		domain, err := s.DB.DomainByID(r.Context(), id, user.ID)
 		if err != nil {
 			errCode := http.StatusInternalServerError
-			errMsg := "Something went wrong"
+			errMsg := "Error retrieving domain data"
 			if err == pgx.ErrNoRows {
 				errCode = http.StatusNotFound
 				errMsg = "Domain not found"
 			}
-			log.Printf("get domains: %v", err)
+			log.Printf("get domain: %v", err)
 			handleErrorPage(w, r, errMsg, errCode)
 			return
 		}
-		domain = d
-	}
-	if err := views.Domain(w, &user, domain, nil); err != nil {
-		log.Printf("render template: %v", err)
+
+		refreshData := domain.CheckedAt.Before(time.Now().UTC().Add(-time.Minute))
+		if partial && refreshData {
+			info, err := certs.FetchCert(r.Context(), domain.DomainName)
+			if err != nil {
+				log.Printf("get domain: %v", err)
+				if isHXrequest(r) {
+					hxError(w, fmt.Errorf("Error fetching certificate"))
+					return
+				}
+				handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
+				return
+			}
+			domain.CertificateInfo = *info
+			if err := s.DB.UpdateDomainInfo(domain.ID, user.ID, *info); err != nil {
+				log.Printf("update domain: %v", err)
+				handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
+				return
+			}
+			d, err := s.DB.DomainByID(r.Context(), id, user.ID)
+			if err != nil {
+				errCode := http.StatusInternalServerError
+				errMsg := "Something went wrong"
+				if err == pgx.ErrNoRows {
+					errCode = http.StatusNotFound
+					errMsg = "Domain not found"
+				}
+				log.Printf("get domains: %v", err)
+				handleErrorPage(w, r, errMsg, errCode)
+				return
+			}
+			domain = d
+			if err := views.DomainPartial(w, domain); err != nil {
+				log.Printf("render template: %v", err)
+			}
+			return
+		}
+		if err := views.Domain(w, &user, domain, nil, refreshData); err != nil {
+			log.Printf("render template: %v", err)
+		}
 	}
 }
 

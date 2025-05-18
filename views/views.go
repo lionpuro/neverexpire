@@ -27,6 +27,7 @@ var (
 	account     = parse("layouts/main.html", "account.html")
 	login       = parse("layouts/auth.html", "login.html")
 	errorBanner = parse("partials/error-banner.html")
+	domainPart  = parse("layouts/partial.html", "domains/details.html")
 )
 
 func Home(w http.ResponseWriter, user *model.User, err error) error {
@@ -41,8 +42,12 @@ func Domains(w http.ResponseWriter, user *model.User, dmains []model.Domain, err
 	return domains.render(w, map[string]any{"User": user, "Domains": dmains, "Error": err})
 }
 
-func Domain(w http.ResponseWriter, user *model.User, d model.Domain, err error) error {
-	return domain.render(w, map[string]any{"User": user, "Domain": d, "Error": err})
+func Domain(w http.ResponseWriter, user *model.User, d model.Domain, err error, refreshData bool) error {
+	return domain.render(w, map[string]any{"User": user, "Domain": d, "Error": err, "RefreshData": refreshData})
+}
+
+func DomainPartial(w http.ResponseWriter, d model.Domain) error {
+	return domainPart.render(w, map[string]any{"Domain": d})
 }
 
 func NewDomain(w http.ResponseWriter, user *model.User, inputValue string, err error) error {

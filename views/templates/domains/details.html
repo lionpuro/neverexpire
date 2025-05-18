@@ -1,21 +1,15 @@
-{{ define "li" }}
-	<li class="contents">
-		<span class="font-semibold text-base-800">
-			{{ .key }}
-		</span>
-		<span
-			class="font-medium text-base-600"
-			{{ if .id }}
-				id={{ .id }}
-			{{ end }}
-		>
-			{{ .val }}
-		</span>
-	</li>
-{{ end }}
-
 {{ define "content" }}
-	<div class="flex flex-col max-w-3xl w-full mx-auto gap-6">
+	<div
+		{{ if .RefreshData }}
+			{{/* prettier-ignore-start */}}
+			hx-get="/partials/domains/{{ .Domain.ID }}"
+			hx-trigger="load"
+			hx-target="#content"
+			hx-swap="innerHTML"
+			{{/* prettier-ignore-end */}}
+		{{ end }}
+		class="flex flex-col max-w-3xl w-full mx-auto gap-6"
+	>
 		<div class="flex flex-col gap-1">
 			<h1 class="font-semibold text-xl text-base-800">
 				{{ .Domain.DomainName }}
@@ -72,4 +66,19 @@
 			el.textContent = str;
 		})();
 	</script>
+{{ end }}
+{{ define "li" }}
+	<li class="contents">
+		<span class="font-semibold text-base-800">
+			{{ .key }}
+		</span>
+		<span
+			class="font-medium text-base-600"
+			{{ if .id }}
+				id={{ .id }}
+			{{ end }}
+		>
+			{{ .val }}
+		</span>
+	</li>
 {{ end }}
