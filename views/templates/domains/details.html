@@ -14,37 +14,39 @@
 			<h1 class="font-semibold text-xl text-base-800">
 				{{ .Domain.DomainName }}
 			</h1>
-			<span class="text-base-500 font-medium">{{ .Domain.IP }}</span>
+			<span class="text-base-500 font-medium"
+				>{{ .Domain.Certificate.IP }}</span
+			>
 		</div>
 		<ul class="grid grid-cols-2 gap-2">
 			<li class="contents">
 				<span class="font-semibold text-base-800">Status</span>
 				<span
-					class="{{ statusClass .Domain.Status | cn "w-fit rounded-full flex justify-center items-center px-3 py-0.5 text-sm font-medium" }}"
+					class="{{ statusClass .Domain.Certificate.Status | cn "w-fit rounded-full flex justify-center items-center px-3 py-0.5 text-sm font-medium" }}"
 				>
-					{{ statusText .Domain.Status .Domain.Expires }}
+					{{ statusText .Domain.Certificate.Status .Domain.Certificate.Expires }}
 				</span>
 			</li>
 			{{ template "li" withAttributes
 				"key" "Issuer"
-				"val" .Domain.Issuer
+				"val" .Domain.Certificate.Issuer
 			}}
 			{{ template "li" withAttributes
 				"key" "Expires"
-				"val" (datef .Domain.Expires "2006-01-02 15:04:05")
+				"val" (datef .Domain.Certificate.Expires "2006-01-02 15:04:05")
 			}}
 			{{ template "li" withAttributes
 				"key" "Latency"
-				"val" (sprintf "%d ms" .Domain.Latency)
+				"val" (sprintf "%d ms" .Domain.Certificate.Latency)
 			}}
 			{{ template "li" withAttributes
 				"key" "DNS"
-				"val" .Domain.DNSNames
+				"val" .Domain.Certificate.DNSNames
 			}}
 			{{ template "li" withAttributes
 				"id" "last-checked"
 				"key" "Last checked"
-				"val" ((.Domain.CheckedAt.Format "2006-01-02 15:04:05") | sprintf "%s UTC")
+				"val" ((.Domain.Certificate.CheckedAt.Format "2006-01-02 15:04:05") | sprintf "%s UTC")
 			}}
 		</ul>
 		<button
@@ -56,7 +58,7 @@
 	</div>
 	<script>
 		(() => {
-			const d = new Date("{{.Domain.CheckedAt.String}}");
+			const d = new Date("{{.Domain.Certificate.CheckedAt.String}}");
 			const el = document.querySelector("#last-checked");
 			if (!el) return;
 			const str = d.toLocaleString(window.navigator.language);

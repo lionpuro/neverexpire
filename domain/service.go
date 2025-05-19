@@ -32,9 +32,9 @@ func (s *Service) Create(user model.User, name string) error {
 		return err
 	}
 	domain := model.Domain{
-		UserID:          user.ID,
-		DomainName:      name,
-		CertificateInfo: *info,
+		UserID:      user.ID,
+		DomainName:  name,
+		Certificate: *info,
 	}
 	return s.repo.Create(domain)
 }

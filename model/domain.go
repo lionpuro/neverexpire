@@ -3,10 +3,10 @@ package model
 import "time"
 
 type Domain struct {
-	ID         int    `db:"id"`
-	UserID     string `db:"user_id"`
-	DomainName string `db:"domain_name"`
-	CertificateInfo
+	ID          int    `db:"id"`
+	UserID      string `db:"user_id"`
+	DomainName  string `db:"domain_name"`
+	Certificate CertificateInfo
 }
 
 type CertificateInfo struct {

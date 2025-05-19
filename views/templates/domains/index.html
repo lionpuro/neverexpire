@@ -40,7 +40,7 @@
 					<div
 						class="max-sm:row-start-4 md:col-start-2 flex items-center text-sm font-medium text-base-600 text-base-700 px-1 py-2 bg-base-white max-md:hidden"
 					>
-						{{ $domain.Issuer }}
+						{{ $domain.Certificate.Issuer }}
 					</div>
 					<div
 						class="max-sm:contents sm:col-start-2 md:col-start-3 flex items-center text-base-700 px-1 py-2 bg-base-white"
@@ -49,7 +49,7 @@
 							>Expires</span
 						>
 						<span class="date font-medium text-sm max-sm:py-0.5">
-							{{ datef $domain.Expires "2006-01-02" }}
+							{{ datef $domain.Certificate.Expires "2006-01-02" }}
 						</span>
 					</div>
 					<div
@@ -60,9 +60,9 @@
 							>Status</span
 						>
 						<span
-							class="{{ statusClass $domain.Status | cn "max-sm:row-start-2 w-22 sm:w-20 rounded-full flex justify-center items-center px-2 py-0.5" }}"
+							class="{{ statusClass $domain.Certificate.Status | cn "max-sm:row-start-2 w-22 sm:w-20 rounded-full flex justify-center items-center px-2 py-0.5" }}"
 						>
-							{{ statusText $domain.Status $domain.Expires }}
+							{{ statusText $domain.Certificate.Status $domain.Certificate.Expires }}
 						</span>
 					</div>
 					<div
@@ -72,7 +72,7 @@
 							>Last checked</span
 						>
 						<span class="datetime text-sm font-medium max-sm:py-0.5">
-							{{ datef $domain.CheckedAt "2006-01-02 15:04:05" }}
+							{{ datef $domain.Certificate.CheckedAt "2006-01-02 15:04:05" }}
 						</span>
 					</div>
 					<div

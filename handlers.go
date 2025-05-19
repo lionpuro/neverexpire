@@ -64,7 +64,7 @@ func (s *Server) handleDomain(partial bool) http.HandlerFunc {
 			return
 		}
 
-		refreshData := domain.CheckedAt.Before(time.Now().UTC().Add(-time.Minute))
+		refreshData := domain.Certificate.CheckedAt.Before(time.Now().UTC().Add(-time.Minute))
 		if partial && refreshData {
 			info, err := certs.FetchCert(r.Context(), domain.DomainName)
 			if err != nil {
@@ -76,7 +76,7 @@ func (s *Server) handleDomain(partial bool) http.HandlerFunc {
 				handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 				return
 			}
-			domain.CertificateInfo = *info
+			domain.Certificate = *info
 			d, err := s.Domains.Update(domain)
 			if err != nil {
 				log.Printf("update domain: %v", err)
