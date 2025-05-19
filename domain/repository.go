@@ -69,7 +69,9 @@ func (r *DomainRepository) All(ctx context.Context, userID string) ([]model.Doma
 		checked_at,
 		latency
 	FROM domains WHERE user_id = $1
-	ORDER By expires_at
+	ORDER BY
+		array_position(array['offline', 'invalid', 'expiring', 'healthy'], status),
+		expires_at
 	`, userID)
 	if err != nil {
 		return nil, err
