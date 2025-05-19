@@ -83,6 +83,3 @@ func newServer() (*Server, error) {
 	}
 	return s, nil
 }
-
-func routeGroup(middleware ...http.Handler) {
-}
