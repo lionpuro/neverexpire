@@ -123,9 +123,9 @@ func (s *Server) handleAuthCallback(a *AuthClient) http.HandlerFunc {
 			return
 		}
 
-		if err := s.DB.CreateUser(user.ID, user.Email); err != nil {
+		if err := s.Users.Create(user.ID, user.Email); err != nil {
 			log.Printf("%v", err)
-			http.Error(w, "Error registering user", http.StatusInternalServerError)
+			http.Error(w, "Error creating user", http.StatusInternalServerError)
 			return
 		}
 		sess.Values["user"] = model.User{ID: user.ID, Email: user.Email}

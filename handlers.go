@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -42,10 +43,15 @@ func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleDomain(partial bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
+		p := r.PathValue("id")
+		id, err := strconv.Atoi(p)
+		if err != nil {
+			handleErrorPage(w, r, "Bad request", http.StatusBadRequest)
+			return
+		}
 		user, _ := getUserCtx(r.Context())
 
-		domain, err := s.DB.DomainByID(r.Context(), id, user.ID)
+		domain, err := s.Domains.ByID(r.Context(), id, user.ID)
 		if err != nil {
 			errCode := http.StatusInternalServerError
 			errMsg := "Error retrieving domain data"
@@ -71,21 +77,10 @@ func (s *Server) handleDomain(partial bool) http.HandlerFunc {
 				return
 			}
 			domain.CertificateInfo = *info
-			if err := s.DB.UpdateDomainInfo(domain.ID, user.ID, *info); err != nil {
+			d, err := s.Domains.Update(domain)
+			if err != nil {
 				log.Printf("update domain: %v", err)
 				handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
-				return
-			}
-			d, err := s.DB.DomainByID(r.Context(), id, user.ID)
-			if err != nil {
-				errCode := http.StatusInternalServerError
-				errMsg := "Something went wrong"
-				if err == pgx.ErrNoRows {
-					errCode = http.StatusNotFound
-					errMsg = "Domain not found"
-				}
-				log.Printf("get domains: %v", err)
-				handleErrorPage(w, r, errMsg, errCode)
 				return
 			}
 			domain = d
@@ -102,7 +97,7 @@ func (s *Server) handleDomain(partial bool) http.HandlerFunc {
 
 func (s *Server) handleDomains(w http.ResponseWriter, r *http.Request) {
 	user, _ := getUserCtx(r.Context())
-	domains, err := s.DB.Domains(r.Context(), user.ID)
+	domains, err := s.Domains.All(r.Context(), user.ID)
 	if err != nil {
 		log.Printf("get domains: %v", err)
 		handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
@@ -114,12 +109,17 @@ func (s *Server) handleDomains(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDeleteDomain(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	p := r.PathValue("id")
+	id, err := strconv.Atoi(p)
+	if err != nil {
+		handleErrorPage(w, r, "Bad request", http.StatusBadRequest)
+		return
+	}
 	user, _ := getUserCtx(r.Context())
-	if err := s.DB.DeleteDomain(id, user.ID); err != nil {
+	if err := s.Domains.Delete(user.ID, id); err != nil {
 		log.Printf("delete domain: %v", err)
 		if !isHXrequest(r) {
-			handleErrorPage(w, r, err.Error(), http.StatusInternalServerError)
+			handleErrorPage(w, r, "Error deleting domain", http.StatusInternalServerError)
 			return
 		}
 		hxError(w, fmt.Errorf("Error deleting domain"))
@@ -148,25 +148,12 @@ func (s *Server) handleCreateDomain(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	cert, err := certs.FetchCert(r.Context(), input)
-	if err != nil {
-		log.Printf("fetch certificate: %v", err)
-		if err := views.NewDomain(w, &user, input, fmt.Errorf("Error retrieving certificate")); err != nil {
-			log.Printf("render template: %v", err)
-		}
-		return
-	}
-	domain := model.Domain{
-		UserID:          user.ID,
-		DomainName:      input,
-		CertificateInfo: *cert,
-	}
 
-	if err := s.DB.CreateDomain(domain); err != nil {
+	if err := s.Domains.Create(user, input); err != nil {
 		e := fmt.Errorf("Error adding domain")
 		str := `duplicate key value violates unique constraint "unique_domain_per_user"`
 		if strings.Contains(err.Error(), str) {
-			e = fmt.Errorf("Already tracking %s", domain.DomainName)
+			e = fmt.Errorf("Already tracking %s", input)
 		} else {
 			log.Printf("create domain: %v", err)
 		}

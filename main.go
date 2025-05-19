@@ -8,6 +8,8 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/lionpuro/trackcerts/db"
+	"github.com/lionpuro/trackcerts/domain"
+	"github.com/lionpuro/trackcerts/user"
 )
 
 func main() {
@@ -21,9 +23,10 @@ func main() {
 }
 
 type Server struct {
-	DB         *db.Service
 	Sessions   *SessionStore
 	Auth       *AuthService
+	Users      *user.Service
+	Domains    *domain.Service
 	httpServer *http.Server
 }
 
@@ -35,7 +38,7 @@ func newServer() (*Server, error) {
 		os.Getenv("POSTGRES_HOST_PORT"),
 		os.Getenv("POSTGRES_DB"),
 	)
-	dbService, err := db.NewService(conn)
+	pool, err := db.NewPool(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -50,10 +53,14 @@ func newServer() (*Server, error) {
 		return nil, err
 	}
 
+	us := user.NewService(&user.UserRepository{DB: pool})
+	ds := domain.NewService(&domain.DomainRepository{DB: pool})
+
 	s := &Server{
-		DB:       dbService,
 		Sessions: sessions,
 		Auth:     auth,
+		Users:    us,
+		Domains:  ds,
 	}
 
 	r := http.NewServeMux()
