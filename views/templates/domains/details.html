@@ -34,6 +34,7 @@
 			{{ template "li" withAttributes
 				"key" "Expires"
 				"val" (datef .Domain.Certificate.Expires "2006-01-02 15:04:05")
+				"class" "datetime"
 			}}
 			{{ template "li" withAttributes
 				"key" "Latency"
@@ -44,9 +45,9 @@
 				"val" .Domain.Certificate.DNSNames
 			}}
 			{{ template "li" withAttributes
-				"id" "last-checked"
 				"key" "Last checked"
-				"val" ((.Domain.Certificate.CheckedAt.Format "2006-01-02 15:04:05") | sprintf "%s UTC")
+				"val" (datef .Domain.Certificate.CheckedAt "2006-01-02 15:04:05")
+				"class" "datetime"
 			}}
 		</ul>
 		<button
@@ -57,16 +58,7 @@
 		</button>
 	</div>
 	<script>
-		(() => {
-			const d = new Date("{{.Domain.Certificate.CheckedAt.String}}");
-			const el = document.querySelector("#last-checked");
-			if (!el) return;
-			const str = d.toLocaleString(window.navigator.language);
-			if (str === "Invalid Date") {
-				return;
-			}
-			el.textContent = str;
-		})();
+		localizeDates();
 	</script>
 {{ end }}
 {{ define "li" }}
@@ -74,12 +66,7 @@
 		<span class="font-semibold text-base-800">
 			{{ .key }}
 		</span>
-		<span
-			class="font-medium text-base-600"
-			{{ if .id }}
-				id={{ .id }}
-			{{ end }}
-		>
+		<span class="font-medium text-base-600 {{ .class }}">
 			{{ .val }}
 		</span>
 	</li>
