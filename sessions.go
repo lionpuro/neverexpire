@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/lionpuro/trackcerts/model"
 	"github.com/lionpuro/trackcerts/redisstore"
+	"github.com/lionpuro/trackcerts/user"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -57,19 +58,10 @@ func (s *SessionStore) GetUser(r *http.Request) (model.User, error) {
 func (s *Server) sessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		user, err := s.Sessions.GetUser(r)
+		u, err := s.Sessions.GetUser(r)
 		if err == nil {
-			ctx = withUserCtx(r.Context(), user)
+			ctx = user.SaveToContext(r.Context(), u)
 		}
 		next(w, r.WithContext(ctx))
 	}
-}
-
-func withUserCtx(ctx context.Context, user model.User) context.Context {
-	return context.WithValue(ctx, userContextKey, user)
-}
-
-func getUserCtx(ctx context.Context) (model.User, bool) {
-	u, ok := ctx.Value(userContextKey).(model.User)
-	return u, ok
 }

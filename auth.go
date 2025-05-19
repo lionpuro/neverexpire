@@ -11,12 +11,12 @@ import (
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/trackcerts/user"
 	"golang.org/x/oauth2"
 )
 
 const (
 	googleUserEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo"
-	userContextKey     = "user"
 )
 
 type AuthService struct {
@@ -180,7 +180,7 @@ func generateRandomState() (string, error) {
 
 func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, ok := getUserCtx(r.Context())
+		_, ok := user.FromContext(r.Context())
 		if !ok {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
