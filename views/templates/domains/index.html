@@ -49,7 +49,12 @@
 							>Expires</span
 						>
 						<span class="date font-medium text-sm max-sm:py-0.5">
-							{{ datef $domain.Certificate.Expires "2006-01-02" }}
+							<local-time
+								datetime="{{ datef $domain.Certificate.Expires "2006-01-02T15:04:05.000Z" }}"
+								dateonly="true"
+							>
+								{{ datef $domain.Certificate.Expires "2006-01-02" }}
+							</local-time>
 						</span>
 					</div>
 					<div
@@ -72,7 +77,11 @@
 							>Last checked</span
 						>
 						<span class="datetime text-sm font-medium max-sm:py-0.5">
-							{{ datef $domain.Certificate.CheckedAt "2006-01-02 15:04:05" }}
+							<local-time
+								datetime="{{ datef $domain.Certificate.CheckedAt "2006-01-02T15:04:05.000Z" }}"
+							>
+								{{ datef $domain.Certificate.CheckedAt "2006-01-02 15:04:05" }}
+							</local-time>
 						</span>
 					</div>
 					<div
@@ -93,9 +102,6 @@
 				</div>
 			{{ end }}
 		</div>
-		<script>
-			localizeDates();
-		</script>
 	{{ else }}
 		<div class="text-base-600">No tracked domains</div>
 	{{ end }}

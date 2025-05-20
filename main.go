@@ -82,7 +82,7 @@ func newServer() (*Server, error) {
 
 	r.HandleFunc("GET /auth/google/login", s.handleAuth(s.Auth.GoogleClient))
 	r.HandleFunc("GET /auth/google/callback", s.handleAuthCallback(s.Auth.GoogleClient))
-	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("static"))))
+	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("assets/public"))))
 
 	s.httpServer = &http.Server{
 		Addr:    ":3000",

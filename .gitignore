@@ -18,4 +18,5 @@ tmp
 **/*_templ.go
 **/*_templ.txt
 
-static/css
+assets/public/css
+assets/public/scripts/local-time.min.js

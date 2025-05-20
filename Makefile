@@ -11,7 +11,8 @@ setup:
 	mv tailwindcss-linux-x64 .tools/tailwindcss
 
 build:
-	@./.tools/tailwindcss -i ./global.css -o ./static/css/global.css --minify
+	@npm run build
+	@./.tools/tailwindcss -i ./global.css -o ./assets/public/css/global.css --minify
 	@go build -o tmp/run .
 
 run: build

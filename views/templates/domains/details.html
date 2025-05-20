@@ -31,11 +31,16 @@
 				"key" "Issuer"
 				"val" .Domain.Certificate.Issuer
 			}}
-			{{ template "li" withAttributes
-				"key" "Expires"
-				"val" (datef .Domain.Certificate.Expires "2006-01-02 15:04:05")
-				"class" "datetime"
-			}}
+			<li class="contents">
+				<span class="font-semibold text-base-800"> Expires </span>
+				<span class="font-medium text-base-600">
+					<local-time
+						datetime="{{ datef .Domain.Certificate.Expires "2006-01-02T15:04:05.000Z" }}"
+					>
+						{{ datef .Domain.Certificate.Expires "2006-01-02 15:04:05" }}
+					</local-time>
+				</span>
+			</li>
 			{{ template "li" withAttributes
 				"key" "Latency"
 				"val" (sprintf "%d ms" .Domain.Certificate.Latency)
@@ -44,11 +49,16 @@
 				"key" "DNS"
 				"val" .Domain.Certificate.DNSNames
 			}}
-			{{ template "li" withAttributes
-				"key" "Last checked"
-				"val" (datef .Domain.Certificate.CheckedAt "2006-01-02 15:04:05")
-				"class" "datetime"
-			}}
+			<li class="contents">
+				<span class="font-semibold text-base-800"> Last checked </span>
+				<span class="font-medium text-base-600">
+					<local-time
+						datetime="{{ datef .Domain.Certificate.CheckedAt "2006-01-02T15:04:05.000Z" }}"
+					>
+						{{ datef .Domain.Certificate.CheckedAt "2006-01-02 15:04:05" }}
+					</local-time>
+				</span>
+			</li>
 		</ul>
 		<button
 			hx-delete="/domains/{{ .Domain.ID }}"
@@ -57,9 +67,6 @@
 			Delete
 		</button>
 	</div>
-	<script>
-		localizeDates();
-	</script>
 {{ end }}
 {{ define "li" }}
 	<li class="contents">
