@@ -15,10 +15,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const (
-	googleUserEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo"
-)
-
 type AuthService struct {
 	GoogleClient *AuthClient
 }
