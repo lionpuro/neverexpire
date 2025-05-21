@@ -2,7 +2,7 @@ include .env
 
 DATABASE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_HOST_PORT}/${POSTGRES_DB}?sslmode=disable
 
-.PHONY: build run fmt create-migration migrate-up migrate-down
+.PHONY: build run fmt lint create-migration migrate-up migrate-down
 
 build:
 	@npm run build
@@ -18,6 +18,9 @@ dev:
 fmt:
 	@gofmt -l -s -w .
 	@npx prettier . --write
+
+lint:
+	@docker run -t --rm -v ${PWD}:/app -w /app golangci/golangci-lint:v2.1.6 golangci-lint run
 
 create-migration:
 	@read -p "Enter the sequence name: " SEQ; \
