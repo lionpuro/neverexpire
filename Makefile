@@ -6,7 +6,7 @@ DATABASE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_H
 
 build:
 	@npm run build
-	@npx @tailwindcss/cli -i ./global.css -o ./assets/public/css/global.css --minify
+	@npx @tailwindcss/cli -i ./assets/src/global.css -o ./assets/public/css/global.css --minify
 	@go build -o tmp/run .
 
 run: build
