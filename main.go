@@ -7,6 +7,7 @@ import (
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/lionpuro/trackcerts/auth"
 	"github.com/lionpuro/trackcerts/db"
 	"github.com/lionpuro/trackcerts/domain"
 	"github.com/lionpuro/trackcerts/user"
@@ -23,10 +24,6 @@ func main() {
 }
 
 type Server struct {
-	Sessions   *SessionStore
-	Auth       *AuthService
-	Users      *user.Service
-	Domains    *domain.Service
 	httpServer *http.Server
 }
 
@@ -43,50 +40,45 @@ func newServer() (*Server, error) {
 		return nil, err
 	}
 
-	sessions, err := newSessionStore()
-	if err != nil {
-		return nil, err
-	}
-
-	auth, err := newAuthService()
-	if err != nil {
-		return nil, err
-	}
-
 	us := user.NewService(&user.UserRepository{DB: pool})
 	ds := domain.NewService(&domain.DomainRepository{DB: pool})
+	as, err := auth.NewService()
+	if err != nil {
+		return nil, err
+	}
 
-	s := &Server{
-		Sessions: sessions,
-		Auth:     auth,
-		Users:    us,
-		Domains:  ds,
+	dh := domain.NewHandler(ds)
+	ah, err := auth.NewHandler(as, us)
+	if err != nil {
+		return nil, err
 	}
 
 	r := http.NewServeMux()
 
 	register := func(p string, h http.HandlerFunc) {
-		r.HandleFunc(p, s.sessionMiddleware(h))
+		r.HandleFunc(p, ah.Authenticate(h))
 	}
 
-	register("GET /", s.handleHomePage)
-	register("GET /domains", s.requireAuth(s.handleDomains))
-	register("GET /domains/new", s.requireAuth(s.handleNewDomainPage))
-	register("POST /domains", s.requireAuth(s.handleCreateDomain))
-	register("GET /domains/{id}", s.requireAuth(s.handleDomain(false)))
-	register("GET /partials/domains/{id}", s.requireAuth(s.handleDomain(true)))
-	register("DELETE /domains/{id}", s.requireAuth(s.handleDeleteDomain))
-	register("GET /account", s.requireAuth(s.handleAccountPage))
-	register("GET /login", s.handleLoginPage)
-	register("GET /logout", s.handleLogout)
+	register("GET /", handleHomePage)
+	register("GET /domains", requireAuth(dh.Domains))
+	register("GET /domains/new", requireAuth(dh.NewDomainPage))
+	register("POST /domains", requireAuth(dh.CreateDomain))
+	register("GET /domains/{id}", requireAuth(dh.Domain(false)))
+	register("GET /partials/domains/{id}", requireAuth(dh.Domain(true)))
+	register("DELETE /domains/{id}", requireAuth(dh.DeleteDomain))
+	register("GET /account", requireAuth(handleAccountPage))
+	register("GET /login", handleLoginPage)
+	register("GET /logout", ah.Logout)
 
-	r.HandleFunc("GET /auth/google/login", s.handleAuth(s.Auth.GoogleClient))
-	r.HandleFunc("GET /auth/google/callback", s.handleAuthCallback(s.Auth.GoogleClient))
+	r.HandleFunc("GET /auth/google/login", ah.Login(as.GoogleClient))
+	r.HandleFunc("GET /auth/google/callback", ah.Callback(as.GoogleClient))
 	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("assets/public"))))
 
-	s.httpServer = &http.Server{
-		Addr:    ":3000",
-		Handler: r,
+	s := &Server{
+		httpServer: &http.Server{
+			Addr:    ":3000",
+			Handler: r,
+		},
 	}
 	return s, nil
 }

@@ -1,60 +1,30 @@
-package main
+package auth
 
 import (
-	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/lionpuro/trackcerts/model"
 	"github.com/lionpuro/trackcerts/user"
 	"golang.org/x/oauth2"
 )
 
-type AuthService struct {
-	GoogleClient *AuthClient
+type Handler struct {
+	authService *Service
+	userService *user.Service
 }
 
-type AuthClient struct {
-	config       *oauth2.Config
-	oidcProvider *oidc.Provider
+func NewHandler(as *Service, us *user.Service) (*Handler, error) {
+	h := &Handler{
+		authService: as,
+		userService: us,
+	}
+	return h, nil
 }
 
-func newAuthService() (*AuthService, error) {
-	googleProvider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
-	if err != nil {
-		return nil, fmt.Errorf("new google provider: %v", err)
-	}
-	googleClient, err := newAuthClient(googleProvider, &oauth2.Config{
-		ClientID:     os.Getenv("OAUTH_GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("OAUTH_GOOGLE_CALLBACK_URL"),
-		Scopes:       []string{oidc.ScopeOpenID, "email"},
-		Endpoint:     googleProvider.Endpoint(),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("new google client: %v", err)
-	}
-
-	s := &AuthService{
-		GoogleClient: googleClient,
-	}
-	return s, nil
-}
-
-func newAuthClient(provider *oidc.Provider, conf *oauth2.Config) (*AuthClient, error) {
-	client := &AuthClient{
-		config:       conf,
-		oidcProvider: provider,
-	}
-	return client, nil
-}
-
-func (s *Server) handleAuth(a *AuthClient) http.HandlerFunc {
+func (h *Handler) Login(a *Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		state, err := generateRandomState()
 		if err != nil {
@@ -62,7 +32,7 @@ func (s *Server) handleAuth(a *AuthClient) http.HandlerFunc {
 			return
 		}
 
-		sess, err := s.Sessions.GetSession(r)
+		sess, err := h.authService.sessions.GetSession(r)
 		if err != nil {
 			log.Printf("get session: %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
@@ -80,9 +50,9 @@ func (s *Server) handleAuth(a *AuthClient) http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleAuthCallback(a *AuthClient) http.HandlerFunc {
+func (h *Handler) Callback(a *Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sess, err := s.Sessions.GetSession(r)
+		sess, err := h.authService.sessions.GetSession(r)
 		if err != nil {
 			log.Printf("get session: %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
@@ -119,7 +89,7 @@ func (s *Server) handleAuthCallback(a *AuthClient) http.HandlerFunc {
 			return
 		}
 
-		if err := s.Users.Create(user.ID, user.Email); err != nil {
+		if err := h.userService.Create(user.ID, user.Email); err != nil {
 			log.Printf("%v", err)
 			http.Error(w, "Error creating user", http.StatusInternalServerError)
 			return
@@ -135,8 +105,8 @@ func (s *Server) handleAuthCallback(a *AuthClient) http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
-	sess, err := s.Sessions.GetSession(r)
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	sess, err := h.authService.sessions.GetSession(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -150,19 +120,6 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-func (a *AuthClient) verifyToken(ctx context.Context, token *oauth2.Token) (*oidc.IDToken, error) {
-	rawToken, ok := token.Extra("id_token").(string)
-	if !ok {
-		return nil, fmt.Errorf("missing field id_token in oauth2 token")
-	}
-
-	conf := &oidc.Config{
-		ClientID: a.config.ClientID,
-	}
-
-	return a.oidcProvider.Verifier(conf).Verify(ctx, rawToken)
-}
-
 func generateRandomState() (string, error) {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
@@ -174,13 +131,13 @@ func generateRandomState() (string, error) {
 	return state, nil
 }
 
-func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
+func (h *Handler) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, ok := user.FromContext(r.Context())
-		if !ok {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
+		ctx := r.Context()
+		u, err := h.authService.sessions.GetUser(r)
+		if err == nil {
+			ctx = user.SaveToContext(r.Context(), u)
 		}
-		next(w, r)
+		next(w, r.WithContext(ctx))
 	}
 }

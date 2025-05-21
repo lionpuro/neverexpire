@@ -1,4 +1,4 @@
-package main
+package auth
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/lionpuro/trackcerts/model"
 	"github.com/lionpuro/trackcerts/redisstore"
-	"github.com/lionpuro/trackcerts/user"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -53,15 +52,4 @@ func (s *SessionStore) GetUser(r *http.Request) (model.User, error) {
 		return model.User{}, fmt.Errorf("invalid session data")
 	}
 	return user, nil
-}
-
-func (s *Server) sessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		u, err := s.Sessions.GetUser(r)
-		if err == nil {
-			ctx = user.SaveToContext(r.Context(), u)
-		}
-		next(w, r.WithContext(ctx))
-	}
 }
