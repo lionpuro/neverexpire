@@ -20,7 +20,7 @@ func cn(classnames ...string) string {
 }
 
 func datef(t time.Time, layout string) string {
-	if t == (time.Time{}) {
+	if t.IsZero() {
 		return "n/a"
 	}
 	return t.Format(layout)
