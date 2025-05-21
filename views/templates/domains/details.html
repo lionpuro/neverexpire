@@ -10,6 +10,14 @@
 		{{ end }}
 		class="flex flex-col max-w-3xl w-full mx-auto gap-6"
 	>
+		<a
+			href="/domains"
+			hx-boost="true"
+			class="flex items-center gap-1 font-semibold text-base-500 w-fit"
+		>
+			{{ template "icon-arrow-left" withAttributes "size" "22" }}
+			Domains
+		</a>
 		<div class="flex flex-col gap-1">
 			<h1 class="font-semibold text-xl text-base-800">
 				{{ .Domain.DomainName }}
