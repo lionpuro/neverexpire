@@ -3,31 +3,18 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
+	netHTTP "net/http"
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/lionpuro/trackcerts/auth"
 	"github.com/lionpuro/trackcerts/db"
 	"github.com/lionpuro/trackcerts/domain"
+	"github.com/lionpuro/trackcerts/http"
 	"github.com/lionpuro/trackcerts/user"
 )
 
 func main() {
-	srv, err := newServer()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("Listening on %s...\n", srv.httpServer.Addr)
-	log.Fatal(srv.httpServer.ListenAndServe())
-}
-
-type Server struct {
-	httpServer *http.Server
-}
-
-func newServer() (*Server, error) {
 	conn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv("POSTGRES_USER"),
@@ -38,48 +25,44 @@ func newServer() (*Server, error) {
 	)
 	pool, err := db.NewPool(conn)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
 	us := user.NewService(&user.UserRepository{DB: pool})
 	ds := domain.NewService(&domain.DomainRepository{DB: pool})
 	as, err := auth.NewService()
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
-	dh := domain.NewHandler(ds)
-	ah, err := auth.NewHandler(as, us)
-	if err != nil {
-		return nil, err
+	r := netHTTP.NewServeMux()
+
+	h := http.NewHandler(us, ds, as)
+
+	handle := func(p string, hf netHTTP.HandlerFunc) {
+		r.HandleFunc(p, h.Authenticate(hf))
 	}
 
-	r := http.NewServeMux()
+	handle("GET /", h.HomePage)
+	handle("GET /domains", h.RequireAuth(h.DomainsPage))
+	handle("GET /domains/new", h.RequireAuth(h.NewDomainPage))
+	handle("POST /domains", h.RequireAuth(h.CreateDomain))
+	handle("GET /domains/{id}", h.RequireAuth(h.DomainPage(false)))
+	handle("GET /partials/domains/{id}", h.RequireAuth(h.DomainPage(true)))
+	handle("DELETE /domains/{id}", h.RequireAuth(h.DeleteDomain))
+	handle("GET /account", h.RequireAuth(h.AccountPage))
+	handle("GET /login", h.LoginPage)
+	handle("GET /logout", h.Logout)
 
-	handle := func(p string, h http.HandlerFunc) {
-		r.HandleFunc(p, ah.Authenticate(h))
+	r.HandleFunc("GET /auth/google/login", h.Login(as.GoogleClient))
+	r.HandleFunc("GET /auth/google/callback", h.Callback(as.GoogleClient))
+	r.Handle("GET /static/", netHTTP.StripPrefix("/static", netHTTP.FileServer(netHTTP.Dir("assets/public"))))
+
+	srv := &netHTTP.Server{
+		Addr:    ":3000",
+		Handler: r,
 	}
 
-	handle("GET /", handleHomePage)
-	handle("GET /domains", requireAuth(dh.Domains))
-	handle("GET /domains/new", requireAuth(dh.NewDomainPage))
-	handle("POST /domains", requireAuth(dh.CreateDomain))
-	handle("GET /domains/{id}", requireAuth(dh.Domain(false)))
-	handle("GET /partials/domains/{id}", requireAuth(dh.Domain(true)))
-	handle("DELETE /domains/{id}", requireAuth(dh.DeleteDomain))
-	handle("GET /account", requireAuth(handleAccountPage))
-	handle("GET /login", handleLoginPage)
-	handle("GET /logout", ah.Logout)
-
-	r.HandleFunc("GET /auth/google/login", ah.Login(as.GoogleClient))
-	r.HandleFunc("GET /auth/google/callback", ah.Callback(as.GoogleClient))
-	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("assets/public"))))
-
-	s := &Server{
-		httpServer: &http.Server{
-			Addr:    ":3000",
-			Handler: r,
-		},
-	}
-	return s, nil
+	fmt.Printf("Listening on %s...\n", srv.Addr)
+	log.Fatal(srv.ListenAndServe())
 }

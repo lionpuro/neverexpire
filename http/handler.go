@@ -1,0 +1,339 @@
+package http
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/lionpuro/trackcerts/auth"
+	"github.com/lionpuro/trackcerts/certs"
+	"github.com/lionpuro/trackcerts/domain"
+	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/trackcerts/user"
+	"github.com/lionpuro/trackcerts/views"
+)
+
+type Handler struct {
+	UserService   *user.Service
+	DomainService *domain.Service
+	AuthService   *auth.Service
+}
+
+func NewHandler(us *user.Service, ds *domain.Service, as *auth.Service) *Handler {
+	return &Handler{
+		UserService:   us,
+		DomainService: ds,
+		AuthService:   as,
+	}
+}
+
+func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		if err := views.Error(w, http.StatusNotFound, "Page not found"); err != nil {
+			log.Printf("render template: %v", err)
+		}
+		return
+	}
+	var usr *model.User
+	if u, ok := user.FromContext(r.Context()); ok {
+		usr = &u
+	}
+	if err := views.Home(w, usr, nil); err != nil {
+		log.Printf("render template: %v", err)
+	}
+}
+
+func (h *Handler) AccountPage(w http.ResponseWriter, r *http.Request) {
+	u, _ := user.FromContext(r.Context())
+	if err := views.Account(w, &u); err != nil {
+		log.Printf("render template: %v", err)
+	}
+}
+
+func (h *Handler) LoginPage(w http.ResponseWriter, r *http.Request) {
+	if err := views.Login(w); err != nil {
+		log.Printf("render template: %v", err)
+	}
+}
+
+// Middleware
+
+func (h *Handler) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, ok := user.FromContext(r.Context())
+		if !ok {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		next(w, r)
+	}
+}
+
+func (h *Handler) Authenticate(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		u, err := h.AuthService.Sessions.GetUser(r)
+		if err == nil {
+			ctx = user.SaveToContext(r.Context(), u)
+		}
+		next(w, r.WithContext(ctx))
+	}
+}
+
+// Auth
+
+func (h *Handler) Login(a *auth.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		state, err := h.AuthService.GenerateRandomState()
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		sess, err := h.AuthService.Sessions.GetSession(r)
+		if err != nil {
+			log.Printf("get session: %v", err)
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
+
+		sess.Values["state"] = state
+		if err := sess.Save(r, w); err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		url := a.AuthCodeURL(state)
+		http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+	}
+}
+
+func (h *Handler) Callback(a *auth.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sess, err := h.AuthService.Sessions.GetSession(r)
+		if err != nil {
+			log.Printf("get session: %v", err)
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
+
+		if r.FormValue("state") != sess.Values["state"] {
+			http.Error(w, "Invalid state parameter.", http.StatusBadRequest)
+			return
+		}
+
+		code := r.URL.Query().Get("code")
+		tkn, err := a.ExchangeToken(r.Context(), code)
+		if err != nil {
+			log.Printf("auth callback: %v", err)
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
+
+		idToken, err := a.VerifyToken(r.Context(), tkn)
+		if err != nil {
+			log.Printf("verify token: %v", err)
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
+
+		var user struct {
+			ID    string `json:"sub"`
+			Email string `json:"email"`
+		}
+		if err := idToken.Claims(&user); err != nil {
+			log.Printf("unmarshal claims: %v", err)
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
+
+		if err := h.UserService.Create(user.ID, user.Email); err != nil {
+			log.Printf("%v", err)
+			http.Error(w, "Error creating user", http.StatusInternalServerError)
+			return
+		}
+		sess.Values["user"] = model.User{ID: user.ID, Email: user.Email}
+		if err := sess.Save(r, w); err != nil {
+			log.Printf("save session: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	}
+}
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	sess, err := h.AuthService.Sessions.GetSession(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	sess.Options.MaxAge = -1
+	if err := sess.Save(r, w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+// Domain
+
+func (h *Handler) DomainPage(partial bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		p := r.PathValue("id")
+		id, err := strconv.Atoi(p)
+		if err != nil {
+			handleErrorPage(w, r, "Bad request", http.StatusBadRequest)
+			return
+		}
+		u, _ := user.FromContext(r.Context())
+
+		domain, err := h.DomainService.ByID(r.Context(), id, u.ID)
+		if err != nil {
+			errCode := http.StatusInternalServerError
+			errMsg := "Error retrieving domain data"
+			if err == pgx.ErrNoRows {
+				errCode = http.StatusNotFound
+				errMsg = "Domain not found"
+			}
+			log.Printf("get domain: %v", err)
+			handleErrorPage(w, r, errMsg, errCode)
+			return
+		}
+
+		refreshData := domain.Certificate.CheckedAt.Before(time.Now().UTC().Add(-time.Minute))
+		if partial && refreshData {
+			info, err := certs.FetchCert(r.Context(), domain.DomainName)
+			if err != nil {
+				log.Printf("get domain: %v", err)
+				if isHXrequest(r) {
+					htmxError(w, fmt.Errorf("Error fetching certificate"))
+					return
+				}
+				handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
+				return
+			}
+			domain.Certificate = *info
+			d, err := h.DomainService.Update(domain)
+			if err != nil {
+				log.Printf("update domain: %v", err)
+				handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
+				return
+			}
+			domain = d
+			if err := views.DomainPartial(w, domain); err != nil {
+				log.Printf("render template: %v", err)
+			}
+			return
+		}
+		if err := views.Domain(w, &u, domain, nil, refreshData); err != nil {
+			log.Printf("render template: %v", err)
+		}
+	}
+}
+
+func (h *Handler) DomainsPage(w http.ResponseWriter, r *http.Request) {
+	u, _ := user.FromContext(r.Context())
+	domains, err := h.DomainService.All(r.Context(), u.ID)
+	if err != nil {
+		log.Printf("get domains: %v", err)
+		handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+	if err := views.Domains(w, &u, domains, nil); err != nil {
+		log.Printf("render template: %v", err)
+	}
+}
+
+func (h *Handler) NewDomainPage(w http.ResponseWriter, r *http.Request) {
+	u, _ := user.FromContext(r.Context())
+	if err := views.NewDomain(w, &u, "", nil); err != nil {
+		log.Printf("render template: %v", err)
+	}
+}
+
+func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
+	p := r.PathValue("id")
+	id, err := strconv.Atoi(p)
+	if err != nil {
+		handleErrorPage(w, r, "Bad request", http.StatusBadRequest)
+		return
+	}
+	u, _ := user.FromContext(r.Context())
+	if err := h.DomainService.Delete(u.ID, id); err != nil {
+		log.Printf("delete domain: %v", err)
+		if isHXrequest(r) {
+			handleErrorPage(w, r, "Error deleting domain", http.StatusInternalServerError)
+			return
+		}
+		htmxError(w, fmt.Errorf("Error deleting domain"))
+		return
+	}
+	if isHXrequest(r) {
+		w.Header().Set("HX-Location", "/domains")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	http.Redirect(w, r, "/domains", http.StatusOK)
+}
+
+func (h *Handler) CreateDomain(w http.ResponseWriter, r *http.Request) {
+	u, _ := user.FromContext(r.Context())
+	val := r.FormValue("domain")
+	input := strings.ReplaceAll(strings.TrimSpace(val), "https://", "")
+	if len(input) == 0 {
+		e := fmt.Errorf("Please enter a valid domain name")
+		if isHXrequest(r) {
+			htmxError(w, e)
+			return
+		}
+		if err := views.NewDomain(w, &u, "", e); err != nil {
+			log.Printf("render template: %v", err)
+		}
+		return
+	}
+
+	if err := h.DomainService.Create(u, input); err != nil {
+		e := fmt.Errorf("Error adding domain")
+		str := `duplicate key value violates unique constraint "unique_domain_per_user"`
+		if strings.Contains(err.Error(), str) {
+			e = fmt.Errorf("Already tracking %s", input)
+		} else {
+			log.Printf("create domain: %v", err)
+		}
+		htmxError(w, e)
+		return
+	}
+
+	if isHXrequest(r) {
+		w.Header().Set("HX-Location", "/domains")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	http.Redirect(w, r, "/domains", http.StatusOK)
+}
+
+// Helper
+
+func isHXrequest(r *http.Request) bool {
+	return r.Header.Get("HX-Request") == "true"
+}
+
+func htmxError(w http.ResponseWriter, err error) {
+	w.Header().Set("HX-Retarget", "#error-container")
+	if err := views.ErrorBanner(w, err); err != nil {
+		log.Printf("render error: %v", err)
+	}
+}
+
+func handleErrorPage(w http.ResponseWriter, r *http.Request, msg string, code int) {
+	if err := views.Error(w, code, msg); err != nil {
+		log.Printf("render template: %v", err)
+	}
+}

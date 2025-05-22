@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"os"
 
@@ -11,7 +13,7 @@ import (
 
 type Service struct {
 	GoogleClient *Client
-	sessions     *SessionStore
+	Sessions     *SessionStore
 }
 
 func NewService() (*Service, error) {
@@ -37,7 +39,7 @@ func NewService() (*Service, error) {
 
 	s := &Service{
 		GoogleClient: googleClient,
-		sessions:     sessions,
+		Sessions:     sessions,
 	}
 	return s, nil
 }
@@ -55,7 +57,7 @@ func newAuthClient(provider *oidc.Provider, conf *oauth2.Config) (*Client, error
 	return client, nil
 }
 
-func (a *Client) verifyToken(ctx context.Context, token *oauth2.Token) (*oidc.IDToken, error) {
+func (a *Client) VerifyToken(ctx context.Context, token *oauth2.Token) (*oidc.IDToken, error) {
 	rawToken, ok := token.Extra("id_token").(string)
 	if !ok {
 		return nil, fmt.Errorf("missing field id_token in oauth2 token")
@@ -66,4 +68,24 @@ func (a *Client) verifyToken(ctx context.Context, token *oauth2.Token) (*oidc.ID
 	}
 
 	return a.oidcProvider.Verifier(conf).Verify(ctx, rawToken)
+}
+
+func (a *Client) AuthCodeURL(state string) string {
+	return a.config.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.ApprovalForce)
+}
+
+func (s *Service) GenerateRandomState() (string, error) {
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	state := base64.URLEncoding.EncodeToString(b)
+
+	return state, nil
+}
+
+func (a *Client) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
+	tkn, err := a.config.Exchange(ctx, code)
+	return tkn, err
 }
