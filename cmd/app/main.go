@@ -29,9 +29,10 @@ type Server struct {
 
 func newServer() (*Server, error) {
 	conn := fmt.Sprintf(
-		"postgres://%s:%s@localhost:%s/%s?sslmode=disable",
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_HOST"),
 		os.Getenv("POSTGRES_HOST_PORT"),
 		os.Getenv("POSTGRES_DB"),
 	)

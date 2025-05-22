@@ -21,7 +21,7 @@ func (s *Service) ByID(ctx context.Context, id int, userID string) (model.Domain
 }
 
 func (s *Service) All(ctx context.Context, userID string) ([]model.Domain, error) {
-	return s.repo.All(ctx, userID)
+	return s.repo.AllByUser(ctx, userID)
 }
 
 func (s *Service) Create(user model.User, name string) error {

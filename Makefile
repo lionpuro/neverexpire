@@ -2,15 +2,25 @@ include .env
 
 DATABASE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_HOST_PORT}/${POSTGRES_DB}?sslmode=disable
 
-.PHONY: build run fmt lint create-migration migrate-up migrate-down
+.PHONY: all assets app service run-app run-service fmt lint create-migration migrate-up migrate-down
 
-build:
+all: assets app service
+
+assets:
 	@npm run build
 	@npx @tailwindcss/cli -i ./assets/src/global.css -o ./assets/public/css/global.css --minify
-	@go build -o tmp/run .
 
-run: build
-	@./tmp/run
+app:
+	@go build -o tmp/app ./cmd/app
+
+service:
+	@go build -o tmp/service ./cmd/service
+
+run-app:
+	@./tmp/app
+
+run-service:
+	@./tmp/service
 
 dev:
 	@air -c .air.toml

@@ -10,9 +10,11 @@ import (
 
 type Repository interface {
 	ByID(ctx context.Context, userID string, id int) (model.Domain, error)
-	All(ctx context.Context, userID string) ([]model.Domain, error)
+	All(ctx context.Context) ([]model.Domain, error)
+	AllByUser(ctx context.Context, userID string) ([]model.Domain, error)
 	Create(d model.Domain) error
 	Update(d model.Domain) (model.Domain, error)
+	UpdateMultiple(ctx context.Context, domains []model.Domain) error
 	Delete(userID string, id int) error
 }
 
@@ -55,8 +57,55 @@ func (r *DomainRepository) ByID(ctx context.Context, userID string, id int) (mod
 	return result, nil
 }
 
-func (r *DomainRepository) All(ctx context.Context, userID string) ([]model.Domain, error) {
-	rows, err := r.DB.Query(ctx, `
+func (r *DomainRepository) All(ctx context.Context) ([]model.Domain, error) {
+	q := `
+	SELECT
+		id,
+		user_id,
+		domain_name,
+		dns_names,
+		ip_address,
+		issued_by,
+		status,
+		expires_at,
+		checked_at,
+		latency
+	FROM domains
+	ORDER BY
+		array_position(array['offline', 'invalid', 'expiring', 'healthy'], status),
+		expires_at`
+	rows, err := r.DB.Query(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var domains []model.Domain
+	for rows.Next() {
+		var d model.Domain
+		err := rows.Scan(
+			&d.ID,
+			&d.UserID,
+			&d.DomainName,
+			&d.Certificate.DNSNames,
+			&d.Certificate.IP,
+			&d.Certificate.Issuer,
+			&d.Certificate.Status,
+			&d.Certificate.Expires,
+			&d.Certificate.CheckedAt,
+			&d.Certificate.Latency,
+		)
+		if err != nil {
+			return nil, err
+		}
+		domains = append(domains, d)
+	}
+
+	return domains, nil
+}
+
+func (r *DomainRepository) AllByUser(ctx context.Context, userID string) ([]model.Domain, error) {
+	q := `
 	SELECT
 		id,
 		user_id,
@@ -71,8 +120,8 @@ func (r *DomainRepository) All(ctx context.Context, userID string) ([]model.Doma
 	FROM domains WHERE user_id = $1
 	ORDER BY
 		array_position(array['offline', 'invalid', 'expiring', 'healthy'], status),
-		expires_at
-	`, userID)
+		expires_at`
+	rows, err := r.DB.Query(ctx, q, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -195,5 +244,46 @@ func (r *DomainRepository) Delete(userID string, id int) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *DomainRepository) UpdateMultiple(ctx context.Context, domains []model.Domain) error {
+	tx, err := r.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	for _, d := range domains {
+		_, err := tx.Exec(ctx, `
+		UPDATE domains
+		SET
+			dns_names = $1,
+			ip_address = $2,
+			issued_by = $3,
+			status = $4,
+			expires_at = $5,
+			checked_at = $6,
+			latency = $7,
+			updated_at = (now() at time zone 'utc')
+		WHERE id = $8
+		`,
+			d.Certificate.DNSNames,
+			d.Certificate.IP,
+			d.Certificate.Issuer,
+			d.Certificate.Status,
+			d.Certificate.Expires,
+			d.Certificate.CheckedAt,
+			d.Certificate.Latency,
+			d.ID,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }

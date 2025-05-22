@@ -4,8 +4,8 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "tmp/run"
-  cmd = "make build"
+  bin = "tmp/app"
+  cmd = "make all"
   delay = 100
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "bin", "node_modules"]
   exclude_file = []
