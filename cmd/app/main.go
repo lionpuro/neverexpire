@@ -56,20 +56,20 @@ func newServer() (*Server, error) {
 
 	r := http.NewServeMux()
 
-	register := func(p string, h http.HandlerFunc) {
+	handle := func(p string, h http.HandlerFunc) {
 		r.HandleFunc(p, ah.Authenticate(h))
 	}
 
-	register("GET /", handleHomePage)
-	register("GET /domains", requireAuth(dh.Domains))
-	register("GET /domains/new", requireAuth(dh.NewDomainPage))
-	register("POST /domains", requireAuth(dh.CreateDomain))
-	register("GET /domains/{id}", requireAuth(dh.Domain(false)))
-	register("GET /partials/domains/{id}", requireAuth(dh.Domain(true)))
-	register("DELETE /domains/{id}", requireAuth(dh.DeleteDomain))
-	register("GET /account", requireAuth(handleAccountPage))
-	register("GET /login", handleLoginPage)
-	register("GET /logout", ah.Logout)
+	handle("GET /", handleHomePage)
+	handle("GET /domains", requireAuth(dh.Domains))
+	handle("GET /domains/new", requireAuth(dh.NewDomainPage))
+	handle("POST /domains", requireAuth(dh.CreateDomain))
+	handle("GET /domains/{id}", requireAuth(dh.Domain(false)))
+	handle("GET /partials/domains/{id}", requireAuth(dh.Domain(true)))
+	handle("DELETE /domains/{id}", requireAuth(dh.DeleteDomain))
+	handle("GET /account", requireAuth(handleAccountPage))
+	handle("GET /login", handleLoginPage)
+	handle("GET /logout", ah.Logout)
 
 	r.HandleFunc("GET /auth/google/login", ah.Login(as.GoogleClient))
 	r.HandleFunc("GET /auth/google/callback", ah.Callback(as.GoogleClient))
