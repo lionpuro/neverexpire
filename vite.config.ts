@@ -7,7 +7,10 @@ export default defineConfig({
 		outDir: join(__dirname, "assets/public/scripts"),
 		rollupOptions: {
 			external: [],
-			input: [resolve(__dirname, "assets/src/local-time.ts")],
+			input: [
+				resolve(__dirname, "assets/src/local-time.ts"),
+				resolve(__dirname, "assets/src/account.ts"),
+			],
 			output: {
 				entryFileNames: "[name].min.js",
 			},

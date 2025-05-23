@@ -12,6 +12,7 @@ import (
 type Repository interface {
 	ByID(ctx context.Context, id string) (model.User, error)
 	Create(id, email string) error
+	Delete(id string) error
 }
 
 type UserRepository struct {
@@ -40,5 +41,12 @@ func (r *UserRepository) Create(id, email string) error {
 		INSERT INTO users (id, email) VALUES ($1, $2)
 		ON CONFLICT DO NOTHING
 	`, id, email)
+	return err
+}
+
+func (r *UserRepository) Delete(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
+	defer cancel()
+	_, err := r.DB.Exec(ctx, `DELETE FROM users WHERE id = $1`, id)
 	return err
 }

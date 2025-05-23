@@ -53,6 +53,7 @@ func main() {
 	handle("GET /account", h.RequireAuth(h.AccountPage))
 	handle("GET /login", h.LoginPage)
 	handle("GET /logout", h.Logout)
+	handle("DELETE /account", h.RequireAuth(h.DeleteUser))
 
 	r.HandleFunc("GET /auth/google/login", h.Login(as.GoogleClient))
 	r.HandleFunc("GET /auth/google/callback", h.AuthCallback(as.GoogleClient))

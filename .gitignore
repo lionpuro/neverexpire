@@ -19,4 +19,5 @@ tmp
 **/*_templ.txt
 
 assets/public/css
-assets/public/scripts/local-time.min.js
+assets/public/scripts
+!assets/public/scripts/htmx.min.js

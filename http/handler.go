@@ -182,6 +182,26 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	u, _ := user.FromContext(r.Context())
+	if err := h.UserService.Delete(u.ID); err != nil {
+		htmxError(w, fmt.Errorf("Error deleting account"))
+		return
+	}
+	sess, err := h.AuthService.Sessions.GetSession(r)
+	if err != nil {
+		htmxError(w, fmt.Errorf("Error logging out"))
+		return
+	}
+	sess.Options.MaxAge = -1
+	if err := sess.Save(r, w); err != nil {
+		htmxError(w, fmt.Errorf("Error logging out"))
+		return
+	}
+	w.Header().Set("HX-Redirect", "/")
+	w.WriteHeader(http.StatusOK)
+}
+
 // Domain
 
 func (h *Handler) DomainPage(partial bool) http.HandlerFunc {

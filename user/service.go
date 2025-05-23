@@ -21,3 +21,7 @@ func (s *Service) ByID(ctx context.Context, id string) (model.User, error) {
 func (s *Service) Create(id, email string) error {
 	return s.repo.Create(id, email)
 }
+
+func (s *Service) Delete(id string) error {
+	return s.repo.Delete(id)
+}
