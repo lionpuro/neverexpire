@@ -8,7 +8,6 @@ all: assets app service
 
 assets:
 	@npm run build
-	@npx @tailwindcss/cli -i ./assets/src/global.css -o ./assets/public/css/global.css --minify
 
 app:
 	@go build -o tmp/app ./cmd/app
@@ -22,8 +21,11 @@ run-app:
 run-service:
 	@./tmp/service
 
-dev:
-	@air -c .air.toml
+watch:
+	@wgo -debounce 100ms -xdir assets/public clear :: npm run build:tw :: go run ./cmd/app :: wgo go run ./cmd/service
+
+watch-app:
+	@wgo -debounce 100ms -xdir assets/public clear :: npm run build:tw :: go build -o tmp/app ./cmd/app :: ./tmp/app
 
 fmt:
 	@gofmt -l -s -w .

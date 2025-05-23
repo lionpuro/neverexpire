@@ -5,7 +5,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"build": "tsc && vite build"
+		"build": "npm run build:tw && npm run build:scripts",
+		"build:scripts": "tsc && vite build",
+		"build:tw": "npx @tailwindcss/cli -i ./assets/src/global.css -o ./assets/public/css/global.css --minify"
 	},
 	"devDependencies": {
 		"@types/node": "^22.15.19",
