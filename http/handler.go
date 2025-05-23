@@ -112,7 +112,7 @@ func (h *Handler) Login(a *auth.Client) http.HandlerFunc {
 	}
 }
 
-func (h *Handler) Callback(a *auth.Client) http.HandlerFunc {
+func (h *Handler) AuthCallback(a *auth.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sess, err := h.AuthService.Sessions.GetSession(r)
 		if err != nil {

@@ -55,7 +55,7 @@ func main() {
 	handle("GET /logout", h.Logout)
 
 	r.HandleFunc("GET /auth/google/login", h.Login(as.GoogleClient))
-	r.HandleFunc("GET /auth/google/callback", h.Callback(as.GoogleClient))
+	r.HandleFunc("GET /auth/google/callback", h.AuthCallback(as.GoogleClient))
 	r.Handle("GET /static/", netHTTP.StripPrefix("/static", netHTTP.FileServer(netHTTP.Dir("assets/public"))))
 
 	srv := &netHTTP.Server{
