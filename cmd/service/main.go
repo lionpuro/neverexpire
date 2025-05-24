@@ -30,7 +30,7 @@ func main() {
 		return
 	}
 
-	repo := &domain.DomainRepository{DB: pool}
+	repo := domain.NewRepository(pool)
 	monitor := NewMonitor(time.Minute*30, repo)
 	fmt.Println("Starting monitoring service...")
 	monitor.Start()

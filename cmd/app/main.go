@@ -28,8 +28,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	us := user.NewService(&user.UserRepository{DB: pool})
-	ds := domain.NewService(&domain.DomainRepository{DB: pool})
+	us := user.NewService(user.NewRepository(pool))
+	ds := domain.NewService(domain.NewRepository(pool))
 	as, err := auth.NewService()
 	if err != nil {
 		log.Fatal(err)

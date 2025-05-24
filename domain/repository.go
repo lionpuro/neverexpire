@@ -22,6 +22,10 @@ type DomainRepository struct {
 	DB *pgxpool.Pool
 }
 
+func NewRepository(dbpool *pgxpool.Pool) *DomainRepository {
+	return &DomainRepository{DB: dbpool}
+}
+
 func (r *DomainRepository) ByID(ctx context.Context, userID string, id int) (model.Domain, error) {
 	row := r.DB.QueryRow(ctx, `
 	SELECT

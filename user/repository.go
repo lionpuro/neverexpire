@@ -19,6 +19,10 @@ type UserRepository struct {
 	DB *pgxpool.Pool
 }
 
+func NewRepository(dbpool *pgxpool.Pool) *UserRepository {
+	return &UserRepository{DB: dbpool}
+}
+
 func (r *UserRepository) ByID(ctx context.Context, id string) (model.User, error) {
 	rows, err := r.DB.Query(ctx, `SELECT id, email FROM users WHERE id = $1`, id)
 	if err != nil {
