@@ -24,6 +24,10 @@ export default defineConfig({
 					src: resolve(__dirname, "node_modules/htmx.org/dist/htmx.min.js"),
 					dest: resolve(__dirname, "assets/public/scripts"),
 				},
+				{
+					src: resolve(__dirname, "assets/static/*"),
+					dest: resolve(__dirname, "assets/public"),
+				},
 			],
 		}),
 	],

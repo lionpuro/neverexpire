@@ -18,5 +18,4 @@ tmp
 **/*_templ.go
 **/*_templ.txt
 
-assets/public/css
-assets/public/scripts
+assets/public
