@@ -46,6 +46,13 @@ func statusText(status string, expires time.Time) string {
 	case certs.StatusInvalid:
 		return "expired"
 	}
+	days := certs.DaysLeft(expires)
+	if days == 0 {
+		now := time.Now().UTC()
+		diff := expires.Sub(now)
+		hours := int(diff.Minutes() / 60)
+		return fmt.Sprintf("%d hours", hours)
+	}
 	return fmt.Sprintf("%d days", certs.DaysLeft(expires))
 }
 
