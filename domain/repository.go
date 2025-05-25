@@ -38,7 +38,8 @@ func (r *DomainRepository) ByID(ctx context.Context, userID string, id int) (mod
 		status,
 		expires_at,
 		checked_at,
-		latency
+		latency,
+		signature
 	FROM domains
 	WHERE id = $1 AND user_id = $2`, id, userID)
 	var result model.Domain
@@ -53,6 +54,7 @@ func (r *DomainRepository) ByID(ctx context.Context, userID string, id int) (mod
 		&result.Certificate.Expires,
 		&result.Certificate.CheckedAt,
 		&result.Certificate.Latency,
+		&result.Certificate.Signature,
 	)
 	if err != nil {
 		return model.Domain{}, err
@@ -73,7 +75,8 @@ func (r *DomainRepository) All(ctx context.Context) ([]model.Domain, error) {
 		status,
 		expires_at,
 		checked_at,
-		latency
+		latency,
+		signature
 	FROM domains
 	ORDER BY
 		array_position(array['offline', 'invalid', 'expiring', 'healthy'], status),
@@ -98,6 +101,7 @@ func (r *DomainRepository) All(ctx context.Context) ([]model.Domain, error) {
 			&d.Certificate.Expires,
 			&d.Certificate.CheckedAt,
 			&d.Certificate.Latency,
+			&d.Certificate.Signature,
 		)
 		if err != nil {
 			return nil, err
@@ -120,7 +124,8 @@ func (r *DomainRepository) AllByUser(ctx context.Context, userID string) ([]mode
 		status,
 		expires_at,
 		checked_at,
-		latency
+		latency,
+		signature
 	FROM domains WHERE user_id = $1
 	ORDER BY
 		array_position(array['offline', 'invalid', 'expiring', 'healthy'], status),
@@ -145,6 +150,7 @@ func (r *DomainRepository) AllByUser(ctx context.Context, userID string) ([]mode
 			&d.Certificate.Expires,
 			&d.Certificate.CheckedAt,
 			&d.Certificate.Latency,
+			&d.Certificate.Signature,
 		)
 		if err != nil {
 			return nil, err
@@ -168,9 +174,10 @@ func (r *DomainRepository) Create(d model.Domain) error {
 		status,
 		expires_at,
 		checked_at,
-		latency
+		latency,
+		signature
 	)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
 		d.UserID,
 		d.DomainName,
 		d.Certificate.DNSNames,
@@ -180,6 +187,7 @@ func (r *DomainRepository) Create(d model.Domain) error {
 		d.Certificate.Expires,
 		d.Certificate.CheckedAt,
 		d.Certificate.Latency,
+		d.Certificate.Signature,
 	)
 	return err
 }
@@ -197,6 +205,7 @@ func (r *DomainRepository) Update(d model.Domain) (model.Domain, error) {
 		expires_at = $7,
 		checked_at = $8,
 		latency = $9,
+		signature = $10,
 		updated_at = (now() at time zone 'utc')
 	WHERE id = $1 AND user_id = $2
 	RETURNING
@@ -209,7 +218,8 @@ func (r *DomainRepository) Update(d model.Domain) (model.Domain, error) {
 		status,
 		expires_at,
 		checked_at,
-		latency
+		latency,
+		signature
 	`,
 		d.ID,
 		d.UserID,
@@ -220,6 +230,7 @@ func (r *DomainRepository) Update(d model.Domain) (model.Domain, error) {
 		d.Certificate.Expires,
 		d.Certificate.CheckedAt,
 		d.Certificate.Latency,
+		d.Certificate.Signature,
 	)
 	var result model.Domain
 	err := row.Scan(
@@ -233,6 +244,7 @@ func (r *DomainRepository) Update(d model.Domain) (model.Domain, error) {
 		&result.Certificate.Expires,
 		&result.Certificate.CheckedAt,
 		&result.Certificate.Latency,
+		&result.Certificate.Signature,
 	)
 	if err != nil {
 		return model.Domain{}, err
@@ -269,8 +281,9 @@ func (r *DomainRepository) UpdateMultiple(ctx context.Context, domains []model.D
 			expires_at = $5,
 			checked_at = $6,
 			latency = $7,
+			signature = $8,
 			updated_at = (now() at time zone 'utc')
-		WHERE id = $8
+		WHERE id = $9
 		`,
 			d.Certificate.DNSNames,
 			d.Certificate.IP,
@@ -279,6 +292,7 @@ func (r *DomainRepository) UpdateMultiple(ctx context.Context, domains []model.D
 			d.Certificate.Expires,
 			d.Certificate.CheckedAt,
 			d.Certificate.Latency,
+			d.Certificate.Signature,
 			d.ID,
 		)
 		if err != nil {

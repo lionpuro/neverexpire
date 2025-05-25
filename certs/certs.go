@@ -2,7 +2,9 @@ package certs
 
 import (
 	"context"
+	"crypto/sha1"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"strings"
 	"time"
@@ -57,6 +59,7 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 			CheckedAt: start,
 			Status:    StatusString(cert.NotAfter),
 			Latency:   int(time.Since(start).Milliseconds()),
+			Signature: fingerprint(cert),
 		}
 	}()
 
@@ -68,6 +71,11 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 	case result := <-result:
 		return &result, nil
 	}
+}
+
+func fingerprint(cert *x509.Certificate) string {
+	fingerprint := sha1.Sum(cert.Raw)
+	return fmt.Sprintf("%x", fingerprint)
 }
 
 func StatusString(expires time.Time) string {

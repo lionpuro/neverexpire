@@ -65,6 +65,15 @@
 				"key" "DNS"
 				"val" .Domain.Certificate.DNSNames
 			}}
+			{{ $signature := .Domain.Certificate.Signature }}
+			{{ if eq .Domain.Certificate.Signature "" }}
+				{{ $signature = "n/a" }}
+			{{ end }}
+			{{ template "li" withAttributes
+				"key" "Signature"
+				"val" $signature
+				"class" "break-all"
+			}}
 			<li class="contents">
 				<span class="font-semibold text-base-800"> Last checked </span>
 				<span class="font-medium text-base-600">

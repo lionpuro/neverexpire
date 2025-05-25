@@ -17,5 +17,6 @@ type CertificateInfo struct {
 	Status    string    `db:"status"`
 	CheckedAt time.Time `db:"checked_at"`
 	Latency   int       `db:"latency"`
+	Signature string    `db:"signature"`
 	Error     error     `db:"-"`
 }
