@@ -13,7 +13,7 @@ export default defineConfig({
 				resolve(__dirname, "assets/src/account.ts"),
 			],
 			output: {
-				entryFileNames: "[name].min.js",
+				entryFileNames: "[name].js",
 			},
 		},
 	},
