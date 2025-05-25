@@ -1,3 +1,4 @@
 package-lock.json
 static/css
-**/*.min.js
+assets/public/css
+assets/public/scripts
