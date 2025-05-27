@@ -3,7 +3,7 @@
 		{{ if .RefreshData }}
 			{{/* prettier-ignore-start */}}
 			hx-get="/partials/domains/{{ .Domain.ID }}"
-			hx-trigger="load"
+			hx-trigger="load delay:1s"
 			hx-target="#content"
 			hx-swap="innerHTML"
 			{{/* prettier-ignore-end */}}
