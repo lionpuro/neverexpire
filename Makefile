@@ -47,3 +47,8 @@ migrate-down:
 	@read -p "Number of migrations you want to rollback (default: 1): " NUM; NUM=$${NUM:-1}; \
 		docker run --rm -it -v ./migrations:/migrations --network host migrate/migrate \
 			-path=/migrations -database "${DATABASE}" down $${NUM}
+
+migrate-force:
+	@read -p "Enter the version to force: " VERSION; \
+	docker run -u 1000:1000 --rm -it -v ./migrations:/migrations --network host migrate/migrate \
+		-path=/migrations -database "${DATABASE}" force $${VERSION}
