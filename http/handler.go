@@ -13,6 +13,7 @@ import (
 	"github.com/lionpuro/trackcerts/certs"
 	"github.com/lionpuro/trackcerts/domain"
 	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/trackcerts/notification"
 	"github.com/lionpuro/trackcerts/user"
 	"github.com/lionpuro/trackcerts/views"
 )
@@ -47,9 +48,27 @@ func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) AccountPage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := user.FromContext(r.Context())
-	if err := views.Account(w, &u); err != nil {
+	settings, err := h.UserService.Settings(r.Context(), u.ID)
+	if err != nil {
+		log.Printf("get user settings: %v", err)
+		htmxError(w, fmt.Errorf("Something went wrong"))
+		return
+	}
+	if settings == (model.Settings{}) {
+		sec := 14 * 24 * 60 * 60
+		sett, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{
+			RemindBefore: &sec,
+		})
+		if err != nil {
+			log.Printf("save user settings: %v", err)
+			htmxError(w, fmt.Errorf("Something went wrong"))
+			return
+		}
+		settings = sett
+	}
+	if err := views.Settings(w, &u, settings); err != nil {
 		log.Printf("render template: %v", err)
 	}
 }
@@ -202,6 +221,57 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (h *Handler) UpdateReminders(w http.ResponseWriter, r *http.Request) {
+	u, _ := user.FromContext(r.Context())
+	seconds, err := strconv.Atoi(r.FormValue("remind_before"))
+	if err != nil {
+		htmxError(w, fmt.Errorf("Bad request"))
+		return
+	}
+	if _, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{RemindBefore: &seconds}); err != nil {
+		log.Printf("save user settings: %v", err)
+		htmxError(w, fmt.Errorf("Something went wrong"))
+		return
+	}
+	w.Header().Set("HX-Retarget", "#banner-container")
+	if err := views.SuccessBanner(w, "Settings saved"); err != nil {
+		log.Printf("render template: %v", err)
+	}
+}
+
+func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
+	u, _ := user.FromContext(r.Context())
+	url := strings.TrimSpace(r.FormValue("webhook_url"))
+	if len(url) == 0 {
+		htmxError(w, fmt.Errorf("Invalid URL"))
+		return
+	}
+	if _, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{WebhookURL: &url}); err != nil {
+		log.Printf("save user settings: %v", err)
+		htmxError(w, fmt.Errorf("Something went wrong"))
+		return
+	}
+	if err := notification.NewNotifier().Send(url, notification.TestMessage); err != nil {
+		log.Printf("send message: %v", err)
+		htmxError(w, fmt.Errorf("Error sending test notification"))
+		return
+	}
+	w.Header().Set("HX-Location", "/settings")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) DeleteWebhook(w http.ResponseWriter, r *http.Request) {
+	u, _ := user.FromContext(r.Context())
+	var s string
+	if _, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{WebhookURL: &s}); err != nil {
+		log.Printf("save user settings: %v", err)
+		htmxError(w, fmt.Errorf("Something went wrong"))
+		return
+	}
+	w.Header().Set("HX-Location", "/settings")
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // Domain
 
 func (h *Handler) DomainPage(partial bool) http.HandlerFunc {
@@ -346,7 +416,7 @@ func isHXrequest(r *http.Request) bool {
 }
 
 func htmxError(w http.ResponseWriter, err error) {
-	w.Header().Set("HX-Retarget", "#error-container")
+	w.Header().Set("HX-Retarget", "#banner-container")
 	if err := views.ErrorBanner(w, err); err != nil {
 		log.Printf("render error: %v", err)
 	}

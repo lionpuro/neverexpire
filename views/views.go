@@ -19,15 +19,16 @@ type viewTemplate struct {
 }
 
 var (
-	home        = parse("layouts/main.html", "home.html")
-	errorPage   = parse("layouts/main.html", "error.html")
-	domains     = parse("layouts/main.html", "domains/index.html")
-	domain      = parse("layouts/main.html", "domains/details.html")
-	newDomain   = parse("layouts/main.html", "domains/new.html")
-	account     = parse("layouts/main.html", "account.html")
-	login       = parse("layouts/auth.html", "login.html")
-	errorBanner = parse("partials/error-banner.html")
-	domainPart  = parse("layouts/partial.html", "domains/details.html")
+	home          = parse("layouts/main.html", "home.html")
+	errorPage     = parse("layouts/main.html", "error.html")
+	domains       = parse("layouts/main.html", "domains/index.html")
+	domain        = parse("layouts/main.html", "domains/details.html")
+	newDomain     = parse("layouts/main.html", "domains/new.html")
+	settings      = parse("layouts/main.html", "settings.html")
+	login         = parse("layouts/auth.html", "login.html")
+	errorBanner   = parse("partials/error-banner.html")
+	successBanner = parse("partials/success-banner.html")
+	domainPart    = parse("layouts/partial.html", "domains/details.html")
 )
 
 func Home(w http.ResponseWriter, user *model.User, err error) error {
@@ -58,8 +59,24 @@ func NewDomain(w http.ResponseWriter, user *model.User, inputValue string, err e
 	return newDomain.render(w, data)
 }
 
-func Account(w http.ResponseWriter, user *model.User) error {
-	return account.render(w, map[string]any{"User": user})
+func Settings(w http.ResponseWriter, user *model.User, sett model.Settings) error {
+	type reminder struct {
+		Value   int
+		Display string
+	}
+	day := 24 * 60 * 60
+	opts := []reminder{
+		{Value: 1 * day, Display: "1 day before"},
+		{Value: 2 * day, Display: "2 days before"},
+		{Value: 7 * day, Display: "1 week before"},
+		{Value: 14 * day, Display: "2 weeks before"},
+	}
+	data := map[string]any{
+		"User":            user,
+		"ReminderOptions": opts,
+		"Settings":        sett,
+	}
+	return settings.render(w, data)
 }
 
 func Login(w http.ResponseWriter) error {
@@ -68,6 +85,10 @@ func Login(w http.ResponseWriter) error {
 
 func ErrorBanner(w http.ResponseWriter, err error) error {
 	return errorBanner.render(w, map[string]any{"Error": err})
+}
+
+func SuccessBanner(w http.ResponseWriter, msg string) error {
+	return successBanner.render(w, map[string]any{"Message": msg})
 }
 
 func parse(templates ...string) *viewTemplate {

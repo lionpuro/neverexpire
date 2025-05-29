@@ -9,7 +9,13 @@
 				<div class="ml-auto flex items-center gap-6">
 					{{ if .User }}
 						<a href="/domains" class="font-medium text-base-600"> Domains </a>
-						<a href="/account" class="font-medium text-base-600"> Account </a>
+						<a href="/settings" class="font-medium text-base-600"> Settings </a>
+						<a
+							href="/logout"
+							class="ml-auto flex gap-1 text-base-white bg-base-600 font-medium rounded-md px-3 py-1.5"
+						>
+							Sign out
+						</a>
 					{{ else }}
 						<a href="/login" class="ml-auto text-primary-500 font-medium">
 							Log in
@@ -18,7 +24,7 @@
 				</div>
 			</nav>
 		</header>
-		<div id="error-container">
+		<div id="banner-container">
 			{{ if .Error }}
 				{{ template "error-banner" .Error }}
 			{{ end }}
