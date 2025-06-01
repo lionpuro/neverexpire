@@ -13,6 +13,7 @@ import (
 	"github.com/lionpuro/trackcerts/db"
 	"github.com/lionpuro/trackcerts/domain"
 	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/trackcerts/notification"
 )
 
 func main() {
@@ -30,23 +31,32 @@ func main() {
 		return
 	}
 
-	repo := domain.NewRepository(pool)
-	monitor := NewMonitor(time.Minute*30, repo)
-	fmt.Println("Starting monitoring service...")
+	dr := domain.NewRepository(pool)
+	ds := domain.NewService(dr)
+	ns := notification.NewService(notification.NewRepository(pool))
+	monitor := NewMonitor(time.Minute*30, dr, ns)
+	notifier := notification.NewNotifier(ns, ds)
+
+	fmt.Println("Starting notification service...")
+	go notifier.Start(context.Background())
+
+	fmt.Println("Starting domain monitoring service...")
 	monitor.Start()
 }
 
 type Monitor struct {
-	interval time.Duration
-	repo     domain.Repository
-	quit     chan struct{}
+	interval      time.Duration
+	domains       domain.Repository
+	notifications *notification.Service
+	quit          chan struct{}
 }
 
-func NewMonitor(interval time.Duration, domainRepo domain.Repository) *Monitor {
+func NewMonitor(interval time.Duration, dr domain.Repository, ns *notification.Service) *Monitor {
 	return &Monitor{
-		interval: interval,
-		repo:     domainRepo,
-		quit:     make(chan struct{}),
+		interval:      interval,
+		domains:       dr,
+		notifications: ns,
+		quit:          make(chan struct{}),
 	}
 }
 
@@ -73,7 +83,7 @@ func (m *Monitor) Start() {
 }
 
 func (m *Monitor) poll() error {
-	domains, err := m.repo.All(context.Background())
+	domains, err := m.domains.All(context.Background())
 	if err != nil {
 		return err
 	}
@@ -116,5 +126,5 @@ func (m *Monitor) updateData(domainch chan model.Domain) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	return m.repo.UpdateMultiple(ctx, domains)
+	return m.domains.UpdateMultiple(ctx, domains)
 }

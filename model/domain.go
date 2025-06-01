@@ -20,3 +20,8 @@ type CertificateInfo struct {
 	Signature string    `db:"signature"`
 	Error     error     `db:"-"`
 }
+
+type DomainWithSettings struct {
+	Domain   Domain
+	Settings Settings
+}

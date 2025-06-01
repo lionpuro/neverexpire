@@ -24,6 +24,12 @@ func (s *Service) All(ctx context.Context, userID string) ([]model.Domain, error
 	return s.repo.AllByUser(ctx, userID)
 }
 
+func (s *Service) Notifiable(ctx context.Context) ([]model.DomainWithSettings, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	return s.repo.Notifiable(ctx)
+}
+
 func (s *Service) Create(user model.User, name string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()

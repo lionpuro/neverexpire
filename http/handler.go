@@ -251,7 +251,7 @@ func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
 		htmxError(w, fmt.Errorf("Something went wrong"))
 		return
 	}
-	if err := notification.NewNotifier().Send(url, notification.TestMessage); err != nil {
+	if err := notification.SendTestNotification(url); err != nil {
 		log.Printf("send message: %v", err)
 		htmxError(w, fmt.Errorf("Error sending test notification"))
 		return

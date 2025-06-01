@@ -11,6 +11,7 @@ import (
 type Repository interface {
 	ByID(ctx context.Context, userID string, id int) (model.Domain, error)
 	All(ctx context.Context) ([]model.Domain, error)
+	Notifiable(ctx context.Context) ([]model.DomainWithSettings, error)
 	AllByUser(ctx context.Context, userID string) ([]model.Domain, error)
 	Create(d model.Domain) error
 	Update(d model.Domain) (model.Domain, error)
@@ -107,6 +108,66 @@ func (r *DomainRepository) All(ctx context.Context) ([]model.Domain, error) {
 			return nil, err
 		}
 		domains = append(domains, d)
+	}
+
+	return domains, nil
+}
+
+func (r *DomainRepository) Notifiable(ctx context.Context) ([]model.DomainWithSettings, error) {
+	q := `
+	SELECT
+		d.id,
+		d.user_id,
+		d.domain_name,
+		d.dns_names,
+		d.ip_address,
+		d.issued_by,
+		d.status,
+		d.expires_at,
+		d.checked_at,
+		d.latency,
+		d.signature,
+		s.webhook_url,
+		s.remind_before
+	FROM domains d
+	INNER JOIN settings s ON d.user_id = s.user_id
+	WHERE (d.expires_at - (s.remind_before * interval '1 second')) <= (now() at time zone 'utc')
+	AND NOT EXISTS(
+		SELECT 1 FROM notifications n
+		WHERE n.domain_id = d.id
+		AND n.due = (d.expires_at - (s.remind_before * interval '1 second'))
+		AND n.delivered_at IS NOT NULL
+		AND n.attempts < 3
+	)
+	FOR UPDATE SKIP LOCKED`
+	rows, err := r.DB.Query(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var domains []model.DomainWithSettings
+	for rows.Next() {
+		var record model.DomainWithSettings
+		err := rows.Scan(
+			&record.Domain.ID,
+			&record.Domain.UserID,
+			&record.Domain.DomainName,
+			&record.Domain.Certificate.DNSNames,
+			&record.Domain.Certificate.IP,
+			&record.Domain.Certificate.Issuer,
+			&record.Domain.Certificate.Status,
+			&record.Domain.Certificate.Expires,
+			&record.Domain.Certificate.CheckedAt,
+			&record.Domain.Certificate.Latency,
+			&record.Domain.Certificate.Signature,
+			&record.Settings.WebhookURL,
+			&record.Settings.RemindBefore,
+		)
+		if err != nil {
+			return nil, err
+		}
+		domains = append(domains, record)
 	}
 
 	return domains, nil
