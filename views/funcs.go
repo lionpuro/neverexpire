@@ -56,6 +56,10 @@ func statusText(status string, expires time.Time) string {
 	return fmt.Sprintf("%d days", certs.DaysLeft(expires))
 }
 
+func split(s, sep string) []string {
+	return strings.Split(s, sep)
+}
+
 // Use with caution
 func withAttributes(kv ...string) map[string]string {
 	if len(kv)%2 != 0 {

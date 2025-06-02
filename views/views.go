@@ -99,6 +99,7 @@ func parse(templates ...string) *viewTemplate {
 		"statusClass":    statusClass,
 		"statusText":     statusText,
 		"withAttributes": withAttributes,
+		"split":          split,
 	}
 	patterns := []string{templatePath("base.html"), templatePath("components/*.html")}
 	for _, t := range templates {
