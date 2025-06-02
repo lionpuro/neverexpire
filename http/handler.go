@@ -182,7 +182,7 @@ func (h *Handler) AuthCallback(a *auth.Client) http.HandlerFunc {
 			return
 		}
 
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/domains", http.StatusTemporaryRedirect)
 	}
 }
 
