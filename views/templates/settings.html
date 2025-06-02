@@ -2,17 +2,19 @@
 {{ define "content" }}
 	<div class="flex flex-col max-w-3xl w-full mx-auto gap-8">
 		{{ template "h1" withAttributes "Text" "Settings" }}
-		<div class="flex flex-col pb-4">
-			<h2 class="font-bold text-lg text-base-900 mb-4">Account</h2>
-			<span class="font-bold text-base-900">Email</span>
-			<div class="flex items-center text-base-700">
-				{{ .User.Email }}
-				<button
-					id="delete-btn"
-					class="ml-auto bg-red-600/80 text-base-white font-medium rounded-md px-3 py-1.5"
-				>
-					Delete
-				</button>
+		<div class="flex flex-col gap-4">
+			{{ template "h2" withAttributes "Text" "Account" }}
+			<div class="flex flex-col">
+				<span class="font-semibold text-base-900">Email</span>
+				<div class="flex items-center text-base-600 font-medium">
+					{{ .User.Email }}
+					<button
+						id="delete-btn"
+						class="ml-auto bg-red-600/80 text-base-white font-medium rounded-md px-3 py-1.5"
+					>
+						Delete
+					</button>
+				</div>
 			</div>
 			<dialog
 				id="confirm-dialog"
@@ -41,9 +43,9 @@
 			</dialog>
 			<script src="/static/scripts/account.js"></script>
 		</div>
-		<div class="flex flex-col">
-			<h2 class="font-bold text-lg text-base-900 mb-4">Notifications</h2>
-			<p class="text-base-600 font-medium mb-4">
+		<div class="flex flex-col gap-4">
+			{{ template "h2" withAttributes "Text" "Notifications" }}
+			<p class="text-base-600 font-medium">
 				Set up a
 				<a
 					href="https://support.discord.com/hc/en-us/articles/360045093012-Server-Integrations-Page"
@@ -55,10 +57,8 @@
 				</a>
 				webhook and add its URL here to start receiving notifications.
 			</p>
-			<div class="flex flex-col mb-4">
-				<label for="webhook_url" class="font-medium text-base-900 mb-2">
-					Webhook URL
-				</label>
+			<div class="flex flex-col">
+				<span class="font-semibold text-base-900 mb-2"> Webhook URL </span>
 				{{ if not .Settings.WebhookURL }}
 					<form
 						class="flex gap-2"
@@ -97,43 +97,44 @@
 					</div>
 				{{ end }}
 			</div>
-			<h3 class="font-bold text-base-900 mb-4">Expiration reminder</h3>
-			<form
-				class="contents"
-				hx-put="/settings/reminders"
-				hx-on::after-request="htmx.addClass(htmx.find('#banner'), 'hidden', 2000);"
-			>
-				<div
-					class="mb-4 flex items-center rounded-md bg-base-100 overflow-hidden"
+			<div class="flex flex-col">
+				<span class="font-semibold text-base-900 mb-2"
+					>Expiration reminder</span
 				>
-					<label for="remind_before" class="px-3 font-medium text-base-900">
-						Reminder
-					</label>
-					<select
-						id="remind_before"
-						name="remind_before"
-						class="grow text-right px-3 py-1.5 text-base-600 font-medium border-r-6 border-transparent"
+				<form
+					class="flex gap-2"
+					hx-put="/settings/reminders"
+					hx-on::after-request="htmx.addClass(htmx.find('#banner'), 'hidden', 2000);"
+				>
+					<div
+						class="grow flex items-center rounded-md bg-base-100 overflow-hidden"
 					>
-						{{ $selected := .Settings.RemindBefore }}
-						{{ range $opt := .ReminderOptions }}
-							<option
-								value="{{ $opt.Value }}"
-								{{ if eq $opt.Value $selected }}
-									selected
-								{{ end }}
-							>
-								{{ $opt.Display }}
-							</option>
-						{{ end }}
-					</select>
-				</div>
-				<button
-					type="submit"
-					class="w-fit px-3 py-1.5 bg-primary-500 text-base-white rounded-md font-medium"
-				>
-					Save
-				</button>
-			</form>
+						<select
+							id="remind_before"
+							name="remind_before"
+							class="grow px-3 py-1.5 text-base-600 font-medium border-r-6 border-transparent"
+						>
+							{{ $selected := .Settings.RemindBefore }}
+							{{ range $opt := .ReminderOptions }}
+								<option
+									value="{{ $opt.Value }}"
+									{{ if eq $opt.Value $selected }}
+										selected
+									{{ end }}
+								>
+									{{ $opt.Display }}
+								</option>
+							{{ end }}
+						</select>
+					</div>
+					<button
+						type="submit"
+						class="w-fit px-3 py-1.5 bg-primary-500 text-base-white rounded-md font-medium"
+					>
+						Save
+					</button>
+				</form>
+			</div>
 		</div>
 	</div>
 {{ end }}
