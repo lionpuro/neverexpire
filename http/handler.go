@@ -375,9 +375,8 @@ func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) CreateDomain(w http.ResponseWriter, r *http.Request) {
 	u, _ := user.FromContext(r.Context())
-	val := r.FormValue("domain")
-	input := strings.ReplaceAll(strings.TrimSpace(val), "https://", "")
-	if len(input) == 0 {
+	name, err := parseDomain(r.FormValue("domain"))
+	if err != nil {
 		e := fmt.Errorf("Please enter a valid domain name")
 		if isHXrequest(r) {
 			htmxError(w, e)
@@ -389,11 +388,13 @@ func (h *Handler) CreateDomain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DomainService.Create(u, input); err != nil {
+	if err := h.DomainService.Create(u, name); err != nil {
 		e := fmt.Errorf("Error adding domain")
 		str := `duplicate key value violates unique constraint "uq_domains_user_id_domain_name"`
 		if strings.Contains(err.Error(), str) {
-			e = fmt.Errorf("Already tracking %s", input)
+			e = fmt.Errorf("Already tracking %s", name)
+		} else if strings.Contains(err.Error(), "connection refused") {
+			e = fmt.Errorf("Can't connect to %s", name)
 		} else {
 			log.Printf("create domain: %v", err)
 		}
