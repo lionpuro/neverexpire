@@ -391,7 +391,7 @@ func (h *Handler) CreateDomain(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.DomainService.Create(u, input); err != nil {
 		e := fmt.Errorf("Error adding domain")
-		str := `duplicate key value violates unique constraint "unique_domain_per_user"`
+		str := `duplicate key value violates unique constraint "uq_domains_user_id_domain_name"`
 		if strings.Contains(err.Error(), str) {
 			e = fmt.Errorf("Already tracking %s", input)
 		} else {
