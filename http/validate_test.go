@@ -2,6 +2,40 @@ package http
 
 import "testing"
 
+func TestParseWebhookURL(t *testing.T) {
+	tests := []struct {
+		name      string
+		url       string
+		expectErr bool
+	}{
+		{
+			name:      "Empty URL",
+			url:       "",
+			expectErr: true,
+		},
+		{
+			name:      "Valid Discord URL",
+			url:       "https://discord.com/api/webhooks/1376156197287362632/rm1wgu-I7mdon75z4eQbHG6KD2ane37YdRSnGIQt59z6xIYAswEDCiDV0gsnfYrddSa1",
+			expectErr: false,
+		},
+		{
+			name:      "Invalid Discord URL",
+			url:       "https://discord.com/api/webhooks/1234",
+			expectErr: true,
+		},
+	}
+	for _, ts := range tests {
+		t.Run(ts.name, func(t *testing.T) {
+			_, err := parseWebhookURL(ts.url)
+			if ts.expectErr && err == nil {
+				t.Error("expected error and got none")
+			} else if !ts.expectErr && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
 func TestParseDomain(t *testing.T) {
 	var longStr string
 	for range 10 {

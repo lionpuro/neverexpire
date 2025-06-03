@@ -241,8 +241,8 @@ func (h *Handler) UpdateReminders(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
 	u, _ := user.FromContext(r.Context())
-	url := strings.TrimSpace(r.FormValue("webhook_url"))
-	if len(url) == 0 {
+	url, err := parseWebhookURL(r.FormValue("webhook_url"))
+	if err != nil {
 		htmxError(w, fmt.Errorf("Invalid URL"))
 		return
 	}
