@@ -3,7 +3,6 @@ package views
 import (
 	"bytes"
 	"embed"
-	"fmt"
 	"html/template"
 	"net/http"
 	"path/filepath"
@@ -18,17 +17,20 @@ type viewTemplate struct {
 	template *template.Template
 }
 
+type htmlTemplate struct {
+	template *template.Template
+}
+
 var (
-	home          = parse("layouts/main.html", "home.html")
-	errorPage     = parse("layouts/main.html", "error.html")
-	domains       = parse("layouts/main.html", "domains/index.html")
-	domain        = parse("layouts/main.html", "domains/details.html")
-	newDomain     = parse("layouts/main.html", "domains/new.html")
-	settings      = parse("layouts/main.html", "settings.html")
-	login         = parse("layouts/auth.html", "login.html")
-	errorBanner   = parse("partials/error-banner.html")
-	successBanner = parse("partials/success-banner.html")
-	domainPart    = parse("layouts/partial.html", "domains/details.html")
+	home       = parse("layouts/main.html", "home.html")
+	errorPage  = parse("layouts/main.html", "error.html")
+	domains    = parse("layouts/main.html", "domains/index.html")
+	domain     = parse("layouts/main.html", "domains/details.html")
+	newDomain  = parse("layouts/main.html", "domains/new.html")
+	settings   = parse("layouts/main.html", "settings.html")
+	login      = parse("layouts/auth.html", "login.html")
+	domainPart = parse("layouts/partial.html", "domains/details.html")
+	partials   = parsePartials()
 )
 
 func Home(w http.ResponseWriter, user *model.User, err error) error {
@@ -84,23 +86,15 @@ func Login(w http.ResponseWriter) error {
 }
 
 func ErrorBanner(w http.ResponseWriter, err error) error {
-	return errorBanner.render(w, map[string]any{"Error": err})
+	return partials.renderPartial(w, "error-banner", map[string]any{"Error": err})
 }
 
 func SuccessBanner(w http.ResponseWriter, msg string) error {
-	return successBanner.render(w, map[string]any{"Message": msg})
+	return partials.renderPartial(w, "success-banner", map[string]any{"Message": msg})
 }
 
 func parse(templates ...string) *viewTemplate {
-	funcs := template.FuncMap{
-		"datef":          datef,
-		"sprintf":        fmt.Sprintf,
-		"cn":             cn,
-		"statusClass":    statusClass,
-		"statusText":     statusText,
-		"withAttributes": withAttributes,
-		"split":          split,
-	}
+	funcs := funcMap()
 	patterns := []string{templatePath("base.html"), templatePath("components/*.html")}
 	for _, t := range templates {
 		patterns = append(patterns, templatePath(t))
@@ -108,6 +102,23 @@ func parse(templates ...string) *viewTemplate {
 	name := filepath.Base(templates[0])
 	tmpl := template.Must(template.New(name).Funcs(funcs).ParseFS(templateFS, patterns...))
 	return &viewTemplate{template: tmpl}
+}
+
+func parsePartials() *viewTemplate {
+	funcs := funcMap()
+	patterns := []string{templatePath("components/*.html")}
+	tmpl := template.Must(template.New("").Funcs(funcs).ParseFS(templateFS, patterns...))
+	return &viewTemplate{template: tmpl}
+}
+
+func (t *viewTemplate) renderPartial(w http.ResponseWriter, name string, data any) error {
+	buf := &bytes.Buffer{}
+	if err := t.template.ExecuteTemplate(buf, name, data); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, err := buf.WriteTo(w)
+	return err
 }
 
 func (t *viewTemplate) render(w http.ResponseWriter, data any) error {

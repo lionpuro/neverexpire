@@ -2,12 +2,25 @@ package views
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/lionpuro/trackcerts/certs"
 )
+
+func funcMap() template.FuncMap {
+	return template.FuncMap{
+		"datef":          datef,
+		"sprintf":        fmt.Sprintf,
+		"cn":             cn,
+		"statusClass":    statusClass,
+		"statusText":     statusText,
+		"withAttributes": withAttributes,
+		"split":          split,
+	}
+}
 
 func cn(classnames ...string) string {
 	var classes []string
