@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/lionpuro/trackcerts/auth"
 	"github.com/lionpuro/trackcerts/certs"
+	"github.com/lionpuro/trackcerts/db"
 	"github.com/lionpuro/trackcerts/domain"
 	"github.com/lionpuro/trackcerts/model"
 	"github.com/lionpuro/trackcerts/notification"
@@ -288,7 +288,7 @@ func (h *Handler) DomainPage(partial bool) http.HandlerFunc {
 		if err != nil {
 			errCode := http.StatusInternalServerError
 			errMsg := "Error retrieving domain data"
-			if err == pgx.ErrNoRows {
+			if db.IsErrNoRows(err) {
 				errCode = http.StatusNotFound
 				errMsg = "Domain not found"
 			}

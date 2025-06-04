@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -63,7 +62,7 @@ func (r *UserRepository) Settings(ctx context.Context, userID string) (model.Set
 	row := r.DB.QueryRow(ctx, q, userID)
 	var vals model.Settings
 	if err := row.Scan(&vals.WebhookURL, &vals.RemindBefore); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if db.IsErrNoRows(err) {
 			return model.Settings{}, nil
 		}
 		return model.Settings{}, err
