@@ -46,7 +46,7 @@ func main() {
 	handle("GET /", h.HomePage)
 	handle("GET /domains", h.RequireAuth(h.DomainsPage))
 	handle("GET /domains/new", h.RequireAuth(h.NewDomainPage))
-	handle("POST /domains", h.RequireAuth(h.CreateDomain))
+	handle("POST /domains", h.RequireAuth(h.CreateDomains))
 	handle("GET /domains/{id}", h.RequireAuth(h.DomainPage(false)))
 	handle("GET /partials/domains/{id}", h.RequireAuth(h.DomainPage(true)))
 	handle("DELETE /domains/{id}", h.RequireAuth(h.DeleteDomain))

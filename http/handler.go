@@ -373,29 +373,46 @@ func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/domains", http.StatusOK)
 }
 
-func (h *Handler) CreateDomain(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 	u, _ := user.FromContext(r.Context())
-	name, err := parseDomain(r.FormValue("domain"))
-	if err != nil {
-		e := fmt.Errorf("Please enter a valid domain name")
+	input := strings.TrimSpace(r.FormValue("domains"))
+	ds := strings.Split(input, ",")
+	if len(input) < 3 {
+		htmxError(w, fmt.Errorf("Please enter at least one valid domain"))
+		return
+	}
+	var names []string
+	var errs []error
+	for _, d := range ds {
+		name, err := parseDomain(d)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		if name != "" {
+			names = append(names, name)
+		}
+	}
+	if len(errs) > 0 {
+		fmt.Printf("%v", errs)
+		err := fmt.Errorf("Invalid domain name")
 		if isHXrequest(r) {
-			htmxError(w, e)
+			htmxError(w, err)
 			return
 		}
-		if err := views.NewDomain(w, &u, "", e); err != nil {
+		if err := views.NewDomain(w, &u, "", err); err != nil {
 			log.Printf("render template: %v", err)
 		}
 		return
 	}
 
-	if err := h.DomainService.Create(u, name); err != nil {
+	if err := h.DomainService.CreateMultiple(u, names); err != nil {
 		e := fmt.Errorf("Error adding domain")
-		str := `duplicate key value violates unique constraint "uq_domains_user_id_domain_name"`
-		if strings.Contains(err.Error(), str) {
-			e = fmt.Errorf("Already tracking %s", name)
-		} else if strings.Contains(err.Error(), "connection refused") {
-			e = fmt.Errorf("Can't connect to %s", name)
-		} else {
+		switch {
+		case strings.Contains(err.Error(), "already tracking"):
+			e = err
+		case strings.Contains(err.Error(), "can't connect to"):
+			e = err
+		default:
 			log.Printf("create domain: %v", err)
 		}
 		htmxError(w, e)
