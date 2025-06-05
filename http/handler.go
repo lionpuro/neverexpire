@@ -393,7 +393,6 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if len(errs) > 0 {
-		fmt.Printf("%v", errs)
 		err := fmt.Errorf("Invalid domain name")
 		if isHXrequest(r) {
 			htmxError(w, err)
@@ -408,9 +407,9 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 	if err := h.DomainService.CreateMultiple(u, names); err != nil {
 		e := fmt.Errorf("Error adding domain")
 		switch {
-		case strings.Contains(err.Error(), "already tracking"):
-			e = err
-		case strings.Contains(err.Error(), "can't connect to"):
+		case
+			strings.Contains(err.Error(), "already tracking"),
+			strings.Contains(err.Error(), "can't connect to"):
 			e = err
 		default:
 			log.Printf("create domain: %v", err)

@@ -2,6 +2,8 @@ package domain
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lionpuro/trackcerts/db"
@@ -14,6 +16,7 @@ type Repository interface {
 	Notifiable(ctx context.Context) ([]model.DomainWithSettings, error)
 	AllByUser(ctx context.Context, userID string) ([]model.Domain, error)
 	Create(d model.Domain) error
+	CreateMultiple(domains []model.Domain) error
 	Update(d model.Domain) (model.Domain, error)
 	UpdateMultiple(ctx context.Context, domains []model.Domain) error
 	Delete(userID string, id int) error
@@ -251,6 +254,55 @@ func (r *DomainRepository) Create(d model.Domain) error {
 		d.Certificate.Signature,
 	)
 	return err
+}
+
+func (r *DomainRepository) CreateMultiple(domains []model.Domain) error {
+	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
+	defer cancel()
+	tx, err := r.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	for _, d := range domains {
+		_, err := tx.Exec(ctx, `
+		INSERT INTO domains (
+			user_id,
+			domain_name,
+			dns_names,
+			ip_address,
+			issued_by,
+			status,
+			expires_at,
+			checked_at,
+			latency,
+			signature
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+			d.UserID,
+			d.DomainName,
+			d.Certificate.DNSNames,
+			d.Certificate.IP,
+			d.Certificate.Issuer,
+			d.Certificate.Status,
+			d.Certificate.Expires,
+			d.Certificate.CheckedAt,
+			d.Certificate.Latency,
+			d.Certificate.Signature,
+		)
+		str := `duplicate key value violates unique constraint "uq_domains_user_id_domain_name"`
+		if err != nil {
+			if strings.Contains(err.Error(), str) {
+				return fmt.Errorf("already tracking domain %s", d.DomainName)
+			}
+			return err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *DomainRepository) Update(d model.Domain) (model.Domain, error) {
