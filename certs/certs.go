@@ -35,7 +35,7 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 				}
 				return
 			}
-			if strings.Contains(err.Error(), "no such host") {
+			if strings.Contains(err.Error(), "no such host") || strings.Contains(err.Error(), "Temporary failure in name resolution") {
 				result <- model.CertificateInfo{
 					Status:    StatusOffline,
 					Issuer:    "n/a",
