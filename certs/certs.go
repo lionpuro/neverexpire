@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -47,7 +48,11 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 			errch <- err
 			return
 		}
-		defer conn.Close()
+		defer func() {
+			if err := conn.Close(); err != nil {
+				log.Printf("close connection: %v", err)
+			}
+		}()
 
 		state := conn.ConnectionState()
 		cert := state.PeerCertificates[0]

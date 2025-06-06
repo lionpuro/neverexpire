@@ -2,9 +2,12 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lionpuro/neverexpire/db"
 	"github.com/lionpuro/neverexpire/model"
@@ -252,7 +255,11 @@ func (r *Repository) CreateMultiple(domains []model.Domain) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Printf("tx rollback: %v", err)
+		}
+	}()
 
 	for _, d := range domains {
 		_, err := tx.Exec(ctx, `
@@ -370,7 +377,11 @@ func (r *Repository) UpdateMultiple(ctx context.Context, domains []model.Domain)
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			log.Printf("tx rollback: %v", err)
+		}
+	}()
 
 	for _, d := range domains {
 		_, err := tx.Exec(ctx, `

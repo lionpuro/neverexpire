@@ -70,7 +70,11 @@ func sendNotification(client *http.Client, url, msg string) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			log.Printf("close body: %v", err)
+		}
+	}()
 	code := res.StatusCode
 	if code < 200 || code > 299 {
 		return fmt.Errorf("response status: %s", res.Status)
