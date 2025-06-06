@@ -39,19 +39,19 @@ test:
 
 create-migration:
 	@read -p "Enter the sequence name: " SEQ; \
-		docker run -u 1000:1000 --rm -v ./migrations:/migrations migrate/migrate \
+		docker run -u 1000:1000 --rm -v ./db/migrations:/migrations migrate/migrate \
 			create -ext sql -dir /migrations -seq $${SEQ}
 
 migrate-up:
-	@docker run --rm -v ./migrations:/migrations --network host migrate/migrate \
+	@docker run --rm -v ./db/migrations:/migrations --network host migrate/migrate \
 		-path=/migrations -database "${DATABASE}" up
 
 migrate-down:
 	@read -p "Number of migrations you want to rollback (default: 1): " NUM; NUM=$${NUM:-1}; \
-		docker run --rm -it -v ./migrations:/migrations --network host migrate/migrate \
+		docker run --rm -it -v ./db/migrations:/migrations --network host migrate/migrate \
 			-path=/migrations -database "${DATABASE}" down $${NUM}
 
 migrate-force:
 	@read -p "Enter the version to force: " VERSION; \
-	docker run -u 1000:1000 --rm -it -v ./migrations:/migrations --network host migrate/migrate \
+	docker run -u 1000:1000 --rm -it -v ./db/migrations:/migrations --network host migrate/migrate \
 		-path=/migrations -database "${DATABASE}" force $${VERSION}
