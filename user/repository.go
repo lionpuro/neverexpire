@@ -5,8 +5,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lionpuro/trackcerts/db"
-	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/neverexpire/db"
+	"github.com/lionpuro/neverexpire/model"
 )
 
 type Repository struct {

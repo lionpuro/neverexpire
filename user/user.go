@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/neverexpire/model"
 )
 
 const (

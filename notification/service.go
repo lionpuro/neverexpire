@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lionpuro/trackcerts/certs"
-	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/neverexpire/certs"
+	"github.com/lionpuro/neverexpire/model"
 )
 
 type Service struct {

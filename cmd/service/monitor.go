@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lionpuro/trackcerts/certs"
-	"github.com/lionpuro/trackcerts/domain"
-	"github.com/lionpuro/trackcerts/model"
-	"github.com/lionpuro/trackcerts/notification"
+	"github.com/lionpuro/neverexpire/certs"
+	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/model"
+	"github.com/lionpuro/neverexpire/notification"
 )
 
 type Monitor struct {

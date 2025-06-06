@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/neverexpire/model"
 )
 
 type Service struct {

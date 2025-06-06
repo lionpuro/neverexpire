@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lionpuro/trackcerts/domain"
-	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/model"
 )
 
 const (

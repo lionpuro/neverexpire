@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/lionpuro/trackcerts/model"
+	"github.com/lionpuro/neverexpire/model"
 )
 
 //go:embed templates

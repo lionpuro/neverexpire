@@ -7,11 +7,11 @@ import (
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/lionpuro/trackcerts/auth"
-	"github.com/lionpuro/trackcerts/db"
-	"github.com/lionpuro/trackcerts/domain"
-	"github.com/lionpuro/trackcerts/http"
-	"github.com/lionpuro/trackcerts/user"
+	"github.com/lionpuro/neverexpire/auth"
+	"github.com/lionpuro/neverexpire/db"
+	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/http"
+	"github.com/lionpuro/neverexpire/user"
 )
 
 func main() {

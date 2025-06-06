@@ -8,9 +8,9 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/lionpuro/trackcerts/db"
-	"github.com/lionpuro/trackcerts/domain"
-	"github.com/lionpuro/trackcerts/notification"
+	"github.com/lionpuro/neverexpire/db"
+	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/notification"
 )
 
 func main() {

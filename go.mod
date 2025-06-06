@@ -1,4 +1,4 @@
-module github.com/lionpuro/trackcerts
+module github.com/lionpuro/neverexpire
 
 go 1.24.2
 
