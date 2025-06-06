@@ -14,15 +14,15 @@ import (
 
 type Monitor struct {
 	interval      time.Duration
-	domains       *domain.Repository
+	domains       *domain.Service
 	notifications *notification.Service
 	quit          chan struct{}
 }
 
-func NewMonitor(interval time.Duration, dr *domain.Repository, ns *notification.Service) *Monitor {
+func NewMonitor(interval time.Duration, ds *domain.Service, ns *notification.Service) *Monitor {
 	return &Monitor{
 		interval:      interval,
-		domains:       dr,
+		domains:       ds,
 		notifications: ns,
 		quit:          make(chan struct{}),
 	}

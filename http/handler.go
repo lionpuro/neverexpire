@@ -330,7 +330,7 @@ func (h *Handler) DomainPage(partial bool) http.HandlerFunc {
 
 func (h *Handler) DomainsPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := user.FromContext(r.Context())
-	domains, err := h.DomainService.All(r.Context(), u.ID)
+	domains, err := h.DomainService.AllByUser(r.Context(), u.ID)
 	if err != nil {
 		log.Printf("get domains: %v", err)
 		handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)

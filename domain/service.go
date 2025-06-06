@@ -23,8 +23,12 @@ func (s *Service) ByID(ctx context.Context, id int, userID string) (model.Domain
 	return s.repo.ByID(ctx, userID, id)
 }
 
-func (s *Service) All(ctx context.Context, userID string) ([]model.Domain, error) {
+func (s *Service) AllByUser(ctx context.Context, userID string) ([]model.Domain, error) {
 	return s.repo.AllByUser(ctx, userID)
+}
+
+func (s *Service) All(ctx context.Context) ([]model.Domain, error) {
+	return s.repo.All(ctx)
 }
 
 func (s *Service) Notifiable(ctx context.Context) ([]model.DomainWithSettings, error) {
@@ -89,6 +93,10 @@ func (s *Service) CreateMultiple(user model.User, names []string) error {
 
 func (s *Service) Update(d model.Domain) (model.Domain, error) {
 	return s.repo.Update(d)
+}
+
+func (s *Service) UpdateMultiple(ctx context.Context, domains []model.Domain) error {
+	return s.repo.UpdateMultiple(ctx, domains)
 }
 
 func (s *Service) Delete(userID string, id int) error {

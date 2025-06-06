@@ -28,10 +28,9 @@ func main() {
 		return
 	}
 
-	dr := domain.NewRepository(pool)
-	ds := domain.NewService(dr)
+	ds := domain.NewService(domain.NewRepository(pool))
 	ns := notification.NewService(notification.NewRepository(pool))
-	monitor := NewMonitor(time.Minute*30, dr, ns)
+	monitor := NewMonitor(time.Minute*30, ds, ns)
 	notifier := notification.NewNotifier(ns, ds)
 
 	fmt.Println("Starting notification service...")
