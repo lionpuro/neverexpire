@@ -17,10 +17,6 @@ type viewTemplate struct {
 	template *template.Template
 }
 
-type htmlTemplate struct {
-	template *template.Template
-}
-
 var (
 	home       = parse("layouts/main.html", "home.html")
 	errorPage  = parse("layouts/main.html", "error.html")
