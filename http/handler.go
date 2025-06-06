@@ -279,7 +279,7 @@ func (h *Handler) DomainPage(partial bool) http.HandlerFunc {
 		p := r.PathValue("id")
 		id, err := strconv.Atoi(p)
 		if err != nil {
-			handleErrorPage(w, r, "Bad request", http.StatusBadRequest)
+			handleErrorPage(w, "Bad request", http.StatusBadRequest)
 			return
 		}
 		u, _ := user.FromContext(r.Context())
@@ -293,7 +293,7 @@ func (h *Handler) DomainPage(partial bool) http.HandlerFunc {
 				errMsg = "Domain not found"
 			}
 			log.Printf("get domain: %v", err)
-			handleErrorPage(w, r, errMsg, errCode)
+			handleErrorPage(w, errMsg, errCode)
 			return
 		}
 
@@ -306,14 +306,14 @@ func (h *Handler) DomainPage(partial bool) http.HandlerFunc {
 					htmxError(w, fmt.Errorf("Error fetching certificate"))
 					return
 				}
-				handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
+				handleErrorPage(w, "Something went wrong", http.StatusInternalServerError)
 				return
 			}
 			domain.Certificate = *info
 			d, err := h.DomainService.Update(domain)
 			if err != nil {
 				log.Printf("update domain: %v", err)
-				handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
+				handleErrorPage(w, "Something went wrong", http.StatusInternalServerError)
 				return
 			}
 			domain = d
@@ -333,7 +333,7 @@ func (h *Handler) DomainsPage(w http.ResponseWriter, r *http.Request) {
 	domains, err := h.DomainService.AllByUser(r.Context(), u.ID)
 	if err != nil {
 		log.Printf("get domains: %v", err)
-		handleErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
+		handleErrorPage(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
 	if err := views.Domains(w, &u, domains, nil); err != nil {
@@ -352,14 +352,14 @@ func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
 	p := r.PathValue("id")
 	id, err := strconv.Atoi(p)
 	if err != nil {
-		handleErrorPage(w, r, "Bad request", http.StatusBadRequest)
+		handleErrorPage(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 	u, _ := user.FromContext(r.Context())
 	if err := h.DomainService.Delete(u.ID, id); err != nil {
 		log.Printf("delete domain: %v", err)
 		if isHXrequest(r) {
-			handleErrorPage(w, r, "Error deleting domain", http.StatusInternalServerError)
+			handleErrorPage(w, "Error deleting domain", http.StatusInternalServerError)
 			return
 		}
 		htmxError(w, fmt.Errorf("Error deleting domain"))
@@ -439,7 +439,7 @@ func htmxError(w http.ResponseWriter, err error) {
 	}
 }
 
-func handleErrorPage(w http.ResponseWriter, r *http.Request, msg string, code int) {
+func handleErrorPage(w http.ResponseWriter, msg string, code int) {
 	if err := views.Error(w, code, msg); err != nil {
 		log.Printf("render template: %v", err)
 	}
