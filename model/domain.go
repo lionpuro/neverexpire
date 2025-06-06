@@ -12,7 +12,7 @@ type Domain struct {
 type CertificateInfo struct {
 	DNSNames  string    `db:"dns_names"`
 	IP        string    `db:"ip_address"`
-	Issuer    string    `db:"issued_by"`
+	IssuedBy  string    `db:"issued_by"`
 	Expires   time.Time `db:"expires_at"`
 	Status    string    `db:"status"`
 	CheckedAt time.Time `db:"checked_at"`

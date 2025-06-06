@@ -29,7 +29,7 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 			if strings.Contains(err.Error(), "tls: failed to verify") {
 				result <- model.CertificateInfo{
 					Status:    StatusInvalid,
-					Issuer:    "n/a",
+					IssuedBy:  "n/a",
 					CheckedAt: start,
 					Error:     err,
 				}
@@ -38,7 +38,7 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 			if strings.Contains(err.Error(), "no such host") || strings.Contains(err.Error(), "Temporary failure in name resolution") {
 				result <- model.CertificateInfo{
 					Status:    StatusOffline,
-					Issuer:    "n/a",
+					IssuedBy:  "n/a",
 					CheckedAt: start,
 					Error:     err,
 				}
@@ -55,7 +55,7 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 			DNSNames:  strings.Join(cert.DNSNames, ", "),
 			IP:        conn.RemoteAddr().String(),
 			Expires:   cert.NotAfter,
-			Issuer:    cert.Issuer.Organization[0],
+			IssuedBy:  cert.Issuer.Organization[0],
 			CheckedAt: start,
 			Status:    StatusString(cert.NotAfter),
 			Latency:   int(time.Since(start).Milliseconds()),
