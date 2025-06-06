@@ -9,23 +9,15 @@ import (
 	"github.com/lionpuro/trackcerts/model"
 )
 
-type Repository interface {
-	ByID(ctx context.Context, id string) (model.User, error)
-	Create(id, email string) error
-	Delete(id string) error
-	Settings(ctx context.Context, userID string) (model.Settings, error)
-	SaveSettings(ctx context.Context, userID string, settings model.SettingsInput) (model.Settings, error)
-}
-
-type UserRepository struct {
+type Repository struct {
 	DB *pgxpool.Pool
 }
 
-func NewRepository(dbpool *pgxpool.Pool) *UserRepository {
-	return &UserRepository{DB: dbpool}
+func NewRepository(dbpool *pgxpool.Pool) *Repository {
+	return &Repository{DB: dbpool}
 }
 
-func (r *UserRepository) ByID(ctx context.Context, id string) (model.User, error) {
+func (r *Repository) ByID(ctx context.Context, id string) (model.User, error) {
 	rows, err := r.DB.Query(ctx, `SELECT id, email FROM users WHERE id = $1`, id)
 	if err != nil {
 		return model.User{}, err
@@ -40,7 +32,7 @@ func (r *UserRepository) ByID(ctx context.Context, id string) (model.User, error
 	return user, nil
 }
 
-func (r *UserRepository) Create(id, email string) error {
+func (r *Repository) Create(id, email string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
 	_, err := r.DB.Exec(ctx, `
@@ -50,14 +42,14 @@ func (r *UserRepository) Create(id, email string) error {
 	return err
 }
 
-func (r *UserRepository) Delete(id string) error {
+func (r *Repository) Delete(id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
 	_, err := r.DB.Exec(ctx, `DELETE FROM users WHERE id = $1`, id)
 	return err
 }
 
-func (r *UserRepository) Settings(ctx context.Context, userID string) (model.Settings, error) {
+func (r *Repository) Settings(ctx context.Context, userID string) (model.Settings, error) {
 	q := `SELECT webhook_url, remind_before FROM settings WHERE user_id = $1`
 	row := r.DB.QueryRow(ctx, q, userID)
 	var vals model.Settings
@@ -70,7 +62,7 @@ func (r *UserRepository) Settings(ctx context.Context, userID string) (model.Set
 	return vals, nil
 }
 
-func (r *UserRepository) SaveSettings(ctx context.Context, userID string, settings model.SettingsInput) (model.Settings, error) {
+func (r *Repository) SaveSettings(ctx context.Context, userID string, settings model.SettingsInput) (model.Settings, error) {
 	q := `
 	INSERT INTO settings (user_id, webhook_url, remind_before)
 	VALUES (

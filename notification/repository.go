@@ -9,21 +9,15 @@ import (
 	"github.com/lionpuro/trackcerts/model"
 )
 
-type Repository interface {
-	AllDue(ctx context.Context) ([]model.Notification, error)
-	Create(ctx context.Context, n model.NotificationInput) error
-	Update(ctx context.Context, id int, n model.NotificationUpdate) error
-}
-
-type NotifRepository struct {
+type Repository struct {
 	DB *pgxpool.Pool
 }
 
-func NewRepository(db *pgxpool.Pool) *NotifRepository {
-	return &NotifRepository{DB: db}
+func NewRepository(db *pgxpool.Pool) *Repository {
+	return &Repository{DB: db}
 }
 
-func (r *NotifRepository) AllDue(ctx context.Context) ([]model.Notification, error) {
+func (r *Repository) AllDue(ctx context.Context) ([]model.Notification, error) {
 	q := `
 	SELECT
 		s.webhook_url as endpoint,
@@ -59,7 +53,7 @@ func (r *NotifRepository) AllDue(ctx context.Context) ([]model.Notification, err
 	return notifs, nil
 }
 
-func (r *NotifRepository) Create(ctx context.Context, n model.NotificationInput) error {
+func (r *Repository) Create(ctx context.Context, n model.NotificationInput) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	q := `
@@ -78,7 +72,7 @@ func (r *NotifRepository) Create(ctx context.Context, n model.NotificationInput)
 	return err
 }
 
-func (r *NotifRepository) Update(ctx context.Context, id int, n model.NotificationUpdate) error {
+func (r *Repository) Update(ctx context.Context, id int, n model.NotificationUpdate) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	q := `

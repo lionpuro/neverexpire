@@ -10,27 +10,15 @@ import (
 	"github.com/lionpuro/trackcerts/model"
 )
 
-type Repository interface {
-	ByID(ctx context.Context, userID string, id int) (model.Domain, error)
-	All(ctx context.Context) ([]model.Domain, error)
-	Notifiable(ctx context.Context) ([]model.DomainWithSettings, error)
-	AllByUser(ctx context.Context, userID string) ([]model.Domain, error)
-	Create(d model.Domain) error
-	CreateMultiple(domains []model.Domain) error
-	Update(d model.Domain) (model.Domain, error)
-	UpdateMultiple(ctx context.Context, domains []model.Domain) error
-	Delete(userID string, id int) error
-}
-
-type DomainRepository struct {
+type Repository struct {
 	DB *pgxpool.Pool
 }
 
-func NewRepository(dbpool *pgxpool.Pool) *DomainRepository {
-	return &DomainRepository{DB: dbpool}
+func NewRepository(dbpool *pgxpool.Pool) *Repository {
+	return &Repository{DB: dbpool}
 }
 
-func (r *DomainRepository) ByID(ctx context.Context, userID string, id int) (model.Domain, error) {
+func (r *Repository) ByID(ctx context.Context, userID string, id int) (model.Domain, error) {
 	row := r.DB.QueryRow(ctx, `
 	SELECT
 		id,
@@ -67,7 +55,7 @@ func (r *DomainRepository) ByID(ctx context.Context, userID string, id int) (mod
 	return result, nil
 }
 
-func (r *DomainRepository) All(ctx context.Context) ([]model.Domain, error) {
+func (r *Repository) All(ctx context.Context) ([]model.Domain, error) {
 	q := `
 	SELECT
 		id,
@@ -116,7 +104,7 @@ func (r *DomainRepository) All(ctx context.Context) ([]model.Domain, error) {
 	return domains, nil
 }
 
-func (r *DomainRepository) Notifiable(ctx context.Context) ([]model.DomainWithSettings, error) {
+func (r *Repository) Notifiable(ctx context.Context) ([]model.DomainWithSettings, error) {
 	q := `
 	SELECT
 		d.id,
@@ -176,7 +164,7 @@ func (r *DomainRepository) Notifiable(ctx context.Context) ([]model.DomainWithSe
 	return domains, nil
 }
 
-func (r *DomainRepository) AllByUser(ctx context.Context, userID string) ([]model.Domain, error) {
+func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Domain, error) {
 	q := `
 	SELECT
 		id,
@@ -225,7 +213,7 @@ func (r *DomainRepository) AllByUser(ctx context.Context, userID string) ([]mode
 	return domains, nil
 }
 
-func (r *DomainRepository) Create(d model.Domain) error {
+func (r *Repository) Create(d model.Domain) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
 	_, err := r.DB.Exec(ctx, `
@@ -256,7 +244,7 @@ func (r *DomainRepository) Create(d model.Domain) error {
 	return err
 }
 
-func (r *DomainRepository) CreateMultiple(domains []model.Domain) error {
+func (r *Repository) CreateMultiple(domains []model.Domain) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
 	tx, err := r.DB.Begin(ctx)
@@ -305,7 +293,7 @@ func (r *DomainRepository) CreateMultiple(domains []model.Domain) error {
 	return nil
 }
 
-func (r *DomainRepository) Update(d model.Domain) (model.Domain, error) {
+func (r *Repository) Update(d model.Domain) (model.Domain, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
 	row := r.DB.QueryRow(ctx, `
@@ -366,7 +354,7 @@ func (r *DomainRepository) Update(d model.Domain) (model.Domain, error) {
 	return result, nil
 }
 
-func (r *DomainRepository) Delete(userID string, id int) error {
+func (r *Repository) Delete(userID string, id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
 	_, err := r.DB.Exec(ctx, `DELETE FROM domains WHERE id = $1 AND user_id = $2`, id, userID)
@@ -376,7 +364,7 @@ func (r *DomainRepository) Delete(userID string, id int) error {
 	return nil
 }
 
-func (r *DomainRepository) UpdateMultiple(ctx context.Context, domains []model.Domain) error {
+func (r *Repository) UpdateMultiple(ctx context.Context, domains []model.Domain) error {
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
 		return err
