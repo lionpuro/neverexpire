@@ -45,16 +45,20 @@
 					<div
 						class="max-sm:contents sm:col-start-2 md:col-start-3 flex items-center text-base-700 px-1 py-2 bg-base-white"
 					>
-						<span class="sm:hidden text-base-800 font-medium py-0.5"
-							>Expires</span
-						>
+						<span class="sm:hidden text-base-800 font-medium py-0.5">
+							Expires
+						</span>
 						<span class="date font-medium text-sm max-sm:py-0.5">
-							<local-time
-								datetime="{{ datef $domain.Certificate.Expires "2006-01-02T15:04:05.000Z" }}"
-								dateonly="true"
-							>
-								{{ datef $domain.Certificate.Expires "2006-01-02" }}
-							</local-time>
+							{{ if $domain.Certificate.Expires }}
+								<local-time
+									datetime="{{ datef $domain.Certificate.Expires "2006-01-02T15:04:05.000Z" }}"
+									dateonly="true"
+								>
+									{{ datef $domain.Certificate.Expires "2006-01-02" }}
+								</local-time>
+							{{ else }}
+								n/a
+							{{ end }}
 						</span>
 					</div>
 					<div

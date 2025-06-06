@@ -42,7 +42,11 @@ func (s *Service) CreateReminders(ctx context.Context, domains []model.DomainWit
 }
 
 func (s *Service) createReminder(ctx context.Context, record model.DomainWithSettings) error {
-	days := certs.DaysLeft(record.Domain.Certificate.Expires)
+	exp := record.Domain.Certificate.Expires
+	if exp == nil {
+		return nil
+	}
+	days := certs.DaysLeft(*exp)
 	body := fmt.Sprintf("SSL certificate for %s is expiring in %d days!", record.Domain.DomainName, days)
 	diff := time.Duration(record.Settings.RemindBefore) * time.Second
 	input := model.NotificationInput{
@@ -53,7 +57,7 @@ func (s *Service) createReminder(ctx context.Context, record model.DomainWithSet
 		Due:          record.Domain.Certificate.Expires.Add(-diff),
 		DeliveredAt:  nil,
 		Attempts:     0,
-		DeletedAfter: record.Domain.Certificate.Expires,
+		DeletedAfter: *exp,
 	}
 	return s.repo.Create(ctx, input)
 }

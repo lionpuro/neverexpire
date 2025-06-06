@@ -52,21 +52,24 @@ func statusClass(status string) string {
 	}
 }
 
-func statusText(status string, expires time.Time) string {
+func statusText(status string, expires *time.Time) string {
+	if expires == nil {
+		return certs.StatusOffline
+	}
 	switch status {
 	case certs.StatusOffline:
 		return status
 	case certs.StatusInvalid:
 		return "expired"
 	}
-	days := certs.DaysLeft(expires)
+	days := certs.DaysLeft(*expires)
 	if days == 0 {
 		now := time.Now().UTC()
 		diff := expires.Sub(now)
 		hours := int(diff.Minutes() / 60)
 		return fmt.Sprintf("%d hours", hours)
 	}
-	return fmt.Sprintf("%d days", certs.DaysLeft(expires))
+	return fmt.Sprintf("%d days", certs.DaysLeft(*expires))
 }
 
 func split(s, sep string) []string {

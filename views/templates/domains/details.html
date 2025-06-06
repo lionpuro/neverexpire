@@ -50,11 +50,17 @@
 			<li class="contents">
 				<span class="font-semibold text-base-800"> Expires </span>
 				<span class="font-medium text-base-600">
-					<local-time
-						datetime="{{ datef .Domain.Certificate.Expires "2006-01-02T15:04:05.000Z" }}"
-					>
-						{{ datef .Domain.Certificate.Expires "2006-01-02 15:04:05" }}
-					</local-time>
+					{{ $datetime := "n/a" }}
+					{{ if .Domain.Certificate.Expires }}
+						{{ $datetime = datef .Domain.Certificate.Expires "2006-01-02T15:04:05.000Z" }}
+					{{ end }}
+					{{ if eq $datetime "n/a" }}
+						{{ $datetime }}
+					{{ else }}
+						<local-time datetime="{{ $datetime }}">
+							{{ datef .Domain.Certificate.Expires "2006-01-02 15:04:05" }}
+						</local-time>
+					{{ end }}
 				</span>
 			</li>
 			{{ template "li" withAttributes
