@@ -181,7 +181,8 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Doma
 	FROM domains WHERE user_id = $1
 	ORDER BY
 		array_position(array['offline', 'invalid', 'expiring', 'healthy'], status),
-		expires_at`
+		expires_at,
+		domain_name`
 	rows, err := r.DB.Query(ctx, q, userID)
 	if err != nil {
 		return nil, err
