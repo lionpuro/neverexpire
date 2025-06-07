@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	redisAddr = "localhost:6379"
+	redisAddr = "localhost:6380"
 )
 
 func TestNew(t *testing.T) {
