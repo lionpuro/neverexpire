@@ -14,14 +14,13 @@ import (
 )
 
 func main() {
-	conn := fmt.Sprintf(
-		"postgres://%s:%s@localhost:%s/%s?sslmode=disable",
+	conn := db.ConnString(
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_HOST"),
 		os.Getenv("POSTGRES_HOST_PORT"),
 		os.Getenv("POSTGRES_DB"),
 	)
-
 	pool, err := db.NewPool(conn)
 	if err != nil {
 		log.Fatal(err)
