@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	netHTTP "net/http"
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -34,37 +33,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	r := netHTTP.NewServeMux()
-
 	h := http.NewHandler(us, ds, as)
-
-	handle := func(p string, hf netHTTP.HandlerFunc) {
-		r.HandleFunc(p, h.Authenticate(hf))
-	}
-
-	handle("GET /", h.HomePage)
-	handle("GET /domains", h.RequireAuth(h.DomainsPage))
-	handle("GET /domains/new", h.RequireAuth(h.NewDomainPage))
-	handle("POST /domains", h.RequireAuth(h.CreateDomains))
-	handle("GET /domains/{id}", h.RequireAuth(h.DomainPage(false)))
-	handle("GET /partials/domains/{id}", h.RequireAuth(h.DomainPage(true)))
-	handle("DELETE /domains/{id}", h.RequireAuth(h.DeleteDomain))
-	handle("GET /login", h.LoginPage)
-	handle("GET /logout", h.Logout)
-	handle("DELETE /account", h.RequireAuth(h.DeleteUser))
-	handle("GET /settings", h.RequireAuth(h.SettingsPage))
-	handle("PUT /settings/reminders", h.RequireAuth(h.UpdateReminders))
-	handle("POST /settings/webhook", h.RequireAuth(h.AddWebhook))
-	handle("DELETE /settings/webhook", h.RequireAuth(h.DeleteWebhook))
-
-	r.HandleFunc("GET /auth/google/login", h.Login(as.GoogleClient))
-	r.HandleFunc("GET /auth/google/callback", h.AuthCallback(as.GoogleClient))
-	r.Handle("GET /static/", netHTTP.StripPrefix("/static", netHTTP.FileServer(netHTTP.Dir("assets/public"))))
-
-	srv := &netHTTP.Server{
-		Addr:    ":3000",
-		Handler: r,
-	}
+	srv := http.NewServer(h)
 
 	fmt.Printf("Listening on %s...\n", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
