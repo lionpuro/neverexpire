@@ -35,7 +35,7 @@ lint:
 	@docker run -t --rm -v ${PWD}:/app -w /app golangci/golangci-lint:v2.1.6 golangci-lint run
 
 test:
-	@docker compose -f compose.test.yaml up -d
+	@docker compose -f compose.test.yaml --env-file .env.test up -d
 	@go test -v ./...
 	@docker compose -f compose.test.yaml down -v
 

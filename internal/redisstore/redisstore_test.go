@@ -2,22 +2,32 @@ package redisstore
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gorilla/sessions"
+	"github.com/lionpuro/neverexpire/config"
 	"github.com/redis/go-redis/v9"
 )
 
-const (
-	redisAddr = "localhost:6380"
-)
+func newTestClient() (*redis.Client, error) {
+	conf, err := config.FromEnvFile("../../.env.test")
+	if err != nil {
+		return nil, fmt.Errorf("failed to load test config: %v", err)
+	}
+	client := redis.NewClient(&redis.Options{
+		Addr: conf.RedisURL,
+	})
+	return client, nil
+}
 
 func TestNew(t *testing.T) {
-	client := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
-	})
+	client, err := newTestClient()
+	if err != nil {
+		t.Fatal("failed to create test client", err)
+	}
 
 	store, err := NewRedisStore(context.Background(), client)
 	if err != nil {
@@ -39,9 +49,10 @@ func TestNew(t *testing.T) {
 }
 
 func TestOptions(t *testing.T) {
-	client := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
-	})
+	client, err := newTestClient()
+	if err != nil {
+		t.Fatal("failed to create test client", err)
+	}
 
 	store, err := NewRedisStore(context.Background(), client)
 	if err != nil {
@@ -69,9 +80,10 @@ func TestOptions(t *testing.T) {
 }
 
 func TestSave(t *testing.T) {
-	client := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
-	})
+	client, err := newTestClient()
+	if err != nil {
+		t.Fatal("failed to create test client", err)
+	}
 
 	store, err := NewRedisStore(context.Background(), client)
 	if err != nil {
@@ -97,9 +109,10 @@ func TestSave(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	client := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
-	})
+	client, err := newTestClient()
+	if err != nil {
+		t.Fatal("failed to create test client", err)
+	}
 
 	store, err := NewRedisStore(context.Background(), client)
 	if err != nil {
@@ -131,13 +144,13 @@ func TestDelete(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	client := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
-	})
+	client, err := newTestClient()
+	if err != nil {
+		t.Fatal("failed to create test client", err)
+	}
 
 	cmd := client.Ping(context.Background())
-	err := cmd.Err()
-	if err != nil {
+	if cmd.Err() != nil {
 		t.Fatal("connection is not opened")
 	}
 
