@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/sessions"
 	"github.com/lionpuro/neverexpire/internal/redisstore"
@@ -17,9 +16,9 @@ type SessionStore struct {
 	store *redisstore.RedisStore
 }
 
-func newSessionStore() (*SessionStore, error) {
+func newSessionStore(addr string) (*SessionStore, error) {
 	client := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_URL"),
+		Addr:     addr,
 		Password: "",
 		DB:       0,
 	})

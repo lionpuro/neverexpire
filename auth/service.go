@@ -5,9 +5,9 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"os"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/lionpuro/neverexpire/config"
 	"golang.org/x/oauth2"
 )
 
@@ -16,15 +16,15 @@ type Service struct {
 	Sessions     *SessionStore
 }
 
-func NewService() (*Service, error) {
+func NewService(conf *config.Config) (*Service, error) {
 	googleProvider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
 	if err != nil {
 		return nil, fmt.Errorf("new google provider: %v", err)
 	}
 	googleClient, err := newAuthClient(googleProvider, &oauth2.Config{
-		ClientID:     os.Getenv("OAUTH_GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("OAUTH_GOOGLE_CALLBACK_URL"),
+		ClientID:     conf.OAuthGoogleClientID,
+		ClientSecret: conf.OAuthGoogleClientSecret,
+		RedirectURL:  conf.OAuthGoogleCallbackURL,
 		Scopes:       []string{oidc.ScopeOpenID, "email"},
 		Endpoint:     googleProvider.Endpoint(),
 	})
@@ -32,7 +32,7 @@ func NewService() (*Service, error) {
 		return nil, fmt.Errorf("new google client: %v", err)
 	}
 
-	sessions, err := newSessionStore()
+	sessions, err := newSessionStore(conf.RedisURL)
 	if err != nil {
 		return nil, err
 	}
