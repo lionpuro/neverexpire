@@ -17,14 +17,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("load config: %v", err)
 	}
-	conn := db.ConnString(
-		conf.PostgresUser,
-		conf.PostgresPassword,
-		conf.PostgresHost,
-		conf.PostgresPort,
-		conf.PostgresDB,
-	)
-	pool, err := db.NewPool(conn)
+	pool, err := db.NewPool(conf.PostgresURL)
 	if err != nil {
 		log.Fatal(err)
 	}
