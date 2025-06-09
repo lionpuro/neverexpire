@@ -58,7 +58,9 @@
 				webhook and add its URL here to start receiving notifications.
 			</p>
 			<div class="flex flex-col">
-				<span class="font-semibold text-base-900 mb-2"> Webhook URL </span>
+				<span class="font-semibold text-base-900 mb-2 tracking-tight">
+					Webhook URL
+				</span>
 				{{ if not .Settings.WebhookURL }}
 					<form
 						class="flex gap-2"
@@ -98,9 +100,9 @@
 				{{ end }}
 			</div>
 			<div class="flex flex-col">
-				<span class="font-semibold text-base-900 mb-2"
-					>Expiration reminder</span
-				>
+				<span class="font-semibold text-base-900 mb-2 tracking-tight">
+					Expiration reminder
+				</span>
 				<form
 					class="flex gap-2"
 					hx-put="/settings/reminders"
