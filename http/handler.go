@@ -92,12 +92,16 @@ func (h *Handler) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// Authenticate only saves session data to the request context.
+// Unauthenticated requests will be stopped by RequireAuth middleware.
 func (h *Handler) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		u, err := h.AuthService.Sessions.GetUser(r)
+		sess, err := h.AuthService.Session(r)
 		if err == nil {
-			ctx = user.SaveToContext(r.Context(), u)
+			if u := sess.User(); u != nil {
+				ctx = user.SaveToContext(r.Context(), *u)
+			}
 		}
 		next(w, r.WithContext(ctx))
 	}
@@ -107,21 +111,21 @@ func (h *Handler) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 
 func (h *Handler) Login(a *auth.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		state, err := h.AuthService.GenerateRandomState()
+		state, err := auth.GenerateRandomState()
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
-		sess, err := h.AuthService.Sessions.GetSession(r)
+		sess, err := h.AuthService.Session(r)
 		if err != nil {
 			log.Printf("get session: %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
 
-		sess.Values["state"] = state
-		if err := sess.Save(r, w); err != nil {
+		sess.SetState(state)
+		if err := sess.Save(w, r); err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -133,14 +137,15 @@ func (h *Handler) Login(a *auth.Client) http.HandlerFunc {
 
 func (h *Handler) AuthCallback(a *auth.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sess, err := h.AuthService.Sessions.GetSession(r)
+		sess, err := h.AuthService.Session(r)
 		if err != nil {
 			log.Printf("get session: %v", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
 
-		if r.FormValue("state") != sess.Values["state"] {
+		state, ok := sess.State()
+		if !ok || r.FormValue("state") != state {
 			http.Error(w, "Invalid state parameter.", http.StatusBadRequest)
 			return
 		}
@@ -175,8 +180,8 @@ func (h *Handler) AuthCallback(a *auth.Client) http.HandlerFunc {
 			http.Error(w, "Error creating user", http.StatusInternalServerError)
 			return
 		}
-		sess.Values["user"] = model.User{ID: user.ID, Email: user.Email}
-		if err := sess.Save(r, w); err != nil {
+		sess.SetUser(model.User{ID: user.ID, Email: user.Email})
+		if err := sess.Save(w, r); err != nil {
 			log.Printf("save session: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
@@ -187,13 +192,12 @@ func (h *Handler) AuthCallback(a *auth.Client) http.HandlerFunc {
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
-	sess, err := h.AuthService.Sessions.GetSession(r)
+	sess, err := h.AuthService.Session(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	sess.Options.MaxAge = -1
-	if err := sess.Save(r, w); err != nil {
+	if err := sess.Delete(w, r); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -207,13 +211,12 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		htmxError(w, fmt.Errorf("Error deleting account"))
 		return
 	}
-	sess, err := h.AuthService.Sessions.GetSession(r)
+	sess, err := h.AuthService.Session(r)
 	if err != nil {
 		htmxError(w, fmt.Errorf("Error logging out"))
 		return
 	}
-	sess.Options.MaxAge = -1
-	if err := sess.Save(r, w); err != nil {
+	if err := sess.Delete(w, r); err != nil {
 		htmxError(w, fmt.Errorf("Error logging out"))
 		return
 	}

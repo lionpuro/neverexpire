@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"encoding/gob"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -11,6 +10,43 @@ import (
 	"github.com/lionpuro/neverexpire/model"
 	"github.com/redis/go-redis/v9"
 )
+
+type Session struct {
+	session *sessions.Session
+}
+
+func (s *Session) User() *model.User {
+	user, ok := s.session.Values["user"].(model.User)
+	if !ok {
+		return nil
+	}
+	return &user
+}
+
+func (s *Session) SetUser(user model.User) {
+	s.session.Values["user"] = user
+}
+
+func (s *Session) State() (string, bool) {
+	state, ok := s.session.Values["state"].(string)
+	if !ok {
+		return "", false
+	}
+	return state, true
+}
+
+func (s *Session) SetState(value string) {
+	s.session.Values["state"] = value
+}
+
+func (s *Session) Save(w http.ResponseWriter, r *http.Request) error {
+	return s.session.Save(r, w)
+}
+
+func (s *Session) Delete(w http.ResponseWriter, r *http.Request) error {
+	s.session.Options.MaxAge = -1
+	return s.session.Save(r, w)
+}
 
 type SessionStore struct {
 	store *redisstore.RedisStore
@@ -36,19 +72,10 @@ func newSessionStore(addr string) (*SessionStore, error) {
 	return &SessionStore{store}, err
 }
 
-func (s *SessionStore) GetSession(r *http.Request) (*sessions.Session, error) {
-	return s.store.Get(r, "user-session")
-}
-
-func (s *SessionStore) GetUser(r *http.Request) (model.User, error) {
-	sess, err := s.GetSession(r)
+func (s *SessionStore) GetSession(r *http.Request) (*Session, error) {
+	sess, err := s.store.Get(r, "user-session")
 	if err != nil {
-		return model.User{}, err
+		return nil, err
 	}
-	val := sess.Values["user"]
-	user, ok := val.(model.User)
-	if !ok {
-		return model.User{}, fmt.Errorf("invalid session data")
-	}
-	return user, nil
+	return &Session{session: sess}, nil
 }
