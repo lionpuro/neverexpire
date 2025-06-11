@@ -22,7 +22,7 @@
 				placeholder="example.com, google.com"
 				rows="2"
 				class="border border-base-200 p-3 rounded-md focus:outline-2 outline-blue-500 -outline-offset-2"
-				hx-on:focus="htmx.addClass(htmx.find('#error-banner'), 'hidden');"
+				hx-on:focus="htmx.addClass(htmx.find('#banner'), 'hidden');"
 			>{{ if .InputValue }}{{ .InputValue }}{{ end }}</textarea>
 			{{/* prettier-ignore-end */}}
 			<button
