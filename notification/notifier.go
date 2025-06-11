@@ -91,7 +91,7 @@ func (n *Notifier) notify(notif model.Notification) error {
 		if err := n.notifications.Update(context.Background(), notif.ID, input); err != nil {
 			return err
 		}
-		return err
+		return fmt.Errorf("failed to send notification: %v", err)
 	}
 	ts := time.Now().UTC()
 	input := model.NotificationUpdate{
