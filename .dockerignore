@@ -1,0 +1,10 @@
+.git
+.gitignore
+.github
+.dockerignore
+Dockerfile
+compose*.yaml
+Makefile
+tmp
+node_modules
+assets/public

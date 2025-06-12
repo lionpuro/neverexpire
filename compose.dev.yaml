@@ -1,35 +1,5 @@
-name: neverexpire
+name: neverexpire-dev
 services:
-  web:
-    build: .
-    image: neverexpire:latest
-    command: ["./app"]
-    env_file: ".env"
-    environment:
-      - APP_ENV=production
-      - POSTGRES_HOST=postgres
-      - REDIS_HOST=redis
-    ports:
-      - "3000:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-  worker:
-    build: .
-    image: neverexpire:latest
-    command: ["./service"]
-    env_file: ".env"
-    environment:
-      - APP_ENV=production
-      - POSTGRES_HOST=postgres
-      - REDIS_HOST=redis
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
   redis:
     image: redis
     ports:

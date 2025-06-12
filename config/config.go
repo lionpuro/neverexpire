@@ -42,3 +42,7 @@ func FromEnvFile(file string) (*Config, error) {
 	conf := FromEnv()
 	return conf, nil
 }
+
+func LoadEnvFile(file string) error {
+	return godotenv.Load(file)
+}

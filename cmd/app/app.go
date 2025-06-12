@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/lionpuro/neverexpire/auth"
 	"github.com/lionpuro/neverexpire/config"
@@ -13,10 +14,12 @@ import (
 )
 
 func main() {
-	conf, err := config.FromEnvFile(".env")
-	if err != nil {
-		log.Fatalf("load config: %v", err)
+	if os.Getenv("APP_ENV") != "production" {
+		if err := config.LoadEnvFile(".env"); err != nil {
+			log.Fatalf("load env file: %v", err)
+		}
 	}
+	conf := config.FromEnv()
 	pool, err := db.NewPool(conf.PostgresURL)
 	if err != nil {
 		log.Fatal(err)
