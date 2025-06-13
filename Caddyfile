@@ -1,0 +1,8 @@
+www.neverexpire.xyz {
+	redir https://neverexpire.xyz{uri} permanent
+}
+
+neverexpire.xyz {
+	reverse_proxy web:3000
+	encode gzip
+}

@@ -2,7 +2,7 @@ include .env
 
 DATABASE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_HOST_PORT}/${POSTGRES_DB}?sslmode=disable
 
-.PHONY: all assets app service run-app run-service dev-up fmt lint test create-migration migrate-up migrate-down
+.PHONY: all assets app service run-app run-service dev-up fmt lint test docker-deploy create-migration migrate-up migrate-down
 
 all: assets app service
 
@@ -41,6 +41,9 @@ test:
 	@docker compose -f compose.test.yaml --env-file .env.test up -d
 	@go test -v ./...
 	@docker compose -f compose.test.yaml down -v
+
+docker-deploy:
+	DOCKER_CONTEXT=neverexpire docker compose up --build -d
 
 create-migration:
 	@read -p "Enter the sequence name: " SEQ; \
