@@ -30,11 +30,13 @@
 					{{ template "icon-link-external" }}
 				</a>
 			</h1>
-			<span class="text-base-500 font-medium"
+			<span class="text-base-500 font-medium max-sm:text-sm"
 				>{{ .Domain.Certificate.IP }}</span
 			>
 		</div>
-		<ul class="grid grid-cols-2 gap-2">
+		<ul
+			class="grid grid-cols-[minmax(40%,auto)_minmax(0,1fr)] sm:grid-cols-2 gap-2 max-sm:text-sm"
+		>
 			<li class="contents">
 				<span class="font-semibold text-base-800">Status</span>
 				<span
