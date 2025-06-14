@@ -1,39 +1,59 @@
-package redisstore
+package redisstore_test
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gorilla/sessions"
-	"github.com/lionpuro/neverexpire/config"
+	"github.com/lionpuro/neverexpire/internal/redisstore"
 	"github.com/redis/go-redis/v9"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func newTestClient() (*redis.Client, error) {
-	conf, err := config.FromEnvFile("../../.env.test")
-	if err != nil {
-		return nil, fmt.Errorf("failed to load test config: %v", err)
+var client *redis.Client
+var store *redisstore.RedisStore
+
+func TestMain(m *testing.M) {
+	req := testcontainers.ContainerRequest{
+		Image:        "redis:latest",
+		ExposedPorts: []string{"6379/tcp"},
+		WaitingFor:   wait.ForLog("Ready to accept connections"),
 	}
-	client := redis.NewClient(&redis.Options{
-		Addr: conf.RedisURL,
+	container, err := testcontainers.GenericContainer(context.Background(), testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
 	})
-	return client, nil
+	defer func() {
+		if err := testcontainers.TerminateContainer(container); err != nil {
+			log.Printf("failed to terminate container: %v", err)
+		}
+	}()
+	if err != nil {
+		log.Printf("failed to start container: %v", err)
+		return
+	}
+	endpoint, err := container.Endpoint(context.Background(), "")
+	if err != nil {
+		log.Printf("failed to get redis client endpoint: %v", err)
+		return
+	}
+	client = redis.NewClient(&redis.Options{
+		Addr: endpoint,
+	})
+	store, err = redisstore.NewRedisStore(context.Background(), client)
+	if err != nil {
+		log.Printf("failed to create redis store: %v", err)
+		return
+	}
+	os.Exit(m.Run())
 }
 
 func TestNew(t *testing.T) {
-	client, err := newTestClient()
-	if err != nil {
-		t.Fatal("failed to create test client", err)
-	}
-
-	store, err := NewRedisStore(context.Background(), client)
-	if err != nil {
-		t.Fatal("failed to create redis store", err)
-	}
-
 	req, err := http.NewRequest("GET", "http://www.example.com", nil)
 	if err != nil {
 		t.Fatal("failed to create request", err)
@@ -49,16 +69,6 @@ func TestNew(t *testing.T) {
 }
 
 func TestOptions(t *testing.T) {
-	client, err := newTestClient()
-	if err != nil {
-		t.Fatal("failed to create test client", err)
-	}
-
-	store, err := NewRedisStore(context.Background(), client)
-	if err != nil {
-		t.Fatal("failed to create redis store", err)
-	}
-
 	opts := sessions.Options{
 		Path:   "/path",
 		MaxAge: 99999,
@@ -80,16 +90,6 @@ func TestOptions(t *testing.T) {
 }
 
 func TestSave(t *testing.T) {
-	client, err := newTestClient()
-	if err != nil {
-		t.Fatal("failed to create test client", err)
-	}
-
-	store, err := NewRedisStore(context.Background(), client)
-	if err != nil {
-		t.Fatal("failed to create redis store", err)
-	}
-
 	req, err := http.NewRequest("GET", "http://www.example.com", nil)
 	if err != nil {
 		t.Fatal("failed to create request", err)
@@ -109,16 +109,6 @@ func TestSave(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	client, err := newTestClient()
-	if err != nil {
-		t.Fatal("failed to create test client", err)
-	}
-
-	store, err := NewRedisStore(context.Background(), client)
-	if err != nil {
-		t.Fatal("failed to create redis store", err)
-	}
-
 	req, err := http.NewRequest("GET", "http://www.example.com", nil)
 	if err != nil {
 		t.Fatal("failed to create request", err)
@@ -144,22 +134,12 @@ func TestDelete(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	client, err := newTestClient()
-	if err != nil {
-		t.Fatal("failed to create test client", err)
-	}
-
 	cmd := client.Ping(context.Background())
 	if cmd.Err() != nil {
 		t.Fatal("connection is not opened")
 	}
 
-	store, err := NewRedisStore(context.Background(), client)
-	if err != nil {
-		t.Fatal("failed to create redis store", err)
-	}
-
-	err = store.Close()
+	err := store.Close()
 	if err != nil {
 		t.Fatal("failed to close")
 	}
