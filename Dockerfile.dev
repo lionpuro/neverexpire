@@ -1,0 +1,23 @@
+FROM golang:1.24.2
+
+ARG UID
+ARG GID
+
+RUN groupadd -g ${GID} developer && \
+	useradd -l -u ${UID} -g developer developer && \
+	mkdir /home/developer
+
+WORKDIR /app
+
+RUN apt-get update && \
+	apt-get upgrade -y && \
+	apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+	apt-get install -y nodejs build-essential
+
+RUN go install github.com/bokwoon95/wgo@latest
+
+RUN chown -R ${UID}:${GID} /home/developer /go
+USER developer
+
+CMD ["/app/run_dev.sh"]
