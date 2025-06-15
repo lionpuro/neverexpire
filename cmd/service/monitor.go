@@ -71,8 +71,13 @@ func (m *Monitor) poll() error {
 			}()
 			cert, err := certs.FetchCert(ctx, d.DomainName)
 			if err != nil {
+				cert = &model.CertificateInfo{
+					Status:    certs.StatusOffline,
+					IssuedBy:  "n/a",
+					CheckedAt: time.Now().UTC(),
+					Error:     err,
+				}
 				log.Printf("fetch certificate: %v", err)
-				return
 			}
 			domain := d
 			domain.Certificate = *cert
