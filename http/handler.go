@@ -6,10 +6,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/lionpuro/neverexpire/auth"
-	"github.com/lionpuro/neverexpire/certs"
 	"github.com/lionpuro/neverexpire/db"
 	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/model"
@@ -277,57 +275,29 @@ func (h *Handler) DeleteWebhook(w http.ResponseWriter, r *http.Request) {
 
 // Domain
 
-func (h *Handler) DomainPage(partial bool) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		p := r.PathValue("id")
-		id, err := strconv.Atoi(p)
-		if err != nil {
-			handleErrorPage(w, "Bad request", http.StatusBadRequest)
-			return
-		}
-		u, _ := user.FromContext(r.Context())
+func (h *Handler) DomainPage(w http.ResponseWriter, r *http.Request) {
+	p := r.PathValue("id")
+	id, err := strconv.Atoi(p)
+	if err != nil {
+		handleErrorPage(w, "Bad request", http.StatusBadRequest)
+		return
+	}
 
-		domain, err := h.DomainService.ByID(r.Context(), id, u.ID)
-		if err != nil {
-			errCode := http.StatusInternalServerError
-			errMsg := "Error retrieving domain data"
-			if db.IsErrNoRows(err) {
-				errCode = http.StatusNotFound
-				errMsg = "Domain not found"
-			}
-			log.Printf("get domain: %v", err)
-			handleErrorPage(w, errMsg, errCode)
-			return
+	u, _ := user.FromContext(r.Context())
+	domain, err := h.DomainService.ByID(r.Context(), id, u.ID)
+	if err != nil {
+		errCode := http.StatusInternalServerError
+		errMsg := "Error retrieving domain data"
+		if db.IsErrNoRows(err) {
+			errCode = http.StatusNotFound
+			errMsg = "Domain not found"
 		}
-
-		refreshData := domain.Certificate.CheckedAt.Before(time.Now().UTC().Add(-time.Minute))
-		if partial && refreshData {
-			info, err := certs.FetchCert(r.Context(), domain.DomainName)
-			if err != nil {
-				log.Printf("get domain: %v", err)
-				if isHXrequest(r) {
-					htmxError(w, fmt.Errorf("Error fetching certificate"))
-					return
-				}
-				handleErrorPage(w, "Something went wrong", http.StatusInternalServerError)
-				return
-			}
-			domain.Certificate = *info
-			d, err := h.DomainService.Update(domain)
-			if err != nil {
-				log.Printf("update domain: %v", err)
-				handleErrorPage(w, "Something went wrong", http.StatusInternalServerError)
-				return
-			}
-			domain = d
-			if err := views.DomainPartial(w, domain); err != nil {
-				log.Printf("render template: %v", err)
-			}
-			return
-		}
-		if err := views.Domain(w, &u, domain, nil, refreshData); err != nil {
-			log.Printf("render template: %v", err)
-		}
+		log.Printf("get domain: %v", err)
+		handleErrorPage(w, errMsg, errCode)
+		return
+	}
+	if err := views.Domain(w, &u, domain, nil); err != nil {
+		log.Printf("render template: %v", err)
 	}
 }
 
