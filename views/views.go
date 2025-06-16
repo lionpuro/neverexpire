@@ -24,7 +24,7 @@ var (
 	domain     = parse("layouts/main.html", "domains/details.html")
 	newDomain  = parse("layouts/main.html", "domains/new.html")
 	settings   = parse("layouts/main.html", "settings.html")
-	login      = parse("layouts/auth.html", "login.html")
+	login      = parse("layouts/main.html", "login.html")
 	domainPart = parse("layouts/partial.html", "domains/details.html")
 	partials   = parsePartials()
 )
