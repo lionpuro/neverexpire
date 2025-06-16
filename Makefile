@@ -31,8 +31,8 @@ watch-app:
 	@wgo -debounce 100ms -xdir assets/public clear :: npm run build:tw :: go build -o tmp/app ./cmd/app :: ./tmp/app
 
 fmt:
-	@gofmt -l -s -w .
-	@npx prettier . --write
+	@docker compose -f compose.dev.yaml exec app sh -c \
+		"gofmt -l -s -w /app && npx prettier /app --write"
 
 lint:
 	@docker run -t --rm -v ${PWD}:/app -w /app golangci/golangci-lint:v2.1.6 golangci-lint run
