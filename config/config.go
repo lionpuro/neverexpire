@@ -3,8 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -33,16 +31,4 @@ func FromEnv() *Config {
 		PostgresURL:             pgurl,
 	}
 	return conf
-}
-
-func FromEnvFile(file string) (*Config, error) {
-	if err := godotenv.Load(file); err != nil {
-		return nil, err
-	}
-	conf := FromEnv()
-	return conf, nil
-}
-
-func LoadEnvFile(file string) error {
-	return godotenv.Load(file)
 }

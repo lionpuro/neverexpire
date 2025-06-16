@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/lionpuro/neverexpire/config"
 	"github.com/lionpuro/neverexpire/db"
 	"github.com/lionpuro/neverexpire/domain"
@@ -15,11 +13,6 @@ import (
 )
 
 func main() {
-	if os.Getenv("APP_ENV") != "production" {
-		if err := config.LoadEnvFile(".env"); err != nil {
-			log.Fatalf("load env file: %v", err)
-		}
-	}
 	conf := config.FromEnv()
 	pool, err := db.NewPool(conf.PostgresURL)
 	if err != nil {

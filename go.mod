@@ -6,7 +6,6 @@ require (
 	github.com/coreos/go-oidc/v3 v3.14.1
 	github.com/gorilla/sessions v1.4.0
 	github.com/jackc/pgx/v5 v5.7.4
-	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.8.0
 	github.com/testcontainers/testcontainers-go v0.37.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.37.0
