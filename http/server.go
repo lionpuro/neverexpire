@@ -19,7 +19,7 @@ func NewServer(h *Handler) *http.Server {
 	handle("DELETE /domains/{id}", h.RequireAuth(h.DeleteDomain))
 	handle("GET /login", h.LoginPage)
 	handle("GET /logout", h.Logout)
-	handle("DELETE /account", h.RequireAuth(h.DeleteUser))
+	handle("DELETE /account", h.RequireAuth(h.DeleteAccount))
 	handle("GET /settings", h.RequireAuth(h.SettingsPage))
 	handle("PUT /settings/reminders", h.RequireAuth(h.UpdateReminders))
 	handle("POST /settings/webhook", h.RequireAuth(h.AddWebhook))
