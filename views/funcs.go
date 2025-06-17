@@ -54,13 +54,16 @@ func statusClass(status string) string {
 
 func statusText(status string, expires *time.Time) string {
 	if expires == nil {
+		if status == certs.StatusInvalid {
+			return certs.StatusInvalid
+		}
 		return certs.StatusOffline
 	}
 	switch status {
 	case certs.StatusOffline:
 		return status
 	case certs.StatusInvalid:
-		return "expired"
+		return status
 	}
 	days := certs.DaysLeft(*expires)
 	if days == 0 {
