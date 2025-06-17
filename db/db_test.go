@@ -19,6 +19,15 @@ var pool *pgxpool.Pool
 
 func TestMain(m *testing.M) {
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	var container *postgres.PostgresContainer
+	defer func() {
+		if container != nil {
+			if err := testcontainers.TerminateContainer(container); err != nil {
+				log.Printf("failed to terminate container: %v", err)
+			}
+		}
+		cancel()
+	}()
 	migrations, err := os.ReadDir("./migrations")
 	if err != nil {
 		log.Printf("failed to read migrations dir: %v", err)
@@ -28,7 +37,7 @@ func TestMain(m *testing.M) {
 	for _, f := range migrations {
 		scripts = append(scripts, filepath.Join("./migrations", f.Name()))
 	}
-	container, err := postgres.Run(ctx,
+	container, err = postgres.Run(ctx,
 		"postgres:17.4",
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"),
@@ -40,12 +49,6 @@ func TestMain(m *testing.M) {
 				WithStartupTimeout(60*time.Second),
 		),
 	)
-	defer func() {
-		if err := testcontainers.TerminateContainer(container); err != nil {
-			log.Printf("failed to terminate container: %v", err)
-		}
-		cancel()
-	}()
 	if err != nil {
 		log.Printf("failed to start container: %v", err)
 		return
