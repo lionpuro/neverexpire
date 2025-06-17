@@ -60,7 +60,10 @@
 				{{ template "error-banner" .Error }}
 			{{ end }}
 		</div>
-		<div id="content" class="flex flex-col p-6 sm:p-8 grow">
+		<div
+			id="content"
+			class="flex flex-col p-6 sm:p-8 grow max-w-screen-xl mx-auto w-full"
+		>
 			{{ block "content" . }}
 			{{ end }}
 		</div>
