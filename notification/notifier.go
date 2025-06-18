@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	testMessage = "Hello! Your notification webhook is set up correctly."
+	testMessage = "Hello! Your notification webhook for neverexpire.xyz is set up correctly."
 )
 
 type Notifier struct {
