@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -17,6 +18,8 @@ import (
 const (
 	testMessage = "Hello! Your notification webhook for neverexpire.xyz is set up correctly."
 )
+
+var avatarURL string = os.Getenv("WEBHOOK_AVATAR_URL")
 
 type Notifier struct {
 	client        *http.Client
@@ -55,9 +58,13 @@ func (n *Notifier) send(notif model.Notification) error {
 }
 
 func sendNotification(client *http.Client, url, msg string) error {
-	buf, err := json.Marshal(map[string]string{
+	body := map[string]string{
 		"content": msg,
-	})
+	}
+	if avatarURL != "" {
+		body["avatar_url"] = avatarURL
+	}
+	buf, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
