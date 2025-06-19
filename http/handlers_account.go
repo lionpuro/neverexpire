@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/lionpuro/neverexpire/http/views"
 	"github.com/lionpuro/neverexpire/model"
 	"github.com/lionpuro/neverexpire/notification"
 	"github.com/lionpuro/neverexpire/user"
-	"github.com/lionpuro/neverexpire/views"
 )
 
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {

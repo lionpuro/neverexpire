@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/lionpuro/neverexpire/db"
+	"github.com/lionpuro/neverexpire/http/views"
 	"github.com/lionpuro/neverexpire/user"
-	"github.com/lionpuro/neverexpire/views"
 )
 
 func (h *Handler) DomainPage(w http.ResponseWriter, r *http.Request) {
