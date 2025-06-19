@@ -23,13 +23,13 @@ func (h *Handler) DomainPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := user.FromContext(r.Context())
 	domain, err := h.DomainService.ByID(r.Context(), id, u.ID)
 	if err != nil {
-		errCode := http.StatusInternalServerError
-		errMsg := "Error retrieving domain data"
-		if db.IsErrNoRows(err) {
-			errCode = http.StatusNotFound
-			errMsg = "Domain not found"
+		errCode := http.StatusNotFound
+		errMsg := "Domain not found"
+		if !db.IsErrNoRows(err) {
+			errCode = http.StatusInternalServerError
+			errMsg = "Error retrieving domain data"
+			log.Printf("get domain: %v", err)
 		}
-		log.Printf("get domain: %v", err)
 		handleErrorPage(w, errMsg, errCode)
 		return
 	}
