@@ -6,10 +6,10 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
+	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/model"
 )
 
@@ -50,7 +50,7 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 		}
 		defer func() {
 			if err := conn.Close(); err != nil {
-				log.Printf("close connection: %v", err)
+				logging.DefaultLogger().Error("error closing connection", "error", err.Error())
 			}
 		}()
 

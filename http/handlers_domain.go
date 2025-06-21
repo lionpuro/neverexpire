@@ -2,7 +2,6 @@ package http
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,7 +15,7 @@ func (h *Handler) DomainPage(w http.ResponseWriter, r *http.Request) {
 	p := r.PathValue("id")
 	id, err := strconv.Atoi(p)
 	if err != nil {
-		handleErrorPage(w, "Bad request", http.StatusBadRequest)
+		h.ErrorPage(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
@@ -28,13 +27,13 @@ func (h *Handler) DomainPage(w http.ResponseWriter, r *http.Request) {
 		if !db.IsErrNoRows(err) {
 			errCode = http.StatusInternalServerError
 			errMsg = "Error retrieving domain data"
-			log.Printf("get domain: %v", err)
+			h.log.Error("failed to retrieve domain data", "error", err.Error())
 		}
-		handleErrorPage(w, errMsg, errCode)
+		h.ErrorPage(w, errMsg, errCode)
 		return
 	}
 	if err := views.Domain(w, &u, domain, nil); err != nil {
-		log.Printf("render template: %v", err)
+		h.log.Error("failed to render template", "error", err.Error())
 	}
 }
 
@@ -42,19 +41,19 @@ func (h *Handler) DomainsPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := user.FromContext(r.Context())
 	domains, err := h.DomainService.AllByUser(r.Context(), u.ID)
 	if err != nil {
-		log.Printf("get domains: %v", err)
-		handleErrorPage(w, "Something went wrong", http.StatusInternalServerError)
+		h.log.Error("failed to get domains", "error", err.Error())
+		h.ErrorPage(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
 	if err := views.Domains(w, &u, domains, nil); err != nil {
-		log.Printf("render template: %v", err)
+		h.log.Error("failed to render template", "error", err.Error())
 	}
 }
 
 func (h *Handler) NewDomainPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := user.FromContext(r.Context())
 	if err := views.NewDomain(w, &u, "", nil); err != nil {
-		log.Printf("render template: %v", err)
+		h.log.Error("failed to render template", "error", err.Error())
 	}
 }
 
@@ -62,17 +61,17 @@ func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
 	p := r.PathValue("id")
 	id, err := strconv.Atoi(p)
 	if err != nil {
-		handleErrorPage(w, "Bad request", http.StatusBadRequest)
+		h.ErrorPage(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 	u, _ := user.FromContext(r.Context())
 	if err := h.DomainService.Delete(u.ID, id); err != nil {
-		log.Printf("delete domain: %v", err)
+		h.log.Error("failed to delete domain", "error", err.Error())
 		if isHXrequest(r) {
-			handleErrorPage(w, "Error deleting domain", http.StatusInternalServerError)
+			h.ErrorPage(w, "Error deleting domain", http.StatusInternalServerError)
 			return
 		}
-		htmxError(w, fmt.Errorf("Error deleting domain"))
+		h.htmxError(w, fmt.Errorf("Error deleting domain"))
 		return
 	}
 	if isHXrequest(r) {
@@ -88,7 +87,7 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 	input := strings.TrimSpace(r.FormValue("domains"))
 	ds := strings.Split(input, ",")
 	if len(input) < 3 {
-		htmxError(w, fmt.Errorf("Please enter at least one valid domain"))
+		h.htmxError(w, fmt.Errorf("Please enter at least one valid domain"))
 		return
 	}
 	var names []string
@@ -105,11 +104,11 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 	if len(errs) > 0 {
 		err := fmt.Errorf("Invalid domain name")
 		if isHXrequest(r) {
-			htmxError(w, err)
+			h.htmxError(w, err)
 			return
 		}
 		if err := views.NewDomain(w, &u, "", err); err != nil {
-			log.Printf("render template: %v", err)
+			h.log.Error("failed to render template", "error", err.Error())
 		}
 		return
 	}
@@ -122,9 +121,9 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 			strings.Contains(err.Error(), "can't connect to"):
 			e = err
 		default:
-			log.Printf("create domain: %v", err)
+			h.log.Error("failed to create domain", "error", err.Error())
 		}
-		htmxError(w, e)
+		h.htmxError(w, e)
 		return
 	}
 

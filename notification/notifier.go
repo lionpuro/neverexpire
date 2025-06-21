@@ -5,13 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 
 	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/model"
 )
 
@@ -25,6 +25,7 @@ type Notifier struct {
 	client        *http.Client
 	notifications *Service
 	domains       *domain.Service
+	log           logging.Logger
 }
 
 func NewNotifier(ns *Service, ds *domain.Service) *Notifier {
@@ -45,7 +46,7 @@ func (n *Notifier) Start(ctx context.Context) {
 		select {
 		case <-t.C:
 			if err := n.processNotifications(ctx); err != nil {
-				log.Printf("process notifications: %v", err)
+				n.log.Error("failed to process notifications", "error", err.Error())
 			}
 		case <-ctx.Done():
 			return
@@ -54,10 +55,10 @@ func (n *Notifier) Start(ctx context.Context) {
 }
 
 func (n *Notifier) send(notif model.Notification) error {
-	return sendNotification(n.client, notif.Endpoint, notif.Body)
+	return sendNotification(n.log, n.client, notif.Endpoint, notif.Body)
 }
 
-func sendNotification(client *http.Client, url, msg string) error {
+func sendNotification(logger logging.Logger, client *http.Client, url, msg string) error {
 	body := map[string]string{
 		"content": msg,
 	}
@@ -79,7 +80,7 @@ func sendNotification(client *http.Client, url, msg string) error {
 	}
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			log.Printf("close body: %v", err)
+			logger.Error("error closing webhook response body", "error", err.Error())
 		}
 	}()
 	code := res.StatusCode
@@ -127,7 +128,7 @@ func (n *Notifier) processNotifications(ctx context.Context) error {
 		go func(no model.Notification) {
 			defer wg.Done()
 			if err := n.notify(notif); err != nil {
-				log.Printf("notify: %v", err)
+				n.log.Error("failed to notify user", "error", err.Error())
 			}
 		}(notif)
 	}
@@ -142,5 +143,5 @@ func SendTestNotification(url string) error {
 	c := &http.Client{
 		Timeout: 10 * time.Second,
 	}
-	return sendNotification(c, url, testMessage)
+	return sendNotification(logging.DefaultLogger(), c, url, testMessage)
 }

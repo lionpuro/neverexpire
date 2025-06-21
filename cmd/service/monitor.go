@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/lionpuro/neverexpire/certs"
 	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/model"
 	"github.com/lionpuro/neverexpire/notification"
 )
@@ -17,14 +19,16 @@ type Monitor struct {
 	domains       *domain.Service
 	notifications *notification.Service
 	quit          chan struct{}
+	log           logging.Logger
 }
 
-func NewMonitor(interval time.Duration, ds *domain.Service, ns *notification.Service) *Monitor {
+func NewMonitor(interval time.Duration, ds *domain.Service, ns *notification.Service, logger logging.Logger) *Monitor {
 	return &Monitor{
 		interval:      interval,
 		domains:       ds,
 		notifications: ns,
 		quit:          make(chan struct{}),
+		log:           logger,
 	}
 }
 
@@ -38,13 +42,13 @@ func (m *Monitor) Start() {
 		select {
 		case t := <-t.C:
 			start := time.Now()
-			log.Printf("start polling at %v", t)
+			m.log.Info(fmt.Sprintf("start polling at %v", t))
 			if err := m.poll(); err != nil {
-				log.Printf("poll service: %v", err)
+				m.log.Error("error polling domains", "error", err.Error())
 			}
-			log.Printf("finish polling in %v", time.Since(start))
+			m.log.Info(fmt.Sprintf("finish polling in %v", time.Since(start)))
 		case <-m.quit:
-			log.Printf("stopping monitor...")
+			m.log.Info("stopping monitor...")
 			return
 		}
 	}
@@ -77,7 +81,7 @@ func (m *Monitor) poll() error {
 					CheckedAt: time.Now().UTC(),
 					Error:     err,
 				}
-				log.Printf("fetch certificate: %v", err)
+				m.log.Error("error fetching certificate", "error", err.Error())
 			}
 			domain := d
 			domain.Certificate = *cert

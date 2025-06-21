@@ -9,6 +9,7 @@ import (
 	"github.com/lionpuro/neverexpire/db"
 	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/http"
+	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/user"
 )
 
@@ -27,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	h := http.NewHandler(us, ds, as)
+	h := http.NewHandler(logging.NewLogger(), us, ds, as)
 	srv := http.NewServer(3000, h)
 
 	fmt.Printf("Listening on %s...\n", srv.Addr)

@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lionpuro/neverexpire/db"
+	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/model"
 )
 
@@ -257,7 +257,7 @@ func (r *Repository) CreateMultiple(domains []model.Domain) error {
 	}
 	defer func() {
 		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
-			log.Printf("tx rollback: %v", err)
+			logging.DefaultLogger().Error("failed to rollback tx", "error", err.Error())
 		}
 	}()
 
@@ -379,7 +379,7 @@ func (r *Repository) UpdateMultiple(ctx context.Context, domains []model.Domain)
 	}
 	defer func() {
 		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
-			log.Printf("tx rollback: %v", err)
+			logging.DefaultLogger().Error("failed to rollback tx", "error", err.Error())
 		}
 	}()
 

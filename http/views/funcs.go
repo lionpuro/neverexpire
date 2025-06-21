@@ -3,11 +3,11 @@ package views
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"strings"
 	"time"
 
 	"github.com/lionpuro/neverexpire/certs"
+	"github.com/lionpuro/neverexpire/logging"
 )
 
 func funcMap() template.FuncMap {
@@ -82,7 +82,7 @@ func split(s, sep string) []string {
 // Use with caution
 func withAttributes(kv ...string) map[string]string {
 	if len(kv)%2 != 0 {
-		log.Printf("missing value for attribute %s", kv[len(kv)-1])
+		logging.DefaultLogger().Error(fmt.Sprintf("missing value for attribute %s", kv[len(kv)-1]))
 		return map[string]string{}
 	}
 	result := make(map[string]string)
