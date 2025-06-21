@@ -1,10 +1,11 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 )
 
-func NewServer(h *Handler) *http.Server {
+func NewServer(port int, h *Handler) *http.Server {
 	r := http.NewServeMux()
 
 	handle := func(p string, hf http.HandlerFunc) {
@@ -30,7 +31,7 @@ func NewServer(h *Handler) *http.Server {
 	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("assets/public"))))
 
 	srv := &http.Server{
-		Addr:    ":3000",
+		Addr:    fmt.Sprintf(":%d", port),
 		Handler: r,
 	}
 	return srv

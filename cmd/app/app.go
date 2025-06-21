@@ -14,6 +14,7 @@ import (
 
 func main() {
 	conf := config.FromEnv()
+
 	pool, err := db.NewPool(conf.PostgresURL)
 	if err != nil {
 		log.Fatal(err)
@@ -27,7 +28,7 @@ func main() {
 	}
 
 	h := http.NewHandler(us, ds, as)
-	srv := http.NewServer(h)
+	srv := http.NewServer(3000, h)
 
 	fmt.Printf("Listening on %s...\n", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
