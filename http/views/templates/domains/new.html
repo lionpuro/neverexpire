@@ -31,5 +31,14 @@
 				Track
 			</button>
 		</form>
+		<script>
+			document.querySelector("#domains").addEventListener("keypress", (e) => {
+				if (e.key === "Enter" && !e.shiftKey) {
+					e.preventDefault();
+					const event = new Event("submit", { cancelable: true });
+					e.currentTarget.form.dispatchEvent(event);
+				}
+			});
+		</script>
 	</div>
 {{ end }}
