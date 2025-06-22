@@ -72,7 +72,7 @@ func statusText(status string, expires *time.Time) string {
 		hours := int(diff.Minutes() / 60)
 		return fmt.Sprintf("%d hours", hours)
 	}
-	return fmt.Sprintf("%d days", pkgdomain.DaysLeft(*expires))
+	return fmt.Sprintf("%d days", days)
 }
 
 func split(s, sep string) []string {
