@@ -81,7 +81,6 @@ func (m *Monitor) poll() error {
 					CheckedAt: time.Now().UTC(),
 					Error:     err,
 				}
-				m.log.Error("error fetching certificate", "error", err.Error())
 			}
 			domain := d
 			domain.Certificate = *cert
