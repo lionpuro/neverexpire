@@ -1,4 +1,4 @@
-package certs
+package domain
 
 import (
 	"context"

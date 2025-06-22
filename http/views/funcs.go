@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lionpuro/neverexpire/certs"
+	pkgdomain "github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/logging"
 )
 
@@ -41,11 +41,11 @@ func datef(t time.Time, layout string) string {
 
 func statusClass(status string) string {
 	switch status {
-	case certs.StatusOffline:
+	case pkgdomain.StatusOffline:
 		return "text-base-900 bg-[#cacaca]"
-	case certs.StatusInvalid:
+	case pkgdomain.StatusInvalid:
 		return "text-danger-dark bg-danger-light"
-	case certs.StatusExpiring:
+	case pkgdomain.StatusExpiring:
 		return "text-warning-dark bg-warning-light"
 	default:
 		return "text-healthy-dark bg-healthy-light"
@@ -54,25 +54,25 @@ func statusClass(status string) string {
 
 func statusText(status string, expires *time.Time) string {
 	if expires == nil {
-		if status == certs.StatusInvalid {
-			return certs.StatusInvalid
+		if status == pkgdomain.StatusInvalid {
+			return pkgdomain.StatusInvalid
 		}
-		return certs.StatusOffline
+		return pkgdomain.StatusOffline
 	}
 	switch status {
-	case certs.StatusOffline:
+	case pkgdomain.StatusOffline:
 		return status
-	case certs.StatusInvalid:
+	case pkgdomain.StatusInvalid:
 		return status
 	}
-	days := certs.DaysLeft(*expires)
+	days := pkgdomain.DaysLeft(*expires)
 	if days == 0 {
 		now := time.Now().UTC()
 		diff := expires.Sub(now)
 		hours := int(diff.Minutes() / 60)
 		return fmt.Sprintf("%d hours", hours)
 	}
-	return fmt.Sprintf("%d days", certs.DaysLeft(*expires))
+	return fmt.Sprintf("%d days", pkgdomain.DaysLeft(*expires))
 }
 
 func split(s, sep string) []string {

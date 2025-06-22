@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lionpuro/neverexpire/certs"
 	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/model"
@@ -73,10 +72,10 @@ func (m *Monitor) poll() error {
 				wg.Done()
 				cancel()
 			}()
-			cert, err := certs.FetchCert(ctx, d.DomainName)
+			cert, err := domain.FetchCert(ctx, d.DomainName)
 			if err != nil {
 				cert = &model.CertificateInfo{
-					Status:    certs.StatusOffline,
+					Status:    domain.StatusOffline,
 					IssuedBy:  "n/a",
 					CheckedAt: time.Now().UTC(),
 					Error:     err,

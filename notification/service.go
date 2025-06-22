@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lionpuro/neverexpire/certs"
+	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/model"
 )
 
@@ -46,7 +46,7 @@ func (s *Service) createReminder(ctx context.Context, record model.DomainWithSet
 	if exp == nil {
 		return nil
 	}
-	days := certs.DaysLeft(*exp)
+	days := domain.DaysLeft(*exp)
 	body := fmt.Sprintf("SSL certificate for %s is expiring in %d days!", record.Domain.DomainName, days)
 	diff := time.Duration(record.Settings.RemindBefore) * time.Second
 	input := model.NotificationInput{

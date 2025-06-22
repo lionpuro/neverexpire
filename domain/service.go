@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lionpuro/neverexpire/certs"
 	"github.com/lionpuro/neverexpire/model"
 	"golang.org/x/sync/errgroup"
 )
@@ -40,7 +39,7 @@ func (s *Service) Notifiable(ctx context.Context) ([]model.DomainWithSettings, e
 func (s *Service) Create(user model.User, name string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	info, err := certs.FetchCert(ctx, name)
+	info, err := FetchCert(ctx, name)
 	if err != nil {
 		return err
 	}
@@ -60,7 +59,7 @@ func (s *Service) CreateMultiple(user model.User, names []string) error {
 		eg.Go(func() error {
 			fetchCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
-			info, err := certs.FetchCert(fetchCtx, name)
+			info, err := FetchCert(fetchCtx, name)
 			if err != nil {
 				if strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "Temporary failure in name resolution") {
 					return fmt.Errorf("can't connect to %s", name)
