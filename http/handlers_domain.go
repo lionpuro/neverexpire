@@ -71,7 +71,7 @@ func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
 			h.ErrorPage(w, "Error deleting domain", http.StatusInternalServerError)
 			return
 		}
-		h.htmxError(w, fmt.Errorf("Error deleting domain"))
+		h.htmxError(w, fmt.Errorf("error deleting domain"))
 		return
 	}
 	if isHXrequest(r) {
@@ -87,7 +87,7 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 	input := strings.TrimSpace(r.FormValue("domains"))
 	ds := strings.Split(input, ",")
 	if len(input) < 3 {
-		h.htmxError(w, fmt.Errorf("Please enter at least one valid domain"))
+		h.htmxError(w, fmt.Errorf("please enter at least one valid domain"))
 		return
 	}
 	var names []string
@@ -102,7 +102,7 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if len(errs) > 0 {
-		err := fmt.Errorf("Invalid domain name")
+		err := fmt.Errorf("invalid domain name")
 		if isHXrequest(r) {
 			h.htmxError(w, err)
 			return
@@ -114,7 +114,7 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.DomainService.CreateMultiple(u, names); err != nil {
-		e := fmt.Errorf("Error adding domain")
+		e := fmt.Errorf("error adding domain")
 		switch {
 		case
 			strings.Contains(err.Error(), "already tracking"),
