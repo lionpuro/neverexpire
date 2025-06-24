@@ -24,23 +24,23 @@ func NewRepository(dbpool *pgxpool.Pool) *Repository {
 func (r *Repository) ByID(ctx context.Context, userID string, id int) (model.Domain, error) {
 	row := r.DB.QueryRow(ctx, `
 	SELECT
-		id,
-		user_id,
-		domain_name,
-		dns_names,
-		ip_address,
-		issued_by,
-		status,
-		expires_at,
-		checked_at,
-		latency,
-		signature
-	FROM domains
-	WHERE id = $1 AND user_id = $2`, id, userID)
+		d.id,
+		d.domain_name,
+		d.dns_names,
+		d.ip_address,
+		d.issued_by,
+		d.status,
+		d.expires_at,
+		d.checked_at,
+		d.latency,
+		d.signature
+	FROM domains d
+	INNER JOIN user_domains ud
+		ON d.id = ud.domain_id
+	WHERE d.id = $1 AND ud.user_id = $2`, id, userID)
 	var result model.Domain
 	err := row.Scan(
 		&result.ID,
-		&result.UserID,
 		&result.DomainName,
 		&result.Certificate.DNSNames,
 		&result.Certificate.IP,
@@ -62,7 +62,6 @@ func (r *Repository) All(ctx context.Context) ([]model.Domain, error) {
 	q := `
 	SELECT
 		id,
-		user_id,
 		domain_name,
 		dns_names,
 		ip_address,
@@ -87,7 +86,6 @@ func (r *Repository) All(ctx context.Context) ([]model.Domain, error) {
 		var d model.Domain
 		err := rows.Scan(
 			&d.ID,
-			&d.UserID,
 			&d.DomainName,
 			&d.Certificate.DNSNames,
 			&d.Certificate.IP,
@@ -107,11 +105,10 @@ func (r *Repository) All(ctx context.Context) ([]model.Domain, error) {
 	return domains, nil
 }
 
-func (r *Repository) Notifiable(ctx context.Context) ([]model.DomainWithSettings, error) {
+func (r *Repository) Notifiable(ctx context.Context) ([]model.DomainWithUser, error) {
 	q := `
 	SELECT
 		d.id,
-		d.user_id,
 		d.domain_name,
 		d.dns_names,
 		d.ip_address,
@@ -121,10 +118,17 @@ func (r *Repository) Notifiable(ctx context.Context) ([]model.DomainWithSettings
 		d.checked_at,
 		d.latency,
 		d.signature,
+		u.id as user_id,
+		u.email as user_email,
 		s.webhook_url,
 		s.remind_before
 	FROM domains d
-	INNER JOIN settings s ON d.user_id = s.user_id
+	INNER JOIN user_domains ud
+		ON d.id = ud.domain_id
+	INNER JOIN users u
+		ON ud.user_id = u.id
+	INNER JOIN settings s
+		ON u.id = s.user_id
 	WHERE (d.expires_at - (s.remind_before * interval '1 second')) <= (now() at time zone 'utc')
 	AND NOT EXISTS(
 		SELECT 1 FROM notifications n
@@ -140,12 +144,11 @@ func (r *Repository) Notifiable(ctx context.Context) ([]model.DomainWithSettings
 	}
 	defer rows.Close()
 
-	var domains []model.DomainWithSettings
+	var domains []model.DomainWithUser
 	for rows.Next() {
-		var record model.DomainWithSettings
+		var record model.DomainWithUser
 		err := rows.Scan(
 			&record.Domain.ID,
-			&record.Domain.UserID,
 			&record.Domain.DomainName,
 			&record.Domain.Certificate.DNSNames,
 			&record.Domain.Certificate.IP,
@@ -155,6 +158,8 @@ func (r *Repository) Notifiable(ctx context.Context) ([]model.DomainWithSettings
 			&record.Domain.Certificate.CheckedAt,
 			&record.Domain.Certificate.Latency,
 			&record.Domain.Certificate.Signature,
+			&record.User.ID,
+			&record.User.Email,
 			&record.Settings.WebhookURL,
 			&record.Settings.RemindBefore,
 		)
@@ -170,18 +175,20 @@ func (r *Repository) Notifiable(ctx context.Context) ([]model.DomainWithSettings
 func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Domain, error) {
 	q := `
 	SELECT
-		id,
-		user_id,
-		domain_name,
-		dns_names,
-		ip_address,
-		issued_by,
-		status,
-		expires_at,
-		checked_at,
-		latency,
-		signature
-	FROM domains WHERE user_id = $1
+		d.id,
+		d.domain_name,
+		d.dns_names,
+		d.ip_address,
+		d.issued_by,
+		d.status,
+		d.expires_at,
+		d.checked_at,
+		d.latency,
+		d.signature
+	FROM domains d
+	INNER JOIN user_domains ud
+		ON d.id = ud.domain_id
+	WHERE ud.user_id = $1
 	ORDER BY
 		array_position(array['offline', 'invalid', 'expiring', 'healthy'], status),
 		expires_at,
@@ -197,7 +204,6 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Doma
 		var d model.Domain
 		err := rows.Scan(
 			&d.ID,
-			&d.UserID,
 			&d.DomainName,
 			&d.Certificate.DNSNames,
 			&d.Certificate.IP,
@@ -217,12 +223,22 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Doma
 	return domains, nil
 }
 
-func (r *Repository) Create(d model.Domain) error {
+func (r *Repository) Create(uid string, d model.Domain) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
-	_, err := r.DB.Exec(ctx, `
+	tx, err := r.DB.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			logging.DefaultLogger().Error("failed to rollback tx", "error", err.Error())
+		}
+	}()
+
+	var id int
+	err = tx.QueryRow(ctx, `
 	INSERT INTO domains (
-		user_id,
 		domain_name,
 		dns_names,
 		ip_address,
@@ -233,8 +249,18 @@ func (r *Repository) Create(d model.Domain) error {
 		latency,
 		signature
 	)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-		d.UserID,
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	ON CONFLICT (domain_name) DO UPDATE SET
+		dns_names  = EXCLUDED.dns_names,
+		ip_address = EXCLUDED.ip_address,
+		issued_by  = EXCLUDED.issued_by,
+		status     = EXCLUDED.status,
+		expires_at = EXCLUDED.expires_at,
+		checked_at = EXCLUDED.checked_at,
+		latency    = EXCLUDED.latency,
+		signature  = EXCLUDED.signature
+	RETURNING id
+	`,
 		d.DomainName,
 		d.Certificate.DNSNames,
 		d.Certificate.IP,
@@ -244,11 +270,25 @@ func (r *Repository) Create(d model.Domain) error {
 		d.Certificate.CheckedAt,
 		d.Certificate.Latency,
 		d.Certificate.Signature,
+	).Scan(&id)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx,
+		`INSERT INTO user_domains (domain_id, user_id) VALUES ($1, $2)`,
+		id, uid,
 	)
+	if err != nil {
+		return err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
 	return err
 }
 
-func (r *Repository) CreateMultiple(domains []model.Domain) error {
+func (r *Repository) CreateMultiple(uid string, domains []model.Domain) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
 	tx, err := r.DB.Begin(ctx)
@@ -262,9 +302,9 @@ func (r *Repository) CreateMultiple(domains []model.Domain) error {
 	}()
 
 	for _, d := range domains {
-		_, err := tx.Exec(ctx, `
+		var id int
+		err := tx.QueryRow(ctx, `
 		INSERT INTO domains (
-			user_id,
 			domain_name,
 			dns_names,
 			ip_address,
@@ -275,8 +315,18 @@ func (r *Repository) CreateMultiple(domains []model.Domain) error {
 			latency,
 			signature
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-			d.UserID,
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		ON CONFLICT (domain_name) DO UPDATE SET
+			dns_names  = EXCLUDED.dns_names,
+			ip_address = EXCLUDED.ip_address,
+			issued_by  = EXCLUDED.issued_by,
+			status     = EXCLUDED.status,
+			expires_at = EXCLUDED.expires_at,
+			checked_at = EXCLUDED.checked_at,
+			latency    = EXCLUDED.latency,
+			signature  = EXCLUDED.signature
+		RETURNING id
+		`,
 			d.DomainName,
 			d.Certificate.DNSNames,
 			d.Certificate.IP,
@@ -286,9 +336,17 @@ func (r *Repository) CreateMultiple(domains []model.Domain) error {
 			d.Certificate.CheckedAt,
 			d.Certificate.Latency,
 			d.Certificate.Signature,
-		)
-		str := `duplicate key value violates unique constraint "uq_domains_user_id_domain_name"`
+		).Scan(&id)
 		if err != nil {
+			return err
+		}
+
+		_, err = tx.Exec(ctx,
+			`INSERT INTO user_domains (domain_id, user_id) VALUES ($1, $2)`,
+			id, uid,
+		)
+		if err != nil {
+			str := `duplicate key value violates unique constraint "uq_user_domains_user_id_domain_id"`
 			if strings.Contains(err.Error(), str) {
 				return fmt.Errorf("already tracking domain %s", d.DomainName)
 			}
@@ -316,10 +374,9 @@ func (r *Repository) Update(d model.Domain) (model.Domain, error) {
 		latency = $9,
 		signature = $10,
 		updated_at = (now() at time zone 'utc')
-	WHERE id = $1 AND user_id = $2
+	WHERE id = $1
 	RETURNING
 		id,
-		user_id,
 		domain_name,
 		dns_names,
 		ip_address,
@@ -331,7 +388,6 @@ func (r *Repository) Update(d model.Domain) (model.Domain, error) {
 		signature
 	`,
 		d.ID,
-		d.UserID,
 		d.Certificate.DNSNames,
 		d.Certificate.IP,
 		d.Certificate.IssuedBy,
@@ -344,7 +400,6 @@ func (r *Repository) Update(d model.Domain) (model.Domain, error) {
 	var result model.Domain
 	err := row.Scan(
 		&result.ID,
-		&result.UserID,
 		&result.DomainName,
 		&result.Certificate.DNSNames,
 		&result.Certificate.IP,
@@ -362,11 +417,33 @@ func (r *Repository) Update(d model.Domain) (model.Domain, error) {
 	return result, nil
 }
 
-func (r *Repository) Delete(userID string, id int) error {
+func (r *Repository) Delete(uid string, id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
-	_, err := r.DB.Exec(ctx, `DELETE FROM domains WHERE id = $1 AND user_id = $2`, id, userID)
+	tx, err := r.DB.Begin(ctx)
 	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+			logging.DefaultLogger().Error("failed to rollback tx", "error", err.Error())
+		}
+	}()
+	_, err = tx.Exec(ctx, `DELETE FROM user_domains WHERE domain_id = $1 AND user_id = $2`, id, uid)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(ctx, `
+		DELETE FROM domains
+		WHERE id = $1
+		AND NOT EXISTS (
+			SELECT 1 FROM user_domains ud
+			WHERE ud.domain_id = $1
+		)`, id)
+	if err != nil {
+		return err
+	}
+	if err := tx.Commit(ctx); err != nil {
 		return err
 	}
 	return nil

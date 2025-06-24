@@ -4,7 +4,6 @@ import "time"
 
 type Domain struct {
 	ID          int    `db:"id"`
-	UserID      string `db:"user_id"`
 	DomainName  string `db:"domain_name"`
 	Certificate CertificateInfo
 }
@@ -21,7 +20,8 @@ type CertificateInfo struct {
 	Error     error      `db:"-"`
 }
 
-type DomainWithSettings struct {
+type DomainWithUser struct {
 	Domain   Domain
+	User     User
 	Settings Settings
 }

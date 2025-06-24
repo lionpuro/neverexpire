@@ -30,7 +30,7 @@ func (s *Service) All(ctx context.Context) ([]model.Domain, error) {
 	return s.repo.All(ctx)
 }
 
-func (s *Service) Notifiable(ctx context.Context) ([]model.DomainWithSettings, error) {
+func (s *Service) Notifiable(ctx context.Context) ([]model.DomainWithUser, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 	return s.repo.Notifiable(ctx)
@@ -44,11 +44,10 @@ func (s *Service) Create(user model.User, name string) error {
 		return err
 	}
 	domain := model.Domain{
-		UserID:      user.ID,
 		DomainName:  name,
 		Certificate: *info,
 	}
-	return s.repo.Create(domain)
+	return s.repo.Create(user.ID, domain)
 }
 
 func (s *Service) CreateMultiple(user model.User, names []string) error {
@@ -67,7 +66,6 @@ func (s *Service) CreateMultiple(user model.User, names []string) error {
 				return fmt.Errorf("fetch cert: %v", err)
 			}
 			domain := model.Domain{
-				UserID:      user.ID,
 				DomainName:  name,
 				Certificate: *info,
 			}
@@ -87,7 +85,7 @@ func (s *Service) CreateMultiple(user model.User, names []string) error {
 	for d := range domainch {
 		domains = append(domains, d)
 	}
-	return s.repo.CreateMultiple(domains)
+	return s.repo.CreateMultiple(user.ID, domains)
 }
 
 func (s *Service) Update(d model.Domain) (model.Domain, error) {

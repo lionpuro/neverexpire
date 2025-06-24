@@ -29,7 +29,7 @@ func (s *Service) AllDue(ctx context.Context) ([]model.Notification, error) {
 	return s.repo.AllDue(ctx)
 }
 
-func (s *Service) CreateReminders(ctx context.Context, domains []model.DomainWithSettings) error {
+func (s *Service) CreateReminders(ctx context.Context, domains []model.DomainWithUser) error {
 	for _, d := range domains {
 		now := time.Now().UTC()
 		if !d.Domain.Certificate.Expires.Before(now) {
@@ -41,7 +41,7 @@ func (s *Service) CreateReminders(ctx context.Context, domains []model.DomainWit
 	return nil
 }
 
-func (s *Service) createReminder(ctx context.Context, record model.DomainWithSettings) error {
+func (s *Service) createReminder(ctx context.Context, record model.DomainWithUser) error {
 	exp := record.Domain.Certificate.Expires
 	if exp == nil {
 		return nil
@@ -50,7 +50,7 @@ func (s *Service) createReminder(ctx context.Context, record model.DomainWithSet
 	body := fmt.Sprintf("SSL certificate for %s is expiring in %d days!", record.Domain.DomainName, days)
 	diff := time.Duration(record.Settings.RemindBefore) * time.Second
 	input := model.NotificationInput{
-		UserID:       record.Domain.UserID,
+		UserID:       record.User.ID,
 		DomainID:     record.Domain.ID,
 		Type:         model.NotificationTypeExpiration,
 		Body:         body,
