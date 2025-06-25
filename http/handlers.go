@@ -5,7 +5,6 @@ import (
 
 	"github.com/lionpuro/neverexpire/http/views"
 	"github.com/lionpuro/neverexpire/model"
-	"github.com/lionpuro/neverexpire/user"
 )
 
 func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +15,7 @@ func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var usr *model.User
-	if u, ok := user.FromContext(r.Context()); ok {
+	if u, ok := userFromContext(r.Context()); ok {
 		usr = &u
 	}
 	if err := views.Home(w, usr, nil); err != nil {

@@ -8,11 +8,10 @@ import (
 	"github.com/lionpuro/neverexpire/http/views"
 	"github.com/lionpuro/neverexpire/model"
 	"github.com/lionpuro/neverexpire/notification"
-	"github.com/lionpuro/neverexpire/user"
 )
 
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	settings, err := h.UserService.Settings(r.Context(), u.ID)
 	if err != nil {
 		h.log.Error("failed to render template", "error", err.Error())
@@ -37,7 +36,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	if err := h.UserService.Delete(u.ID); err != nil {
 		h.htmxError(w, fmt.Errorf("error deleting account"))
 		return
@@ -56,7 +55,7 @@ func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateReminders(w http.ResponseWriter, r *http.Request) {
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	seconds, err := strconv.Atoi(r.FormValue("remind_before"))
 	if err != nil {
 		h.htmxError(w, fmt.Errorf("bad request"))
@@ -74,7 +73,7 @@ func (h *Handler) UpdateReminders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	url, err := parseWebhookURL(r.FormValue("webhook_url"))
 	if err != nil {
 		h.htmxError(w, fmt.Errorf("invalid URL"))
@@ -95,7 +94,7 @@ func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteWebhook(w http.ResponseWriter, r *http.Request) {
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	var s string
 	if _, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{WebhookURL: &s}); err != nil {
 		h.log.Error("failed to save settings", "error", err.Error())

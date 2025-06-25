@@ -8,7 +8,6 @@ import (
 
 	"github.com/lionpuro/neverexpire/db"
 	"github.com/lionpuro/neverexpire/http/views"
-	"github.com/lionpuro/neverexpire/user"
 )
 
 func (h *Handler) DomainPage(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +18,7 @@ func (h *Handler) DomainPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	domain, err := h.DomainService.ByID(r.Context(), id, u.ID)
 	if err != nil {
 		errCode := http.StatusNotFound
@@ -38,7 +37,7 @@ func (h *Handler) DomainPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DomainsPage(w http.ResponseWriter, r *http.Request) {
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	domains, err := h.DomainService.AllByUser(r.Context(), u.ID)
 	if err != nil {
 		h.log.Error("failed to get domains", "error", err.Error())
@@ -51,7 +50,7 @@ func (h *Handler) DomainsPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) NewDomainPage(w http.ResponseWriter, r *http.Request) {
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	if err := views.NewDomain(w, &u, "", nil); err != nil {
 		h.log.Error("failed to render template", "error", err.Error())
 	}
@@ -64,7 +63,7 @@ func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
 		h.ErrorPage(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	if err := h.DomainService.Delete(u.ID, id); err != nil {
 		h.log.Error("failed to delete domain", "error", err.Error())
 		if isHXrequest(r) {
@@ -83,7 +82,7 @@ func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
-	u, _ := user.FromContext(r.Context())
+	u, _ := userFromContext(r.Context())
 	input := strings.TrimSpace(r.FormValue("domains"))
 	ds := strings.Split(input, ",")
 	if len(input) < 3 {
