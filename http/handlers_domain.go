@@ -113,7 +113,7 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.DomainService.CreateMultiple(u, names); err != nil {
+	if err := h.DomainService.Create(u, names); err != nil {
 		e := fmt.Errorf("error adding domain")
 		switch {
 		case

@@ -223,72 +223,7 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Doma
 	return domains, nil
 }
 
-func (r *Repository) Create(uid string, d model.Domain) error {
-	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
-	defer cancel()
-	tx, err := r.DB.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
-			logging.DefaultLogger().Error("failed to rollback tx", "error", err.Error())
-		}
-	}()
-
-	var id int
-	err = tx.QueryRow(ctx, `
-	INSERT INTO domains (
-		domain_name,
-		dns_names,
-		ip_address,
-		issued_by,
-		status,
-		expires_at,
-		checked_at,
-		latency,
-		signature
-	)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-	ON CONFLICT (domain_name) DO UPDATE SET
-		dns_names  = EXCLUDED.dns_names,
-		ip_address = EXCLUDED.ip_address,
-		issued_by  = EXCLUDED.issued_by,
-		status     = EXCLUDED.status,
-		expires_at = EXCLUDED.expires_at,
-		checked_at = EXCLUDED.checked_at,
-		latency    = EXCLUDED.latency,
-		signature  = EXCLUDED.signature
-	RETURNING id
-	`,
-		d.DomainName,
-		d.Certificate.DNSNames,
-		d.Certificate.IP,
-		d.Certificate.IssuedBy,
-		d.Certificate.Status,
-		d.Certificate.Expires,
-		d.Certificate.CheckedAt,
-		d.Certificate.Latency,
-		d.Certificate.Signature,
-	).Scan(&id)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx,
-		`INSERT INTO user_domains (domain_id, user_id) VALUES ($1, $2)`,
-		id, uid,
-	)
-	if err != nil {
-		return err
-	}
-	if err := tx.Commit(ctx); err != nil {
-		return err
-	}
-	return err
-}
-
-func (r *Repository) CreateMultiple(uid string, domains []model.Domain) error {
+func (r *Repository) Create(uid string, domains []model.Domain) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
 	tx, err := r.DB.Begin(ctx)
@@ -359,64 +294,6 @@ func (r *Repository) CreateMultiple(uid string, domains []model.Domain) error {
 	return nil
 }
 
-func (r *Repository) Update(d model.Domain) (model.Domain, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
-	defer cancel()
-	row := r.DB.QueryRow(ctx, `
-	UPDATE domains
-	SET
-		dns_names = $3,
-		ip_address = $4,
-		issued_by = $5,
-		status = $6,
-		expires_at = $7,
-		checked_at = $8,
-		latency = $9,
-		signature = $10,
-		updated_at = (now() at time zone 'utc')
-	WHERE id = $1
-	RETURNING
-		id,
-		domain_name,
-		dns_names,
-		ip_address,
-		issued_by,
-		status,
-		expires_at,
-		checked_at,
-		latency,
-		signature
-	`,
-		d.ID,
-		d.Certificate.DNSNames,
-		d.Certificate.IP,
-		d.Certificate.IssuedBy,
-		d.Certificate.Status,
-		d.Certificate.Expires,
-		d.Certificate.CheckedAt,
-		d.Certificate.Latency,
-		d.Certificate.Signature,
-	)
-	var result model.Domain
-	err := row.Scan(
-		&result.ID,
-		&result.DomainName,
-		&result.Certificate.DNSNames,
-		&result.Certificate.IP,
-		&result.Certificate.IssuedBy,
-		&result.Certificate.Status,
-		&result.Certificate.Expires,
-		&result.Certificate.CheckedAt,
-		&result.Certificate.Latency,
-		&result.Certificate.Signature,
-	)
-	if err != nil {
-		return model.Domain{}, err
-	}
-
-	return result, nil
-}
-
 func (r *Repository) Delete(uid string, id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
@@ -449,7 +326,7 @@ func (r *Repository) Delete(uid string, id int) error {
 	return nil
 }
 
-func (r *Repository) UpdateMultiple(ctx context.Context, domains []model.Domain) error {
+func (r *Repository) Update(ctx context.Context, domains []model.Domain) error {
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
 		return err

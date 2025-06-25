@@ -101,5 +101,5 @@ func (m *Monitor) updateData(domainch chan model.Domain) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	return m.domains.UpdateMultiple(ctx, domains)
+	return m.domains.Update(ctx, domains)
 }

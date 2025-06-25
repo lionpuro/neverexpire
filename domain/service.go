@@ -36,21 +36,7 @@ func (s *Service) Notifiable(ctx context.Context) ([]model.DomainWithUser, error
 	return s.repo.Notifiable(ctx)
 }
 
-func (s *Service) Create(user model.User, name string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-	info, err := FetchCert(ctx, name)
-	if err != nil {
-		return err
-	}
-	domain := model.Domain{
-		DomainName:  name,
-		Certificate: *info,
-	}
-	return s.repo.Create(user.ID, domain)
-}
-
-func (s *Service) CreateMultiple(user model.User, names []string) error {
+func (s *Service) Create(user model.User, names []string) error {
 	domainch := make(chan model.Domain, len(names))
 	domains := make([]model.Domain, 0)
 	eg, ctx := errgroup.WithContext(context.Background())
@@ -85,15 +71,11 @@ func (s *Service) CreateMultiple(user model.User, names []string) error {
 	for d := range domainch {
 		domains = append(domains, d)
 	}
-	return s.repo.CreateMultiple(user.ID, domains)
+	return s.repo.Create(user.ID, domains)
 }
 
-func (s *Service) Update(d model.Domain) (model.Domain, error) {
-	return s.repo.Update(d)
-}
-
-func (s *Service) UpdateMultiple(ctx context.Context, domains []model.Domain) error {
-	return s.repo.UpdateMultiple(ctx, domains)
+func (s *Service) Update(ctx context.Context, domains []model.Domain) error {
+	return s.repo.Update(ctx, domains)
 }
 
 func (s *Service) Delete(userID string, id int) error {
