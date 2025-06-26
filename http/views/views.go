@@ -32,8 +32,8 @@ func Home(w http.ResponseWriter, user *model.User, err error) error {
 	return home.render(w, map[string]any{"Error": err, "User": user})
 }
 
-func Error(w http.ResponseWriter, code int, msg string) error {
-	return errorPage.render(w, map[string]any{"User": nil, "Code": code, "Message": msg})
+func Error(w http.ResponseWriter, user *model.User, code int, msg string) error {
+	return errorPage.render(w, map[string]any{"User": user, "Code": code, "Message": msg})
 }
 
 func Domains(w http.ResponseWriter, user *model.User, dmains []model.Domain, err error) error {

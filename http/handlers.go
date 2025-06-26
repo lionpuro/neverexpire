@@ -8,15 +8,15 @@ import (
 )
 
 func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		if err := views.Error(w, http.StatusNotFound, "Page not found"); err != nil {
-			h.log.Error("failed to render template", "error", err.Error())
-		}
-		return
-	}
 	var usr *model.User
 	if u, ok := userFromContext(r.Context()); ok {
 		usr = &u
+	}
+	if r.URL.Path != "/" {
+		if err := views.Error(w, usr, http.StatusNotFound, "Page not found"); err != nil {
+			h.log.Error("failed to render template", "error", err.Error())
+		}
+		return
 	}
 	if err := views.Home(w, usr, nil); err != nil {
 		h.log.Error("failed to render template", "error", err.Error())
@@ -34,8 +34,12 @@ func (h *Handler) htmxError(w http.ResponseWriter, err error) {
 	}
 }
 
-func (h *Handler) ErrorPage(w http.ResponseWriter, msg string, code int) {
-	if err := views.Error(w, code, msg); err != nil {
+func (h *Handler) ErrorPage(w http.ResponseWriter, r *http.Request, msg string, code int) {
+	var usr *model.User
+	if u, ok := userFromContext(r.Context()); ok {
+		usr = &u
+	}
+	if err := views.Error(w, usr, code, msg); err != nil {
 		h.log.Error("failed to render template", "error", err.Error())
 	}
 }
