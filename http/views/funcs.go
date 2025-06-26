@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	pkgdomain "github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/logging"
 )
 
@@ -41,11 +41,11 @@ func datef(t time.Time, layout string) string {
 
 func statusClass(status string) string {
 	switch status {
-	case pkgdomain.StatusOffline:
+	case domain.StatusOffline:
 		return "text-base-900 bg-[#cacaca]"
-	case pkgdomain.StatusInvalid:
+	case domain.StatusInvalid:
 		return "text-danger-dark bg-danger-light"
-	case pkgdomain.StatusExpiring:
+	case domain.StatusExpiring:
 		return "text-warning-dark bg-warning-light"
 	default:
 		return "text-healthy-dark bg-healthy-light"
@@ -54,18 +54,18 @@ func statusClass(status string) string {
 
 func statusText(status string, expires *time.Time) string {
 	if expires == nil {
-		if status == pkgdomain.StatusInvalid {
-			return pkgdomain.StatusInvalid
+		if status == domain.StatusInvalid {
+			return domain.StatusInvalid
 		}
-		return pkgdomain.StatusOffline
+		return domain.StatusOffline
 	}
 	switch status {
-	case pkgdomain.StatusOffline:
+	case domain.StatusOffline:
 		return status
-	case pkgdomain.StatusInvalid:
+	case domain.StatusInvalid:
 		return status
 	}
-	days := pkgdomain.DaysLeft(*expires)
+	days := domain.DaysLeft(*expires)
 	if days == 0 {
 		now := time.Now().UTC()
 		diff := expires.Sub(now)

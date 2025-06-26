@@ -23,32 +23,32 @@ type LayoutData struct {
 }
 
 var (
-	home      = parse("layouts/main.html", "home.html")
-	errorPage = parse("layouts/main.html", "error.html")
-	domains   = parse("layouts/main.html", "domains/index.html")
-	domain    = parse("layouts/main.html", "domains/details.html")
-	newDomain = parse("layouts/main.html", "domains/new.html")
-	settings  = parse("layouts/main.html", "settings.html")
-	login     = parse("layouts/main.html", "login.html")
-	partials  = parsePartials()
+	homeTmpl      = parse("layouts/main.html", "home.html")
+	errorPageTmpl = parse("layouts/main.html", "error.html")
+	domainsTmpl   = parse("layouts/main.html", "domains/index.html")
+	domainTmpl    = parse("layouts/main.html", "domains/details.html")
+	newDomainTmpl = parse("layouts/main.html", "domains/new.html")
+	settingsTmpl  = parse("layouts/main.html", "settings.html")
+	loginTmpl     = parse("layouts/main.html", "login.html")
+	partials      = parsePartials()
 )
 
 func Home(w http.ResponseWriter, ld LayoutData) error {
-	return home.render(w, map[string]any{"LayoutData": ld})
+	return homeTmpl.render(w, map[string]any{"LayoutData": ld})
 }
 
 func Error(w http.ResponseWriter, ld LayoutData, code int, msg string) error {
 	data := map[string]any{"LayoutData": ld, "Code": code, "Message": msg}
-	return errorPage.render(w, data)
+	return errorPageTmpl.render(w, data)
 }
 
-func Domains(w http.ResponseWriter, ld LayoutData, dmains []model.Domain) error {
-	data := map[string]any{"LayoutData": ld, "Domains": dmains}
-	return domains.render(w, data)
+func Domains(w http.ResponseWriter, ld LayoutData, domains []model.Domain) error {
+	data := map[string]any{"LayoutData": ld, "Domains": domains}
+	return domainsTmpl.render(w, data)
 }
 
 func Domain(w http.ResponseWriter, ld LayoutData, d model.Domain) error {
-	return domain.render(w, map[string]any{"LayoutData": ld, "Domain": d})
+	return domainTmpl.render(w, map[string]any{"LayoutData": ld, "Domain": d})
 }
 
 func NewDomain(w http.ResponseWriter, ld LayoutData, inputValue string) error {
@@ -56,7 +56,7 @@ func NewDomain(w http.ResponseWriter, ld LayoutData, inputValue string) error {
 	if inputValue == "" {
 		data["InputValue"] = nil
 	}
-	return newDomain.render(w, data)
+	return newDomainTmpl.render(w, data)
 }
 
 func Settings(w http.ResponseWriter, ld LayoutData, sett model.Settings) error {
@@ -76,11 +76,11 @@ func Settings(w http.ResponseWriter, ld LayoutData, sett model.Settings) error {
 		"ReminderOptions": opts,
 		"Settings":        sett,
 	}
-	return settings.render(w, data)
+	return settingsTmpl.render(w, data)
 }
 
 func Login(w http.ResponseWriter) error {
-	return login.render(w, nil)
+	return loginTmpl.render(w, nil)
 }
 
 func ErrorBanner(w http.ResponseWriter, err error) error {
