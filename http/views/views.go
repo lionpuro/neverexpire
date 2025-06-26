@@ -17,6 +17,11 @@ type viewTemplate struct {
 	template *template.Template
 }
 
+type LayoutData struct {
+	User  *model.User
+	Error error
+}
+
 var (
 	home      = parse("layouts/main.html", "home.html")
 	errorPage = parse("layouts/main.html", "error.html")
@@ -28,31 +33,33 @@ var (
 	partials  = parsePartials()
 )
 
-func Home(w http.ResponseWriter, user *model.User, err error) error {
-	return home.render(w, map[string]any{"Error": err, "User": user})
+func Home(w http.ResponseWriter, ld LayoutData) error {
+	return home.render(w, map[string]any{"LayoutData": ld})
 }
 
-func Error(w http.ResponseWriter, user *model.User, code int, msg string) error {
-	return errorPage.render(w, map[string]any{"User": user, "Code": code, "Message": msg})
+func Error(w http.ResponseWriter, ld LayoutData, code int, msg string) error {
+	data := map[string]any{"LayoutData": ld, "Code": code, "Message": msg}
+	return errorPage.render(w, data)
 }
 
-func Domains(w http.ResponseWriter, user *model.User, dmains []model.Domain, err error) error {
-	return domains.render(w, map[string]any{"User": user, "Domains": dmains, "Error": err})
+func Domains(w http.ResponseWriter, ld LayoutData, dmains []model.Domain) error {
+	data := map[string]any{"LayoutData": ld, "Domains": dmains}
+	return domains.render(w, data)
 }
 
-func Domain(w http.ResponseWriter, user *model.User, d model.Domain, err error) error {
-	return domain.render(w, map[string]any{"User": user, "Domain": d, "Error": err})
+func Domain(w http.ResponseWriter, ld LayoutData, d model.Domain) error {
+	return domain.render(w, map[string]any{"LayoutData": ld, "Domain": d})
 }
 
-func NewDomain(w http.ResponseWriter, user *model.User, inputValue string, err error) error {
-	data := map[string]any{"User": user, "InputValue": inputValue, "Error": err}
+func NewDomain(w http.ResponseWriter, ld LayoutData, inputValue string) error {
+	data := map[string]any{"LayoutData": ld, "InputValue": inputValue}
 	if inputValue == "" {
 		data["InputValue"] = nil
 	}
 	return newDomain.render(w, data)
 }
 
-func Settings(w http.ResponseWriter, user *model.User, sett model.Settings) error {
+func Settings(w http.ResponseWriter, ld LayoutData, sett model.Settings) error {
 	type reminder struct {
 		Value   int
 		Display string
@@ -65,7 +72,7 @@ func Settings(w http.ResponseWriter, user *model.User, sett model.Settings) erro
 		{Value: 14 * day, Display: "2 weeks before"},
 	}
 	data := map[string]any{
-		"User":            user,
+		"LayoutData":      ld,
 		"ReminderOptions": opts,
 		"Settings":        sett,
 	}

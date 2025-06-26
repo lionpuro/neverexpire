@@ -13,12 +13,13 @@ func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {
 		usr = &u
 	}
 	if r.URL.Path != "/" {
-		if err := views.Error(w, usr, http.StatusNotFound, "Page not found"); err != nil {
+		err := views.Error(w, views.LayoutData{User: usr}, http.StatusNotFound, "Page not found")
+		if err != nil {
 			h.log.Error("failed to render template", "error", err.Error())
 		}
 		return
 	}
-	if err := views.Home(w, usr, nil); err != nil {
+	if err := views.Home(w, views.LayoutData{User: usr}); err != nil {
 		h.log.Error("failed to render template", "error", err.Error())
 	}
 }
@@ -39,7 +40,7 @@ func (h *Handler) ErrorPage(w http.ResponseWriter, r *http.Request, msg string, 
 	if u, ok := userFromContext(r.Context()); ok {
 		usr = &u
 	}
-	if err := views.Error(w, usr, code, msg); err != nil {
+	if err := views.Error(w, views.LayoutData{User: usr}, code, msg); err != nil {
 		h.log.Error("failed to render template", "error", err.Error())
 	}
 }

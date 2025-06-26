@@ -7,7 +7,7 @@
 					{{ template "logo" }}
 				</a>
 				<div class="ml-auto flex items-center gap-4">
-					{{ if .User }}
+					{{ if .LayoutData.User }}
 						<a href="/domains" class="font-medium text-base-600 py-3">
 							Domains
 						</a>
@@ -16,7 +16,7 @@
 								class="z-[999] py-3 flex gap-1 text-base-600 font-medium"
 								hx-on:click="htmx.toggleClass(htmx.find('#dropdown-content'), 'hidden'); htmx.toggleClass(htmx.find('#dropdown-backdrop'), 'hidden');"
 							>
-								{{ $username := index (split .User.Email "@") 0 }}
+								{{ $username := index (split .LayoutData.User.Email "@") 0 }}
 								{{ $username }}
 								{{ template "icon-chevron-down" }}
 							</button>
@@ -56,8 +56,8 @@
 			</nav>
 		</header>
 		<div id="banner-container">
-			{{ if .Error }}
-				{{ template "error-banner" .Error }}
+			{{ if .LayoutData.Error }}
+				{{ template "error-banner" withAttributes "Error" .LayoutData.Error }}
 			{{ end }}
 		</div>
 		<div

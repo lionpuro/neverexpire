@@ -30,7 +30,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 		}
 		settings = sett
 	}
-	if err := views.Settings(w, &u, settings); err != nil {
+	if err := views.Settings(w, views.LayoutData{User: &u}, settings); err != nil {
 		h.log.Error("failed to render template", "error", err.Error())
 	}
 }
