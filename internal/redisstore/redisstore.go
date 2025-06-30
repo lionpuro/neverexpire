@@ -60,9 +60,10 @@ func (s *RedisStore) New(r *http.Request, name string) (*sessions.Session, error
 	session.ID = c.Value
 
 	err = s.load(r.Context(), session)
-	if err == nil {
+	switch err {
+	case nil:
 		session.IsNew = false
-	} else if err == redis.Nil {
+	case redis.Nil:
 		err = nil // no data stored
 	}
 	return session, err
