@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/sessions"
-	"github.com/lionpuro/neverexpire/internal/redisstore"
+	"github.com/lionpuro/neverexpire/auth/redisstore"
 	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"

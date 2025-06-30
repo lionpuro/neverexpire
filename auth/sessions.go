@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
-	"github.com/lionpuro/neverexpire/internal/redisstore"
+	"github.com/lionpuro/neverexpire/auth/redisstore"
 	"github.com/lionpuro/neverexpire/model"
 	"github.com/redis/go-redis/v9"
 )
