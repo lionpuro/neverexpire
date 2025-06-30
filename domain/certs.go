@@ -84,12 +84,3 @@ func errorStatus(err error) model.CertificateStatus {
 	}
 	return model.CertificateStatusUnknown
 }
-
-func DaysLeft(expires time.Time) int {
-	now := time.Now().UTC()
-	if expires.Before(now) {
-		return 0
-	}
-	diff := expires.Sub(now)
-	return int(diff.Hours() / 24)
-}

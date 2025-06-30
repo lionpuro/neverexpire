@@ -26,6 +26,18 @@ type DomainWithUser struct {
 	Settings Settings
 }
 
+func (c CertificateInfo) DaysLeft() int {
+	if c.Expires == nil {
+		return 0
+	}
+	now := time.Now().UTC()
+	if c.Expires.Before(now) {
+		return 0
+	}
+	diff := c.Expires.Sub(now)
+	return int(diff.Hours() / 24)
+}
+
 type CertificateStatus int
 
 const (

@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/model"
 )
@@ -68,7 +67,7 @@ func statusText(cert model.CertificateInfo) string {
 	if cert.Expires == nil {
 		return "-"
 	}
-	days := domain.DaysLeft(*cert.Expires)
+	days := cert.DaysLeft()
 	if days == 0 {
 		now := time.Now().UTC()
 		diff := cert.Expires.Sub(now)
