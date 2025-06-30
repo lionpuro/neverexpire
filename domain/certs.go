@@ -27,18 +27,10 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 		start := time.Now().UTC()
 		conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", domain), &tls.Config{})
 		if err != nil {
-			if strings.Contains(err.Error(), "tls: failed to verify") {
+			status := errorStatus(err)
+			if status != "" {
 				result <- model.CertificateInfo{
-					Status:    StatusInvalid,
-					IssuedBy:  "n/a",
-					CheckedAt: start,
-					Error:     err,
-				}
-				return
-			}
-			if strings.Contains(err.Error(), "no such host") || strings.Contains(err.Error(), "Temporary failure in name resolution") {
-				result <- model.CertificateInfo{
-					Status:    StatusOffline,
+					Status:    status,
 					IssuedBy:  "n/a",
 					CheckedAt: start,
 					Error:     err,
@@ -81,6 +73,19 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 func fingerprint(cert *x509.Certificate) string {
 	fingerprint := sha1.Sum(cert.Raw)
 	return fmt.Sprintf("%x", fingerprint)
+}
+
+func errorStatus(err error) string {
+	switch {
+	case strings.Contains(err.Error(), "tls: failed to verify"):
+		return StatusInvalid
+	case
+		strings.Contains(err.Error(), "connection refused"),
+		strings.Contains(err.Error(), "no such host"),
+		strings.Contains(err.Error(), "Temporary failure in name resolution"):
+		return StatusOffline
+	}
+	return ""
 }
 
 func StatusString(expires time.Time) string {
