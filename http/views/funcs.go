@@ -8,6 +8,7 @@ import (
 
 	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/logging"
+	"github.com/lionpuro/neverexpire/model"
 )
 
 func funcMap() template.FuncMap {
@@ -39,36 +40,38 @@ func datef(t time.Time, layout string) string {
 	return t.Format(layout)
 }
 
-func statusClass(status string) string {
-	switch status {
-	case domain.StatusOffline:
+func statusClass(cert model.CertificateInfo) string {
+	switch cert.Status {
+	case model.CertificateStatusOffline, model.CertificateStatusUnknown:
 		return "text-base-900 bg-[#cacaca]"
-	case domain.StatusInvalid:
+	case model.CertificateStatusInvalid:
 		return "text-danger-dark bg-danger-light"
-	case domain.StatusExpiring:
-		return "text-warning-dark bg-warning-light"
-	default:
-		return "text-healthy-dark bg-healthy-light"
 	}
+	if cert.Expires == nil {
+		return ""
+	}
+	if cert.Expires.Before(time.Now().UTC().AddDate(0, 0, 14)) {
+		return "text-warning-dark bg-warning-light"
+	}
+	return "text-healthy-dark bg-healthy-light"
 }
 
-func statusText(status string, expires *time.Time) string {
-	if expires == nil {
-		if status == domain.StatusInvalid {
-			return domain.StatusInvalid
-		}
-		return domain.StatusOffline
+func statusText(cert model.CertificateInfo) string {
+	switch cert.Status {
+	case model.CertificateStatusUnknown:
+		return "-"
+	case
+		model.CertificateStatusOffline,
+		model.CertificateStatusInvalid:
+		return cert.Status.String()
 	}
-	switch status {
-	case domain.StatusOffline:
-		return status
-	case domain.StatusInvalid:
-		return status
+	if cert.Expires == nil {
+		return "-"
 	}
-	days := domain.DaysLeft(*expires)
+	days := domain.DaysLeft(*cert.Expires)
 	if days == 0 {
 		now := time.Now().UTC()
-		diff := expires.Sub(now)
+		diff := cert.Expires.Sub(now)
 		hours := int(diff.Minutes() / 60)
 		return fmt.Sprintf("%d hours", hours)
 	}

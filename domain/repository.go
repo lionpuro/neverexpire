@@ -59,22 +59,30 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (model.Dom
 }
 
 func (r *Repository) All(ctx context.Context) ([]model.Domain, error) {
-	q := `
-	SELECT
-		id,
-		domain_name,
-		dns_names,
-		ip_address,
-		issued_by,
-		status,
-		expires_at,
-		checked_at,
-		latency,
-		signature
-	FROM domains
-	ORDER BY
-		array_position(array['offline', 'invalid', 'expiring', 'healthy'], status),
-		expires_at`
+	order := fmt.Sprintf(
+		"array[%d, %d, %d]",
+		model.CertificateStatusUnknown,
+		model.CertificateStatusOffline,
+		model.CertificateStatusInvalid,
+	)
+	q := fmt.Sprintf(`
+		SELECT
+			id,
+			domain_name,
+			dns_names,
+			ip_address,
+			issued_by,
+			status,
+			expires_at,
+			checked_at,
+			latency,
+			signature
+		FROM domains
+		ORDER BY
+			array_position(%s, status),
+			expires_at`,
+		order,
+	)
 	rows, err := r.DB.Query(ctx, q)
 	if err != nil {
 		return nil, err
@@ -173,26 +181,34 @@ func (r *Repository) Notifiable(ctx context.Context) ([]model.DomainWithUser, er
 }
 
 func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Domain, error) {
-	q := `
-	SELECT
-		d.id,
-		d.domain_name,
-		d.dns_names,
-		d.ip_address,
-		d.issued_by,
-		d.status,
-		d.expires_at,
-		d.checked_at,
-		d.latency,
-		d.signature
-	FROM domains d
-	INNER JOIN user_domains ud
-		ON d.id = ud.domain_id
-	WHERE ud.user_id = $1
-	ORDER BY
-		array_position(array['offline', 'invalid', 'expiring', 'healthy'], status),
-		expires_at,
-		domain_name`
+	order := fmt.Sprintf(
+		"array[%d, %d, %d]",
+		model.CertificateStatusUnknown,
+		model.CertificateStatusOffline,
+		model.CertificateStatusInvalid,
+	)
+	q := fmt.Sprintf(`
+		SELECT
+			d.id,
+			d.domain_name,
+			d.dns_names,
+			d.ip_address,
+			d.issued_by,
+			d.status,
+			d.expires_at,
+			d.checked_at,
+			d.latency,
+			d.signature
+		FROM domains d
+		INNER JOIN user_domains ud
+			ON d.id = ud.domain_id
+		WHERE ud.user_id = $1
+		ORDER BY
+			array_position(%s, status),
+			expires_at,
+			domain_name`,
+		order,
+	)
 	rows, err := r.DB.Query(ctx, q, userID)
 	if err != nil {
 		return nil, err

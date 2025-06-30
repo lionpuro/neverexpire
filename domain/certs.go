@@ -13,13 +13,6 @@ import (
 	"github.com/lionpuro/neverexpire/model"
 )
 
-const (
-	StatusHealthy  = "healthy"
-	StatusExpiring = "expiring"
-	StatusInvalid  = "invalid"
-	StatusOffline  = "offline"
-)
-
 func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, error) {
 	errch := make(chan error, 1)
 	result := make(chan model.CertificateInfo, 1)
@@ -28,7 +21,7 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 		conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", domain), &tls.Config{})
 		if err != nil {
 			status := errorStatus(err)
-			if status != "" {
+			if status != model.CertificateStatusUnknown {
 				result <- model.CertificateInfo{
 					Status:    status,
 					IssuedBy:  "n/a",
@@ -48,13 +41,17 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 
 		state := conn.ConnectionState()
 		cert := state.PeerCertificates[0]
+		status := model.CertificateStatusInvalid
+		if cert.NotAfter.After(time.Now().UTC()) {
+			status = model.CertificateStatusHealthy
+		}
 		result <- model.CertificateInfo{
 			DNSNames:  strings.Join(cert.DNSNames, ", "),
 			IP:        conn.RemoteAddr().String(),
 			Expires:   &cert.NotAfter,
 			IssuedBy:  cert.Issuer.Organization[0],
 			CheckedAt: start,
-			Status:    StatusString(cert.NotAfter),
+			Status:    status,
 			Latency:   int(time.Since(start).Milliseconds()),
 			Signature: fingerprint(cert),
 		}
@@ -75,28 +72,17 @@ func fingerprint(cert *x509.Certificate) string {
 	return fmt.Sprintf("%x", fingerprint)
 }
 
-func errorStatus(err error) string {
+func errorStatus(err error) model.CertificateStatus {
 	switch {
 	case strings.Contains(err.Error(), "tls: failed to verify"):
-		return StatusInvalid
+		return model.CertificateStatusInvalid
 	case
 		strings.Contains(err.Error(), "connection refused"),
 		strings.Contains(err.Error(), "no such host"),
 		strings.Contains(err.Error(), "Temporary failure in name resolution"):
-		return StatusOffline
+		return model.CertificateStatusOffline
 	}
-	return ""
-}
-
-func StatusString(expires time.Time) string {
-	switch {
-	case expires.Before(time.Now().UTC()):
-		return StatusInvalid
-	case expires.Before(time.Now().UTC().AddDate(0, 0, 14)):
-		return StatusExpiring
-	default:
-		return StatusHealthy
-	}
+	return model.CertificateStatusUnknown
 }
 
 func DaysLeft(expires time.Time) int {

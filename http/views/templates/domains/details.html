@@ -30,9 +30,9 @@
 			<li class="contents">
 				<span class="font-semibold text-base-800">Status</span>
 				<span
-					class="{{ statusClass .Domain.Certificate.Status | cn "w-fit rounded-full flex justify-center items-center px-3 py-0.5 text-sm font-medium" }}"
+					class="{{ statusClass .Domain.Certificate | cn "w-fit rounded-full flex justify-center items-center px-3 py-0.5 text-sm font-medium" }}"
 				>
-					{{ statusText .Domain.Certificate.Status .Domain.Certificate.Expires }}
+					{{ statusText .Domain.Certificate }}
 				</span>
 			</li>
 			{{ template "li" withAttributes

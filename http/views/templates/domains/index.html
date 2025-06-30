@@ -41,9 +41,9 @@
 							Status
 						</span>
 						<span
-							class="{{ statusClass $domain.Certificate.Status | cn "max-sm:row-start-2 w-22 sm:w-20 rounded-full flex justify-center items-center px-2 py-0.5" }}"
+							class="{{ statusClass $domain.Certificate | cn "max-sm:row-start-2 w-22 sm:w-20 rounded-full flex justify-center items-center px-2 py-0.5" }}"
 						>
-							{{ statusText $domain.Certificate.Status $domain.Certificate.Expires }}
+							{{ statusText $domain.Certificate }}
 						</span>
 					</div>
 					<div
