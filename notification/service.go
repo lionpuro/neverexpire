@@ -48,6 +48,9 @@ func (s *Service) createReminder(ctx context.Context, record model.DomainWithUse
 	}
 	days := domain.DaysLeft(*exp)
 	body := fmt.Sprintf("SSL certificate for %s is expiring in %d days!", record.Domain.DomainName, days)
+	if days == 0 {
+		body = fmt.Sprintf("SSL certificate for %s is expiring today!", record.Domain.DomainName)
+	}
 	diff := time.Duration(record.Settings.RemindBefore) * time.Second
 	input := model.NotificationInput{
 		UserID:       record.User.ID,
