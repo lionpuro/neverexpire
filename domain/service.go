@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -49,7 +50,15 @@ func (s *Service) Create(user model.User, names []string) error {
 				if strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "Temporary failure in name resolution") {
 					return fmt.Errorf("can't connect to %s", name)
 				}
-				return fmt.Errorf("fetch cert: %v", err)
+				if !errors.Is(err, context.DeadlineExceeded) {
+					return fmt.Errorf("fetch cert: %v", err)
+				}
+				info = &model.CertificateInfo{
+					Status:    model.CertificateStatusOffline,
+					IssuedBy:  "n/a",
+					CheckedAt: time.Now().UTC(),
+					Error:     err,
+				}
 			}
 			domain := model.Domain{
 				DomainName:  name,
