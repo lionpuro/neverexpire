@@ -23,13 +23,13 @@ type LayoutData struct {
 }
 
 var (
-	homeTmpl      = parse("layouts/main.html", "index.html")
-	errorPageTmpl = parse("layouts/main.html", "error.html")
-	domainsTmpl   = parse("layouts/main.html", "domains/index.html")
-	domainTmpl    = parse("layouts/main.html", "domains/details.html")
-	newDomainTmpl = parse("layouts/main.html", "domains/new.html")
-	settingsTmpl  = parse("layouts/main.html", "settings.html")
-	loginTmpl     = parse("layouts/main.html", "login.html")
+	homeTmpl      = parse("layouts/main.html", "pages/index.html")
+	errorPageTmpl = parse("layouts/main.html", "pages/error.html")
+	domainsTmpl   = parse("layouts/main.html", "pages/domains/index.html")
+	domainTmpl    = parse("layouts/main.html", "pages/domains/details.html")
+	newDomainTmpl = parse("layouts/main.html", "pages/domains/new.html")
+	settingsTmpl  = parse("layouts/main.html", "pages/settings.html")
+	loginTmpl     = parse("layouts/main.html", "pages/login.html")
 	partials      = parsePartials()
 )
 
