@@ -1,9 +1,9 @@
-{{ template "layout" . }}
-{{ define "content" }}
+{{template "layout" .}}
+{{define "content"}}
 	<div class="flex flex-col pb-16 my-auto">
 		<div class="flex flex-col justify-center items-center gap-2">
-			<h1 class="text-6xl font-bold text-base-900">{{ .Code }}</h1>
-			<p class="font-medium text-base-700">{{ .Message }}</p>
+			<h1 class="text-6xl font-bold text-base-900">{{.Code}}</h1>
+			<p class="font-medium text-base-700">{{.Message}}</p>
 			<a
 				href="/"
 				class="mt-2 bg-primary-500 text-base-white px-4 py-2 rounded-md font-medium"
@@ -12,4 +12,4 @@
 			</a>
 		</div>
 	</div>
-{{ end }}
+{{end}}

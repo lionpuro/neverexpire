@@ -1,28 +1,28 @@
-{{ template "layout" . }}
-{{ define "content" }}
+{{template "layout" .}}
+{{define "content"}}
 	<div class="flex flex-col max-w-3xl w-full mx-auto gap-6">
 		<a
 			href="/domains"
 			hx-boost="true"
 			class="flex items-center gap-1 font-semibold text-primary-600 w-fit"
 		>
-			{{ template "icon-arrow-left" withAttributes "size" "20" }}
+			{{template "icon-arrow-left" withAttributes "size" "20"}}
 			Domains
 		</a>
 		<div class="flex flex-col gap-1">
 			<h1 class="flex gap-3 items-center font-semibold text-xl text-base-800">
-				{{ .Domain.DomainName }}
+				{{.Domain.DomainName}}
 				<a
-					href="https://{{ .Domain.DomainName }}"
+					href="https://{{.Domain.DomainName}}"
 					target="_blank"
 					rel="noopener noreferrer"
 					class="text-base-400 hover:text-base-500"
 				>
-					{{ template "icon-link-external" }}
+					{{template "icon-link-external"}}
 				</a>
 			</h1>
 			<span class="text-base-500 font-medium max-sm:text-sm">
-				{{ .Domain.Certificate.IP }}
+				{{.Domain.Certificate.IP}}
 			</span>
 		</div>
 		<ul
@@ -31,44 +31,44 @@
 			<li class="contents">
 				<span class="font-semibold text-base-800">Status</span>
 				<span
-					class="{{ statusClass .Domain.Certificate | cn "w-fit rounded-full flex justify-center items-center px-3 py-0.5 text-sm font-medium" }}"
+					class="{{statusClass .Domain.Certificate | cn "w-fit rounded-full flex justify-center items-center px-3 py-0.5 text-sm font-medium"}}"
 				>
-					{{ statusText .Domain.Certificate }}
+					{{statusText .Domain.Certificate}}
 				</span>
 			</li>
-			{{ template "li" withAttributes
+			{{template "li" withAttributes
 				"key" "Issuer"
 				"val" .Domain.Certificate.IssuedBy
 			}}
 			<li class="contents">
 				<span class="font-semibold text-base-800"> Expires </span>
 				<span class="font-medium text-base-600">
-					{{ $datetime := "n/a" }}
-					{{ if .Domain.Certificate.Expires }}
-						{{ $datetime = datef .Domain.Certificate.Expires "2006-01-02T15:04:05.000Z" }}
-					{{ end }}
-					{{ if eq $datetime "n/a" }}
-						{{ $datetime }}
-					{{ else }}
-						<local-time datetime="{{ $datetime }}">
-							{{ datef .Domain.Certificate.Expires "2006-01-02 15:04:05" }}
+					{{$datetime := "n/a"}}
+					{{if .Domain.Certificate.Expires}}
+						{{$datetime = datef .Domain.Certificate.Expires "2006-01-02T15:04:05.000Z"}}
+					{{end}}
+					{{if eq $datetime "n/a"}}
+						{{$datetime}}
+					{{else}}
+						<local-time datetime="{{$datetime}}">
+							{{datef .Domain.Certificate.Expires "2006-01-02 15:04:05"}}
 						</local-time>
-					{{ end }}
+					{{end}}
 				</span>
 			</li>
-			{{ template "li" withAttributes
+			{{template "li" withAttributes
 				"key" "Latency"
 				"val" (sprintf "%d ms" .Domain.Certificate.Latency)
 			}}
-			{{ template "li" withAttributes
+			{{template "li" withAttributes
 				"key" "DNS"
 				"val" .Domain.Certificate.DNSNames
 			}}
-			{{ $signature := .Domain.Certificate.Signature }}
-			{{ if eq .Domain.Certificate.Signature "" }}
-				{{ $signature = "n/a" }}
-			{{ end }}
-			{{ template "li" withAttributes
+			{{$signature := .Domain.Certificate.Signature}}
+			{{if eq .Domain.Certificate.Signature ""}}
+				{{$signature = "n/a"}}
+			{{end}}
+			{{template "li" withAttributes
 				"key" "Signature"
 				"val" $signature
 				"class" "break-all"
@@ -77,28 +77,28 @@
 				<span class="font-semibold text-base-800"> Last checked </span>
 				<span class="font-medium text-base-600">
 					<local-time
-						datetime="{{ datef .Domain.Certificate.CheckedAt "2006-01-02T15:04:05.000Z" }}"
+						datetime="{{datef .Domain.Certificate.CheckedAt "2006-01-02T15:04:05.000Z"}}"
 					>
-						{{ datef .Domain.Certificate.CheckedAt "2006-01-02 15:04:05" }}
+						{{datef .Domain.Certificate.CheckedAt "2006-01-02 15:04:05"}}
 					</local-time>
 				</span>
 			</li>
 		</ul>
 		<button
-			hx-delete="/domains/{{ .Domain.ID }}"
+			hx-delete="/domains/{{.Domain.ID}}"
 			class="w-fit px-4 py-1.5 rounded-md bg-danger-dark text-base-white font-medium"
 		>
 			Delete
 		</button>
 	</div>
-{{ end }}
-{{ define "li" }}
+{{end}}
+{{define "li"}}
 	<li class="contents">
 		<span class="font-semibold text-base-800">
-			{{ .key }}
+			{{.key}}
 		</span>
-		<span class="font-medium text-base-600 {{ .class }}">
-			{{ .val }}
+		<span class="font-medium text-base-600 {{.class}}">
+			{{.val}}
 		</span>
 	</li>
-{{ end }}
+{{end}}

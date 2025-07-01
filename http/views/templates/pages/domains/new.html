@@ -1,8 +1,8 @@
-{{ template "layout" . }}
-{{ define "title" }}Add domains{{ end }}
-{{ define "content" }}
+{{template "layout" .}}
+{{define "title"}}Add domains{{end}}
+{{define "content"}}
 	<div class="flex flex-col max-w-3xl gap-4 w-full mx-auto">
-		{{ template "h1" withAttributes
+		{{template "h1" withAttributes
 			"Text" "Add domains"
 		}}
 		<form
@@ -16,15 +16,15 @@
 				Enter a single domain or a comma separated list of all the domains you
 				want to track.
 			</span>
-			{{/* prettier-ignore-start */}}
+			{{/*prettier-ignore-start*/}}
 			<textarea
 				id="domains"
 				name="domains"
 				placeholder="example.com, google.com"
 				rows="2"
 				class="border border-base-200 p-3 rounded-md focus:outline-2 outline-blue-500 -outline-offset-2"
-			>{{ if .InputValue }}{{ .InputValue }}{{ end }}</textarea>
-			{{/* prettier-ignore-end */}}
+			>{{if .InputValue}}{{.InputValue}}{{end}}</textarea>
+			{{/*prettier-ignore-end*/}}
 			<button
 				type="submit"
 				class="w-fit text-base-white bg-primary-500 font-medium px-4 py-1.5 rounded-md"
@@ -42,4 +42,4 @@
 			});
 		</script>
 	</div>
-{{ end }}
+{{end}}

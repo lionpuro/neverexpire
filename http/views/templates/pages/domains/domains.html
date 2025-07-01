@@ -1,8 +1,8 @@
-{{ template "layout" . }}
-{{ define "title" }}My domains - NeverExpire{{ end }}
-{{ define "content" }}
+{{template "layout" .}}
+{{define "title"}}My domains - NeverExpire{{end}}
+{{define "content"}}
 	<div class="flex items-center mb-8 gap-4">
-		{{ template "h1" withAttributes
+		{{template "h1" withAttributes
 			"Text" "My domains"
 		}}
 		<a
@@ -13,7 +13,7 @@
 			Add domains
 		</a>
 	</div>
-	{{ if .Domains }}
+	{{if .Domains}}
 		<div
 			class="w-full max-sm:flex flex-col sm:grid sm:grid-cols-[repeat(5,auto)_minmax(min-content,min-content)] sm:bg-base-100 sm:gap-y-px text-sm sm:text-base max-sm:font-medium"
 		>
@@ -29,7 +29,7 @@
 				</div>
 				<div class="text-base-500 font-medium p-1 bg-base-white">Details</div>
 			</div>
-			{{ range $domain := .Domains }}
+			{{range $domain := .Domains}}
 				<div
 					class="max-sm:grid max-sm:grid-cols-2 max-sm:px-2 max-sm:py-4 max-sm:gap-1 border-b border-base-100 sm:contents"
 				>
@@ -42,20 +42,20 @@
 							Status
 						</span>
 						<span
-							class="{{ statusClass $domain.Certificate | cn "max-sm:row-start-2 w-22 sm:w-20 rounded-full flex justify-center items-center px-2 py-0.5" }}"
+							class="{{statusClass $domain.Certificate | cn "max-sm:row-start-2 w-22 sm:w-20 rounded-full flex justify-center items-center px-2 py-0.5"}}"
 						>
-							{{ statusText $domain.Certificate }}
+							{{statusText $domain.Certificate}}
 						</span>
 					</div>
 					<div
 						class="max-sm:col-span-2 max-sm:text-base col-start-2 flex items-center text-base-900 font-semibold sm:font-medium sm:px-1 sm:py-2 bg-base-white"
 					>
-						{{ $domain.DomainName }}
+						{{$domain.DomainName}}
 					</div>
 					<div
 						class="max-sm:row-start-4 md:col-start-3 flex items-center text-sm font-medium text-base-600 text-base-700 px-1 py-2 bg-base-white max-md:hidden"
 					>
-						{{ $domain.Certificate.IssuedBy }}
+						{{$domain.Certificate.IssuedBy}}
 					</div>
 					<div
 						class="max-sm:contents sm:col-start-3 md:col-start-4 flex items-center text-base-700 px-1 py-2 bg-base-white"
@@ -64,16 +64,16 @@
 							Expires
 						</span>
 						<span class="font-medium text-sm max-sm:py-0.5">
-							{{ if $domain.Certificate.Expires }}
+							{{if $domain.Certificate.Expires}}
 								<local-time
-									datetime="{{ datef $domain.Certificate.Expires "2006-01-02T15:04:05.000Z" }}"
+									datetime="{{datef $domain.Certificate.Expires "2006-01-02T15:04:05.000Z"}}"
 									dateonly="true"
 								>
-									{{ datef $domain.Certificate.Expires "2006-01-02" }}
+									{{datef $domain.Certificate.Expires "2006-01-02"}}
 								</local-time>
-							{{ else }}
+							{{else}}
 								n/a
-							{{ end }}
+							{{end}}
 						</span>
 					</div>
 					<div
@@ -84,9 +84,9 @@
 						</span>
 						<span class="text-sm font-medium max-sm:py-0.5">
 							<local-time
-								datetime="{{ datef $domain.Certificate.CheckedAt "2006-01-02T15:04:05.000Z" }}"
+								datetime="{{datef $domain.Certificate.CheckedAt "2006-01-02T15:04:05.000Z"}}"
 							>
-								{{ datef $domain.Certificate.CheckedAt "2006-01-02 15:04:05" }}
+								{{datef $domain.Certificate.CheckedAt "2006-01-02 15:04:05"}}
 							</local-time>
 						</span>
 					</div>
@@ -94,21 +94,21 @@
 						class="max-sm:col-span-2 sm:col-start-5 md:col-start-6 max-sm:mt-2 flex items-center text-base-700 sm:px-1 sm:py-2 bg-base-white"
 					>
 						<a
-							href="/domains/{{ $domain.ID }}"
+							href="/domains/{{$domain.ID}}"
 							hx-boost="true"
 							class="max-sm:px-3 py-1 text-primary-600 font-semibold rounded text-sm max-sm:border border-primary-500 flex justify-center max-sm:w-full"
 						>
 							<span class="max-sm:hidden flex items-center gap-1">
-								{{ template "icon-eye" withAttributes "size" "20" }}
+								{{template "icon-eye" withAttributes "size" "20"}}
 								View
 							</span>
 							<span class="sm:hidden"> View details </span>
 						</a>
 					</div>
 				</div>
-			{{ end }}
+			{{end}}
 		</div>
-	{{ else }}
+	{{else}}
 		<div class="text-base-600">No tracked domains</div>
-	{{ end }}
-{{ end }}
+	{{end}}
+{{end}}

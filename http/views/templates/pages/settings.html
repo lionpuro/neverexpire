@@ -1,14 +1,14 @@
-{{ template "layout" . }}
-{{ define "title" }}Settings - NeverExpire{{ end }}
-{{ define "content" }}
+{{template "layout" .}}
+{{define "title"}}Settings - NeverExpire{{end}}
+{{define "content"}}
 	<div class="flex flex-col max-w-3xl w-full mx-auto gap-8">
-		{{ template "h1" withAttributes "Text" "Settings" }}
+		{{template "h1" withAttributes "Text" "Settings"}}
 		<div class="flex flex-col gap-4">
-			{{ template "h2" withAttributes "Text" "Account" }}
+			{{template "h2" withAttributes "Text" "Account"}}
 			<div class="flex flex-col">
 				<span class="font-semibold text-base-900">Email</span>
 				<div class="flex items-center text-base-600 font-medium">
-					{{ .LayoutData.User.Email }}
+					{{.LayoutData.User.Email}}
 					<button
 						id="delete-btn"
 						class="ml-auto bg-red-600/80 text-base-white font-medium rounded-md px-3 py-1.5"
@@ -45,7 +45,7 @@
 			<script src="/static/scripts/account.js"></script>
 		</div>
 		<div class="flex flex-col gap-4">
-			{{ template "h2" withAttributes "Text" "Notifications" }}
+			{{template "h2" withAttributes "Text" "Notifications"}}
 			<p class="text-base-600 font-medium">
 				Set up a
 				<a
@@ -62,7 +62,7 @@
 				<span class="font-semibold text-base-900 mb-2 tracking-tight">
 					Webhook URL
 				</span>
-				{{ if not .Settings.WebhookURL }}
+				{{if not .Settings.WebhookURL}}
 					<form
 						class="flex gap-2"
 						hx-post="/settings/webhook"
@@ -84,12 +84,12 @@
 							Add
 						</button>
 					</form>
-				{{ else }}
+				{{else}}
 					<div class="flex gap-2">
 						<span
 							class="bg-base-100 rounded-md py-1.5 overflow-auto border-x-12 border-base-100 whitespace-nowrap"
 						>
-							{{ .Settings.WebhookURL }}
+							{{.Settings.WebhookURL}}
 						</span>
 						<button
 							hx-delete="/settings/webhook"
@@ -98,7 +98,7 @@
 							Remove
 						</button>
 					</div>
-				{{ end }}
+				{{end}}
 			</div>
 			<div class="flex flex-col">
 				<span class="font-semibold text-base-900 mb-2 tracking-tight">
@@ -117,17 +117,17 @@
 							name="remind_before"
 							class="grow px-3 py-1.5 text-base-600 font-medium border-r-6 border-transparent"
 						>
-							{{ $selected := .Settings.RemindBefore }}
-							{{ range $opt := .ReminderOptions }}
+							{{$selected := .Settings.RemindBefore}}
+							{{range $opt := .ReminderOptions}}
 								<option
-									value="{{ $opt.Value }}"
-									{{ if eq $opt.Value $selected }}
+									value="{{$opt.Value}}"
+									{{if eq $opt.Value $selected}}
 										selected
-									{{ end }}
+									{{end}}
 								>
-									{{ $opt.Display }}
+									{{$opt.Display}}
 								</option>
-							{{ end }}
+							{{end}}
 						</select>
 					</div>
 					<button
@@ -140,4 +140,4 @@
 			</div>
 		</div>
 	</div>
-{{ end }}
+{{end}}

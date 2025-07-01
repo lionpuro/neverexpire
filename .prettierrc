@@ -1,6 +1,6 @@
 {
 	"useTabs": true,
-	"goTemplateBracketSpacing": true,
+	"goTemplateBracketSpacing": false,
 	"plugins": ["prettier-plugin-go-template"],
 	"overrides": [
 		{

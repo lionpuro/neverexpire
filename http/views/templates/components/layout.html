@@ -1,10 +1,10 @@
-{{ define "layout" }}
+{{define "layout"}}
 	<!doctype html>
 	<html lang="en">
 		<head>
 			<meta charset="UTF-8" />
 			<meta name="viewport" content="width=device-width, initial-scale=1" />
-			<title>{{ block "title" . }}NeverExpire{{ end }}</title>
+			<title>{{block "title" .}}NeverExpire{{end}}</title>
 			<meta name="description" content="" />
 			<link
 				rel="preload"
@@ -20,35 +20,35 @@
 			<script src="/static/scripts/local-time.js" type="module"></script>
 		</head>
 		<body>
-			{{ block "body" . }}
+			{{block "body" .}}
 				<div class="flex flex-col min-h-full">
-					{{ template "header" . }}
+					{{template "header" .}}
 					<div id="banner-container">
-						{{ if .LayoutData.Error }}
-							{{ template "error-banner" withAttributes "Error" .LayoutData.Error }}
-						{{ end }}
+						{{if .LayoutData.Error}}
+							{{template "error-banner" withAttributes "Error" .LayoutData.Error}}
+						{{end}}
 					</div>
 					<div
 						id="content"
 						class="flex flex-col p-6 sm:p-8 grow max-w-screen-xl mx-auto w-full"
 					>
-						{{ block "content" . }}
-						{{ end }}
+						{{block "content" .}}
+						{{end}}
 					</div>
 				</div>
-			{{ end }}
+			{{end}}
 		</body>
 	</html>
-{{ end }}
+{{end}}
 
-{{ define "header" }}
+{{define "header"}}
 	<header class="flex px-4 mb-4">
 		<nav hx-boost="true" class="flex w-full">
 			<a href="/" class="flex items-center py-3">
-				{{ template "logo" }}
+				{{template "logo"}}
 			</a>
 			<div class="ml-auto flex items-center gap-4">
-				{{ if .LayoutData.User }}
+				{{if .LayoutData.User}}
 					<a href="/domains" class="font-medium text-base-600 py-3">
 						Domains
 					</a>
@@ -57,9 +57,9 @@
 							class="z-[999] py-3 flex gap-1 text-base-600 font-medium"
 							hx-on:click="htmx.toggleClass(htmx.find('#dropdown-content'), 'hidden'); htmx.toggleClass(htmx.find('#dropdown-backdrop'), 'hidden');"
 						>
-							{{ $username := index (split .LayoutData.User.Email "@") 0 }}
-							{{ $username }}
-							{{ template "icon-chevron-down" }}
+							{{$username := index (split .LayoutData.User.Email "@") 0}}
+							{{$username}}
+							{{template "icon-chevron-down"}}
 						</button>
 						<ul
 							id="dropdown-content"
@@ -70,7 +70,7 @@
 								class="flex items-center gap-2 font-medium text-base-600 hover:bg-base-100 px-4 py-2 border-b border-base-200"
 								hx-on:click="htmx.toggleClass(htmx.find('#dropdown-content'), 'hidden'); htmx.toggleClass(htmx.find('#dropdown-backdrop'), 'hidden');"
 							>
-								{{ template "icon-cog" withAttributes "size" "20" }}
+								{{template "icon-cog" withAttributes "size" "20"}}
 								Settings
 							</a>
 							<a
@@ -78,7 +78,7 @@
 								hx-boost="false"
 								class="whitespace-nowrap flex items-center gap-2 text-red-600/80 hover:bg-base-100 font-medium px-4 py-2"
 							>
-								{{ template "icon-logout" withAttributes "size" "20" }}
+								{{template "icon-logout" withAttributes "size" "20"}}
 								Sign out
 							</a>
 						</ul>
@@ -88,12 +88,12 @@
 						class="z-[900] absolute top-0 left-0 w-full h-full hidden"
 						hx-on:click="htmx.toggleClass(htmx.find('#dropdown-content'), 'hidden'); htmx.toggleClass(htmx.find('#dropdown-backdrop'), 'hidden');"
 					></div>
-				{{ else }}
+				{{else}}
 					<a href="/login" class="ml-auto text-primary-500 font-medium py-3">
 						Log in
 					</a>
-				{{ end }}
+				{{end}}
 			</div>
 		</nav>
 	</header>
-{{ end }}
+{{end}}

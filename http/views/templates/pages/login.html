@@ -1,13 +1,13 @@
-{{ template "layout" . }}
-{{ define "title" }}Log in - NeverExpire{{ end }}
-{{ define "content" }}
+{{template "layout" .}}
+{{define "title"}}Log in - NeverExpire{{end}}
+{{define "content"}}
 	<div class="mx-auto w-full max-w-xs flex flex-col">
 		<a
 			href="/auth/google/login"
 			class="border-base-200 text-base-900 flex justify-center gap-2 rounded-md border px-3 py-1.5 font-medium"
 		>
-			{{ template "icon-google" }}
+			{{template "icon-google"}}
 			Sign in with Google
 		</a>
 	</div>
-{{ end }}
+{{end}}
