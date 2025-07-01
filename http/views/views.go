@@ -23,7 +23,7 @@ type LayoutData struct {
 }
 
 var (
-	homeTmpl      = parse("layouts/main.html", "home.html")
+	homeTmpl      = parse("layouts/main.html", "index.html")
 	errorPageTmpl = parse("layouts/main.html", "error.html")
 	domainsTmpl   = parse("layouts/main.html", "domains/index.html")
 	domainTmpl    = parse("layouts/main.html", "domains/details.html")
