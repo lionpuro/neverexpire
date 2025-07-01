@@ -9,7 +9,7 @@ func NewServer(port int, h *Handler) *http.Server {
 	r := http.NewServeMux()
 
 	handle := func(p string, hf http.HandlerFunc) {
-		r.HandleFunc(p, h.Authenticate(hf))
+		r.HandleFunc(p, contentType(h.Authenticate(hf)))
 	}
 
 	handle("GET /", h.HomePage)

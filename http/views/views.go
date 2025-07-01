@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"html/template"
-	"net/http"
+	"io"
 	"path/filepath"
 
 	"github.com/lionpuro/neverexpire/model"
@@ -33,25 +33,25 @@ var (
 	partials      = parsePartials()
 )
 
-func Home(w http.ResponseWriter, ld LayoutData) error {
+func Home(w io.Writer, ld LayoutData) error {
 	return homeTmpl.render(w, map[string]any{"LayoutData": ld})
 }
 
-func Error(w http.ResponseWriter, ld LayoutData, code int, msg string) error {
+func Error(w io.Writer, ld LayoutData, code int, msg string) error {
 	data := map[string]any{"LayoutData": ld, "Code": code, "Message": msg}
 	return errorPageTmpl.render(w, data)
 }
 
-func Domains(w http.ResponseWriter, ld LayoutData, domains []model.Domain) error {
+func Domains(w io.Writer, ld LayoutData, domains []model.Domain) error {
 	data := map[string]any{"LayoutData": ld, "Domains": domains}
 	return domainsTmpl.render(w, data)
 }
 
-func Domain(w http.ResponseWriter, ld LayoutData, d model.Domain) error {
+func Domain(w io.Writer, ld LayoutData, d model.Domain) error {
 	return domainTmpl.render(w, map[string]any{"LayoutData": ld, "Domain": d})
 }
 
-func NewDomain(w http.ResponseWriter, ld LayoutData, inputValue string) error {
+func NewDomain(w io.Writer, ld LayoutData, inputValue string) error {
 	data := map[string]any{"LayoutData": ld, "InputValue": inputValue}
 	if inputValue == "" {
 		data["InputValue"] = nil
@@ -59,7 +59,7 @@ func NewDomain(w http.ResponseWriter, ld LayoutData, inputValue string) error {
 	return newDomainTmpl.render(w, data)
 }
 
-func Settings(w http.ResponseWriter, ld LayoutData, sett model.Settings) error {
+func Settings(w io.Writer, ld LayoutData, sett model.Settings) error {
 	type reminder struct {
 		Value   int
 		Display string
@@ -79,15 +79,15 @@ func Settings(w http.ResponseWriter, ld LayoutData, sett model.Settings) error {
 	return settingsTmpl.render(w, data)
 }
 
-func Login(w http.ResponseWriter) error {
+func Login(w io.Writer) error {
 	return loginTmpl.render(w, nil)
 }
 
-func ErrorBanner(w http.ResponseWriter, err error) error {
+func ErrorBanner(w io.Writer, err error) error {
 	return partials.renderPartial(w, "error-banner", map[string]any{"Error": err})
 }
 
-func SuccessBanner(w http.ResponseWriter, msg string) error {
+func SuccessBanner(w io.Writer, msg string) error {
 	return partials.renderPartial(w, "success-banner", map[string]any{"Message": msg})
 }
 
@@ -109,22 +109,20 @@ func parsePartials() *viewTemplate {
 	return &viewTemplate{template: tmpl}
 }
 
-func (t *viewTemplate) renderPartial(w http.ResponseWriter, name string, data any) error {
+func (t *viewTemplate) renderPartial(w io.Writer, name string, data any) error {
 	buf := &bytes.Buffer{}
 	if err := t.template.ExecuteTemplate(buf, name, data); err != nil {
 		return err
 	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func (t *viewTemplate) render(w http.ResponseWriter, data any) error {
+func (t *viewTemplate) render(w io.Writer, data any) error {
 	buf := &bytes.Buffer{}
 	if err := t.template.Execute(buf, data); err != nil {
 		return err
 	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, err := buf.WriteTo(w)
 	return err
 }
