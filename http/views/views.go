@@ -23,13 +23,13 @@ type LayoutData struct {
 }
 
 var (
-	homeTmpl      = parse("layouts/main.html", "pages/index.html")
-	errorPageTmpl = parse("layouts/main.html", "pages/error.html")
-	domainsTmpl   = parse("layouts/main.html", "pages/domains/index.html")
-	domainTmpl    = parse("layouts/main.html", "pages/domains/details.html")
-	newDomainTmpl = parse("layouts/main.html", "pages/domains/new.html")
-	settingsTmpl  = parse("layouts/main.html", "pages/settings.html")
-	loginTmpl     = parse("layouts/main.html", "pages/login.html")
+	homeTmpl      = parse("pages/index.html")
+	errorPageTmpl = parse("pages/error.html")
+	domainsTmpl   = parse("pages/domains/domains.html")
+	domainTmpl    = parse("pages/domains/domain.html")
+	newDomainTmpl = parse("pages/domains/new.html")
+	settingsTmpl  = parse("pages/settings.html")
+	loginTmpl     = parse("pages/login.html")
 	partials      = parsePartials()
 )
 
@@ -93,7 +93,7 @@ func SuccessBanner(w http.ResponseWriter, msg string) error {
 
 func parse(templates ...string) *viewTemplate {
 	funcs := funcMap()
-	patterns := []string{templatePath("base.html"), templatePath("components/*.html")}
+	patterns := []string{templatePath("components/*.html")}
 	for _, t := range templates {
 		patterns = append(patterns, templatePath(t))
 	}
