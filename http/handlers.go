@@ -13,15 +13,10 @@ func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {
 		usr = &u
 	}
 	if r.URL.Path != "/" {
-		err := views.Error(w, views.LayoutData{User: usr}, http.StatusNotFound, "Page not found")
-		if err != nil {
-			h.log.Error("failed to render template", "error", err.Error())
-		}
+		h.render(views.Error(w, views.LayoutData{User: usr}, http.StatusNotFound, "Page not found"))
 		return
 	}
-	if err := views.Home(w, views.LayoutData{User: usr}); err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
-	}
+	h.render(views.Home(w, views.LayoutData{User: usr}))
 }
 
 func isHXrequest(r *http.Request) bool {
@@ -30,9 +25,7 @@ func isHXrequest(r *http.Request) bool {
 
 func (h *Handler) htmxError(w http.ResponseWriter, err error) {
 	w.Header().Set("HX-Retarget", "#banner-container")
-	if err := views.ErrorBanner(w, err); err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
-	}
+	h.render(views.ErrorBanner(w, err))
 }
 
 func (h *Handler) ErrorPage(w http.ResponseWriter, r *http.Request, msg string, code int) {
@@ -40,7 +33,5 @@ func (h *Handler) ErrorPage(w http.ResponseWriter, r *http.Request, msg string, 
 	if u, ok := userFromContext(r.Context()); ok {
 		usr = &u
 	}
-	if err := views.Error(w, views.LayoutData{User: usr}, code, msg); err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
-	}
+	h.render(views.Error(w, views.LayoutData{User: usr}, code, msg))
 }

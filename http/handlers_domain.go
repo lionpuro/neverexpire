@@ -31,9 +31,7 @@ func (h *Handler) DomainPage(w http.ResponseWriter, r *http.Request) {
 		h.ErrorPage(w, r, errMsg, errCode)
 		return
 	}
-	if err := views.Domain(w, views.LayoutData{User: &u}, domain); err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
-	}
+	h.render(views.Domain(w, views.LayoutData{User: &u}, domain))
 }
 
 func (h *Handler) DomainsPage(w http.ResponseWriter, r *http.Request) {
@@ -44,16 +42,12 @@ func (h *Handler) DomainsPage(w http.ResponseWriter, r *http.Request) {
 		h.ErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
-	if err := views.Domains(w, views.LayoutData{User: &u}, domains); err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
-	}
+	h.render(views.Domains(w, views.LayoutData{User: &u}, domains))
 }
 
 func (h *Handler) NewDomainPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
-	if err := views.NewDomain(w, views.LayoutData{User: &u}, ""); err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
-	}
+	h.render(views.NewDomain(w, views.LayoutData{User: &u}, ""))
 }
 
 func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
@@ -106,9 +100,7 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 			h.htmxError(w, err)
 			return
 		}
-		if err := views.NewDomain(w, views.LayoutData{User: &u, Error: err}, ""); err != nil {
-			h.log.Error("failed to render template", "error", err.Error())
-		}
+		h.render(views.NewDomain(w, views.LayoutData{User: &u, Error: err}, ""))
 		return
 	}
 

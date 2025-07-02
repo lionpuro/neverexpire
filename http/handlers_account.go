@@ -14,7 +14,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
 	settings, err := h.UserService.Settings(r.Context(), u.ID)
 	if err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
+		h.log.Error("failed to retrieve settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return
 	}
@@ -30,9 +30,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 		}
 		settings = sett
 	}
-	if err := views.Settings(w, views.LayoutData{User: &u}, settings); err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
-	}
+	h.render(views.Settings(w, views.LayoutData{User: &u}, settings))
 }
 
 func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
@@ -67,9 +65,7 @@ func (h *Handler) UpdateReminders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("HX-Retarget", "#banner-container")
-	if err := views.SuccessBanner(w, "Settings saved"); err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
-	}
+	h.render(views.SuccessBanner(w, "Settings saved"))
 }
 
 func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {

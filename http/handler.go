@@ -22,3 +22,9 @@ func NewHandler(logger logging.Logger, us *user.Service, ds *domain.Service, as 
 		log:           logger,
 	}
 }
+
+func (h *Handler) render(err error) {
+	if err != nil {
+		h.log.Error("failed to render template", "error", err.Error())
+	}
+}

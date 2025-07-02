@@ -9,9 +9,7 @@ import (
 )
 
 func (h *Handler) LoginPage(w http.ResponseWriter, r *http.Request) {
-	if err := views.Login(w); err != nil {
-		h.log.Error("failed to render template", "error", err.Error())
-	}
+	h.render(views.Login(w))
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
