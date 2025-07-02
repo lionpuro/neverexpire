@@ -32,6 +32,7 @@ func (h *Handler) Login(a *auth.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		state, err := auth.GenerateRandomState()
 		if err != nil {
+			h.log.Error("failed to generate random state token", "error", err.Error())
 			h.ErrorPage(w, r, "Internal server error", http.StatusInternalServerError)
 			return
 		}
