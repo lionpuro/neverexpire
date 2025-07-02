@@ -299,7 +299,7 @@ func (r *Repository) Create(uid string, domains []model.Domain) error {
 		if err != nil {
 			str := `duplicate key value violates unique constraint "uq_user_domains_user_id_domain_id"`
 			if strings.Contains(err.Error(), str) {
-				return fmt.Errorf("already tracking domain %s", d.DomainName)
+				return fmt.Errorf("already tracking %s", d.DomainName)
 			}
 			return err
 		}
