@@ -11,6 +11,7 @@
 			method="POST"
 			hx-boost="true"
 			hx-push-url="false"
+			hx-disabled-elt="#submit"
 		>
 			<span class="text-base-600">
 				Enter a single domain or a comma separated list of all the domains you
@@ -26,8 +27,9 @@
 			>{{if .InputValue}}{{.InputValue}}{{end}}</textarea>
 			{{/*prettier-ignore-end*/}}
 			<button
+				id="submit"
 				type="submit"
-				class="w-fit text-base-white bg-primary-500 font-medium px-4 py-1.5 rounded-md"
+				class="w-fit font-medium px-4 py-1.5 rounded-md bg-primary-500 hover:bg-primary-600/90 text-base-white disabled:bg-base-200 disabled:text-base-400"
 			>
 				Track
 			</button>
