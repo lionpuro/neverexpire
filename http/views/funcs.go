@@ -67,11 +67,10 @@ func statusText(cert model.CertificateInfo) string {
 	if cert.Expires == nil {
 		return "-"
 	}
-	days := cert.DaysLeft()
+	left := cert.TimeLeft()
+	days := int(left.Hours() / 24)
 	if days == 0 {
-		now := time.Now().UTC()
-		diff := cert.Expires.Sub(now)
-		hours := int(diff.Minutes() / 60)
+		hours := int(left.Minutes() / 60)
 		return fmt.Sprintf("%d hours", hours)
 	}
 	return fmt.Sprintf("%d days", days)

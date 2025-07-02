@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Domain struct {
 	ID          int    `db:"id"`
@@ -26,16 +28,13 @@ type DomainWithUser struct {
 	Settings Settings
 }
 
-func (c CertificateInfo) DaysLeft() int {
-	if c.Expires == nil {
-		return 0
-	}
+func (c CertificateInfo) TimeLeft() time.Duration {
+	exp := c.Expires
 	now := time.Now().UTC()
-	if c.Expires.Before(now) {
+	if exp == nil || exp.Before(now) {
 		return 0
 	}
-	diff := c.Expires.Sub(now)
-	return int(diff.Hours() / 24)
+	return exp.Sub(now)
 }
 
 type CertificateStatus int
