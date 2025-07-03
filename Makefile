@@ -2,18 +2,7 @@ include .env
 
 DATABASE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_HOST_PORT}/${POSTGRES_DB}?sslmode=disable
 
-.PHONY: all assets app service run-dev fmt lint test docker-deploy create-migration migrate-up migrate-down migrate-force
-
-all: assets app service
-
-assets:
-	@npm run build
-
-app:
-	@go build -o tmp/app ./cmd/app
-
-service:
-	@go build -o tmp/service ./cmd/service
+.PHONY: run-dev fmt lint test docker-deploy create-migration migrate-up migrate-down migrate-force
 
 run-dev:
 	@docker compose -f compose.dev.yaml up
