@@ -11,6 +11,6 @@ RUN curl -fsSLO "$SUPERCRONIC_URL" \
 	&& mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
 	&& ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
 
-COPY crontab clean_up.sh clean-up-notifications.sql .
+COPY crontab clean_up.sh clean_up.sql .
 
 CMD ["/usr/local/bin/supercronic", "crontab"]
