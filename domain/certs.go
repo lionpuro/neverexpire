@@ -18,7 +18,7 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 	result := make(chan model.CertificateInfo, 1)
 	go func() {
 		start := time.Now().UTC()
-		conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", domain), &tls.Config{})
+		conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", domain), nil)
 		if err != nil {
 			status := errorStatus(err)
 			if status != model.CertificateStatusUnknown {
