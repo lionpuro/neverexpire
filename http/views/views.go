@@ -23,14 +23,14 @@ type LayoutData struct {
 }
 
 var (
-	homeTmpl      = parse("pages/index.html")
-	errorPageTmpl = parse("pages/error.html")
-	domainsTmpl   = parse("pages/domains/domains.html")
-	domainTmpl    = parse("pages/domains/domain.html")
-	newDomainTmpl = parse("pages/domains/new.html")
-	settingsTmpl  = parse("pages/settings.html")
-	loginTmpl     = parse("pages/login.html")
-	partials      = parsePartials()
+	homeTmpl       = parse("pages/index.html")
+	errorPageTmpl  = parse("pages/error.html")
+	domainsTmpl    = parse("pages/domains/domains.html")
+	domainTmpl     = parse("pages/domains/domain.html")
+	newDomainsTmpl = parse("pages/domains/new.html")
+	settingsTmpl   = parse("pages/settings.html")
+	loginTmpl      = parse("pages/login.html")
+	partials       = parsePartials()
 )
 
 func Home(w io.Writer, ld LayoutData) error {
@@ -51,12 +51,12 @@ func Domain(w io.Writer, ld LayoutData, d model.Domain) error {
 	return domainTmpl.render(w, map[string]any{"LayoutData": ld, "Domain": d})
 }
 
-func NewDomain(w io.Writer, ld LayoutData, inputValue string) error {
+func NewDomains(w io.Writer, ld LayoutData, inputValue string) error {
 	data := map[string]any{"LayoutData": ld, "InputValue": inputValue}
 	if inputValue == "" {
 		data["InputValue"] = nil
 	}
-	return newDomainTmpl.render(w, data)
+	return newDomainsTmpl.render(w, data)
 }
 
 func Settings(w io.Writer, ld LayoutData, sett model.Settings) error {

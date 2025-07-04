@@ -53,7 +53,7 @@ func TestRender(t *testing.T) {
 	// NewDomain
 	t.Run("new domain", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		err := views.NewDomain(&buf, views.LayoutData{User: testUser}, "")
+		err := views.NewDomains(&buf, views.LayoutData{User: testUser}, "")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

@@ -45,9 +45,9 @@ func (h *Handler) DomainsPage(w http.ResponseWriter, r *http.Request) {
 	h.render(views.Domains(w, views.LayoutData{User: &u}, domains))
 }
 
-func (h *Handler) NewDomainPage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) NewDomainsPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
-	h.render(views.NewDomain(w, views.LayoutData{User: &u}, ""))
+	h.render(views.NewDomains(w, views.LayoutData{User: &u}, ""))
 }
 
 func (h *Handler) DeleteDomain(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +100,7 @@ func (h *Handler) CreateDomains(w http.ResponseWriter, r *http.Request) {
 			h.htmxError(w, err)
 			return
 		}
-		h.render(views.NewDomain(w, views.LayoutData{User: &u, Error: err}, ""))
+		h.render(views.NewDomains(w, views.LayoutData{User: &u, Error: err}, ""))
 		return
 	}
 
