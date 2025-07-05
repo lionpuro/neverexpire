@@ -20,4 +20,4 @@ RUN go install github.com/bokwoon95/wgo@latest
 RUN chown -R ${UID}:${GID} /home/developer /go
 USER developer
 
-CMD ["/app/run_dev.sh"]
+CMD ["/app/watch.sh"]

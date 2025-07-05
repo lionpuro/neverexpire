@@ -2,14 +2,7 @@ include .env
 
 DATABASE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_HOST_PORT}/${POSTGRES_DB}?sslmode=disable
 
-.PHONY: run-dev fmt lint test docker-deploy create-migration migrate-up migrate-down migrate-force
-
-run-dev:
-	@docker compose -f compose.dev.yaml up
-
-fmt:
-	@docker compose -f compose.dev.yaml exec app sh -c \
-		"gofmt -l -s -w /app && npx prettier /app --write"
+.PHONY: lint test docker-deploy create-migration migrate-up migrate-down migrate-force
 
 lint:
 	@docker run -t --rm -v ${PWD}:/app -w /app golangci/golangci-lint:v2.1.6 golangci-lint run

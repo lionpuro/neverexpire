@@ -1,6 +1,6 @@
 name: neverexpire-dev
 services:
-  app:
+  workspace:
     build:
       context: .
       dockerfile: Dockerfile.dev
