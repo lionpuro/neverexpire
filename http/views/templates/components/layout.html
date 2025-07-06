@@ -17,6 +17,7 @@
 			<link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
 			<link rel="stylesheet" href="/static/css/global.css" />
 			<script src="/static/scripts/htmx.min.js" defer></script>
+			<script src="/static/scripts/index.js" type="module"></script>
 			<script src="/static/scripts/local-time.js" type="module"></script>
 		</head>
 		<body>
@@ -52,42 +53,39 @@
 					<a href="/domains" class="font-medium text-base-600 py-3">
 						Domains
 					</a>
-					<div class="relative">
-						<button
-							class="z-[999] py-3 flex gap-1 text-base-600 font-medium"
-							hx-on:click="htmx.toggleClass(htmx.find('#dropdown-content'), 'hidden'); htmx.toggleClass(htmx.find('#dropdown-backdrop'), 'hidden');"
+					<details id="account-menu" class="relative">
+						<summary
+							id="menu-toggle"
+							class="list-none select-none cursor-pointer py-3 flex gap-1 text-base-600 font-medium"
 						>
 							{{$username := index (split .LayoutData.User.Email "@") 0}}
 							{{$username}}
 							{{template "icon-chevron-down"}}
-						</button>
+						</summary>
 						<ul
-							id="dropdown-content"
-							class="z-[999] hidden flex flex-col min-w-36 absolute right-0 border border-base-200 bg-base-white rounded-md overflow-hidden select-none"
+							class="flex flex-col min-w-36 absolute z-[999] right-0 bg-base-white border border-base-200 rounded-md overflow-hidden"
 						>
-							<a
-								href="/settings"
-								class="flex items-center gap-2 font-medium text-base-600 hover:bg-base-100 px-4 py-2 border-b border-base-200"
-								hx-on:click="htmx.toggleClass(htmx.find('#dropdown-content'), 'hidden'); htmx.toggleClass(htmx.find('#dropdown-backdrop'), 'hidden');"
-							>
-								{{template "icon-cog" withAttributes "size" "20"}}
-								Settings
-							</a>
-							<a
-								href="/logout"
-								hx-boost="false"
-								class="whitespace-nowrap flex items-center gap-2 text-red-600/80 hover:bg-base-100 font-medium px-4 py-2"
-							>
-								{{template "icon-logout" withAttributes "size" "20"}}
-								Sign out
-							</a>
+							<li>
+								<a
+									href="/settings"
+									class="flex items-center gap-2 font-medium text-base-600 hover:bg-base-100 px-4 py-2 border-b border-base-200"
+								>
+									{{template "icon-cog" withAttributes "size" "20"}}
+									Settings
+								</a>
+							</li>
+							<li>
+								<a
+									href="/logout"
+									hx-boost="false"
+									class="whitespace-nowrap flex items-center gap-2 text-red-600/80 hover:bg-base-100 font-medium px-4 py-2"
+								>
+									{{template "icon-logout" withAttributes "size" "20"}}
+									Sign out
+								</a>
+							</li>
 						</ul>
-					</div>
-					<div
-						id="dropdown-backdrop"
-						class="z-[900] absolute top-0 left-0 w-full h-full hidden"
-						hx-on:click="htmx.toggleClass(htmx.find('#dropdown-content'), 'hidden'); htmx.toggleClass(htmx.find('#dropdown-backdrop'), 'hidden');"
-					></div>
+					</details>
 				{{else}}
 					<a href="/login" class="ml-auto text-primary-500 font-medium py-3">
 						Log in

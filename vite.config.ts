@@ -9,6 +9,7 @@ export default defineConfig({
 		rollupOptions: {
 			external: [],
 			input: [
+				resolve(__dirname, "assets/src/index.ts"),
 				resolve(__dirname, "assets/src/local-time.ts"),
 				resolve(__dirname, "assets/src/account.ts"),
 			],
