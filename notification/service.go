@@ -31,7 +31,7 @@ func (s *Service) AllDue(ctx context.Context) ([]model.Notification, error) {
 func (s *Service) CreateReminders(ctx context.Context, domains []model.DomainWithUser) error {
 	for _, d := range domains {
 		now := time.Now().UTC()
-		if !d.Domain.Certificate.Expires.Before(now) {
+		if !d.Domain.Certificate.ExpiresAt.Before(now) {
 			if err := s.createReminder(ctx, d); err != nil {
 				return err
 			}
@@ -41,7 +41,7 @@ func (s *Service) CreateReminders(ctx context.Context, domains []model.DomainWit
 }
 
 func (s *Service) createReminder(ctx context.Context, record model.DomainWithUser) error {
-	exp := record.Domain.Certificate.Expires
+	exp := record.Domain.Certificate.ExpiresAt
 	if exp == nil {
 		return nil
 	}
@@ -57,7 +57,7 @@ func (s *Service) createReminder(ctx context.Context, record model.DomainWithUse
 		record.Domain.DomainName,
 		count,
 		unit,
-		record.Domain.Certificate.Expires.Format(time.DateTime),
+		record.Domain.Certificate.ExpiresAt.Format(time.DateTime),
 	)
 	diff := time.Duration(record.Settings.RemindBefore) * time.Second
 	input := model.NotificationInput{
@@ -65,7 +65,7 @@ func (s *Service) createReminder(ctx context.Context, record model.DomainWithUse
 		DomainID:     record.Domain.ID,
 		Type:         model.NotificationTypeExpiration,
 		Body:         body,
-		Due:          record.Domain.Certificate.Expires.Add(-diff),
+		Due:          record.Domain.Certificate.ExpiresAt.Add(-diff),
 		DeliveredAt:  nil,
 		Attempts:     0,
 		DeletedAfter: *exp,

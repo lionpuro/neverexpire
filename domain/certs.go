@@ -48,7 +48,7 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 		result <- model.CertificateInfo{
 			DNSNames:  strings.Join(cert.DNSNames, ", "),
 			IP:        conn.RemoteAddr().String(),
-			Expires:   &cert.NotAfter,
+			ExpiresAt: &cert.NotAfter,
 			IssuedBy:  cert.Issuer.Organization[0],
 			CheckedAt: start,
 			Status:    status,

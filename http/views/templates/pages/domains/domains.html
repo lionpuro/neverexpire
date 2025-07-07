@@ -64,12 +64,14 @@
 							Expires
 						</span>
 						<span class="font-medium text-sm max-sm:py-0.5">
-							{{if $domain.Certificate.Expires}}
+							{{if $domain.Certificate.ExpiresAt}}
 								<local-time
-									datetime="{{datef $domain.Certificate.Expires "2006-01-02T15:04:05.000Z"}}"
+									datetime="{{datef
+										$domain.Certificate.ExpiresAt "2006-01-02T15:04:05.000Z"
+									}}"
 									dateonly="true"
 								>
-									{{datef $domain.Certificate.Expires "2006-01-02"}}
+									{{datef $domain.Certificate.ExpiresAt "2006-01-02"}}
 								</local-time>
 							{{else}}
 								n/a

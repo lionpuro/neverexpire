@@ -46,10 +46,10 @@ func statusClass(cert model.CertificateInfo) string {
 	case model.CertificateStatusInvalid:
 		return "text-danger-dark bg-danger-light"
 	}
-	if cert.Expires == nil {
+	if cert.ExpiresAt == nil {
 		return ""
 	}
-	if cert.Expires.Before(time.Now().UTC().AddDate(0, 0, 14)) {
+	if cert.ExpiresAt.Before(time.Now().UTC().AddDate(0, 0, 14)) {
 		return "text-warning-dark bg-warning-light"
 	}
 	return "text-healthy-dark bg-healthy-light"
@@ -64,7 +64,7 @@ func statusText(cert model.CertificateInfo) string {
 		model.CertificateStatusInvalid:
 		return cert.Status.String()
 	}
-	if cert.Expires == nil {
+	if cert.ExpiresAt == nil {
 		return "-"
 	}
 	left := cert.TimeLeft()

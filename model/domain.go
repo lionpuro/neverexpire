@@ -14,7 +14,7 @@ type CertificateInfo struct {
 	DNSNames  string            `db:"dns_names"`
 	IP        string            `db:"ip_address"`
 	IssuedBy  string            `db:"issued_by"`
-	Expires   *time.Time        `db:"expires_at"`
+	ExpiresAt *time.Time        `db:"expires_at"`
 	Status    CertificateStatus `db:"status"`
 	CheckedAt time.Time         `db:"checked_at"`
 	Latency   int               `db:"latency"`
@@ -29,7 +29,7 @@ type DomainWithUser struct {
 }
 
 func (c CertificateInfo) TimeLeft() time.Duration {
-	exp := c.Expires
+	exp := c.ExpiresAt
 	now := time.Now().UTC()
 	if exp == nil || exp.Before(now) {
 		return 0
