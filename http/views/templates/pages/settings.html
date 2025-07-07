@@ -6,7 +6,7 @@
 		<div class="flex flex-col gap-4">
 			{{template "h2" withAttributes "Text" "Account"}}
 			<div class="flex flex-col">
-				<span class="font-semibold text-base-900">Email</span>
+				<span class="font-semibold text-base-950">Email</span>
 				<div class="flex items-center text-base-600 font-medium">
 					{{.LayoutData.User.Email}}
 					<button
@@ -22,7 +22,7 @@
 				class="m-auto rounded-md backdrop:bg-[rgba(0,0,0,0.75)]"
 			>
 				<div class="flex flex-col p-6 gap-6">
-					<span class="text-lg font-medium text-base-900 w-full">
+					<span class="text-lg font-medium text-base-950 w-full">
 						Are you sure you want to delete your account?
 					</span>
 					<div class="flex gap-4">
@@ -68,7 +68,7 @@
 				webhook and add its URL here to start receiving notifications.
 			</p>
 			<div class="flex flex-col">
-				<span class="font-semibold text-base-900 mb-2"> Webhook URL </span>
+				<span class="font-semibold text-base-950 mb-2"> Webhook URL </span>
 				{{if not .Settings.WebhookURL}}
 					<form
 						class="flex gap-2"
@@ -108,7 +108,7 @@
 				{{end}}
 			</div>
 			<div class="flex flex-col">
-				<span class="font-semibold text-base-900 mb-2">
+				<span class="font-semibold text-base-950 mb-2">
 					Expiration reminder
 				</span>
 				<form
