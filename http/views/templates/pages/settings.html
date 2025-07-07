@@ -56,6 +56,15 @@
 				>
 					Discord
 				</a>
+				or
+				<a
+					href="https://api.slack.com/messaging/webhooks"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-primary-500"
+				>
+					Slack
+				</a>
 				webhook and add its URL here to start receiving notifications.
 			</p>
 			<div class="flex flex-col">
@@ -113,7 +122,7 @@
 						<select
 							id="remind_before"
 							name="remind_before"
-							class="grow px-3 py-1.5 text-base-600 font-medium border-r-6 border-transparent"
+							class="grow px-3 py-1.5 text-base-600 border-r-6 border-transparent"
 						>
 							{{$selected := .Settings.RemindBefore}}
 							{{range $opt := .ReminderOptions}}

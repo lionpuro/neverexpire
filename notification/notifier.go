@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -58,38 +59,6 @@ func (n *Notifier) send(notif model.Notification) error {
 	return sendNotification(n.log, n.client, notif.Endpoint, notif.Body)
 }
 
-func sendNotification(logger logging.Logger, client *http.Client, url, msg string) error {
-	body := map[string]string{
-		"content": msg,
-	}
-	if avatarURL != "" {
-		body["avatar_url"] = avatarURL
-	}
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-	req, err := http.NewRequest("POST", url, bytes.NewReader(buf))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := res.Body.Close(); err != nil {
-			logger.Error("error closing webhook response body", "error", err.Error())
-		}
-	}()
-	code := res.StatusCode
-	if code < 200 || code > 299 {
-		return fmt.Errorf("response status: %s", res.Status)
-	}
-	return nil
-}
-
 func (n *Notifier) notify(notif model.Notification) error {
 	if err := n.send(notif); err != nil {
 		attempts := notif.Attempts + 1
@@ -136,6 +105,42 @@ func (n *Notifier) processNotifications(ctx context.Context) error {
 		wg.Wait()
 	}()
 
+	return nil
+}
+
+func sendNotification(logger logging.Logger, client *http.Client, url, msg string) error {
+	body := map[string]string{}
+	if strings.Contains(url, "discord") {
+		body["content"] = msg
+		if avatarURL != "" {
+			body["avatar_url"] = avatarURL
+		}
+	}
+	if strings.Contains(url, "slack") {
+		body["text"] = msg
+	}
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewReader(buf))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			logger.Error("error closing webhook response body", "error", err.Error())
+		}
+	}()
+	code := res.StatusCode
+	if code < 200 || code > 299 {
+		return fmt.Errorf("response status: %s", res.Status)
+	}
 	return nil
 }
 
