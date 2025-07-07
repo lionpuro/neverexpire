@@ -19,7 +19,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if settings == (model.Settings{}) {
-		sec := 14 * 24 * 60 * 60
+		sec := notification.Threshold2Weeks
 		sett, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{
 			RemindBefore: &sec,
 		})

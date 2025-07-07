@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/lionpuro/neverexpire/model"
+	"github.com/lionpuro/neverexpire/notification"
 )
 
 //go:embed templates
@@ -64,12 +65,11 @@ func Settings(w io.Writer, ld LayoutData, sett model.Settings) error {
 		Value   int
 		Display string
 	}
-	day := 24 * 60 * 60
 	opts := []reminder{
-		{Value: 1 * day, Display: "1 day before"},
-		{Value: 2 * day, Display: "2 days before"},
-		{Value: 7 * day, Display: "1 week before"},
-		{Value: 14 * day, Display: "2 weeks before"},
+		{Value: notification.ThresholdDay, Display: "1 day before"},
+		{Value: notification.Threshold2Days, Display: "2 days before"},
+		{Value: notification.ThresholdWeek, Display: "1 week before"},
+		{Value: notification.Threshold2Weeks, Display: "2 weeks before"},
 	}
 	data := map[string]any{
 		"LayoutData":      ld,
