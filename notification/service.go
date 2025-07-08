@@ -45,30 +45,35 @@ func (s *Service) createReminder(ctx context.Context, record model.DomainWithUse
 	if exp == nil {
 		return nil
 	}
-	hours := int(record.Domain.Certificate.TimeLeft().Hours())
-	count := hours / 24
-	unit := "days"
-	if hours < 24 {
-		count = hours
-		unit = "hours"
-	}
-	body := fmt.Sprintf(
-		"TLS certificate for %s is expiring in %d %s (at %s UTC)",
-		record.Domain.DomainName,
-		count,
-		unit,
-		record.Domain.Certificate.ExpiresAt.Format(time.DateTime),
-	)
+	msg := formatReminder(record.Domain)
 	diff := time.Duration(record.Settings.RemindBefore) * time.Second
 	input := model.NotificationInput{
 		UserID:       record.User.ID,
 		DomainID:     record.Domain.ID,
 		Type:         model.NotificationTypeExpiration,
-		Body:         body,
+		Body:         msg,
 		Due:          record.Domain.Certificate.ExpiresAt.Add(-diff),
 		DeliveredAt:  nil,
 		Attempts:     0,
 		DeletedAfter: *exp,
 	}
 	return s.repo.Create(ctx, input)
+}
+
+func formatReminder(d model.Domain) string {
+	hours := int(d.Certificate.TimeLeft().Hours())
+	count := hours / 24
+	unit := "days"
+	if hours < 24 {
+		count = hours
+		unit = "hours"
+	}
+	msg := fmt.Sprintf(
+		"TLS certificate for %s is expiring in %d %s (at %s UTC)",
+		d.DomainName,
+		count,
+		unit,
+		d.Certificate.ExpiresAt.Format(time.DateTime),
+	)
+	return msg
 }
