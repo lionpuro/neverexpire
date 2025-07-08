@@ -6,7 +6,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lionpuro/neverexpire/db"
-	"github.com/lionpuro/neverexpire/model"
 )
 
 type Repository struct {
@@ -17,16 +16,16 @@ func NewRepository(dbpool *pgxpool.Pool) *Repository {
 	return &Repository{DB: dbpool}
 }
 
-func (r *Repository) ByID(ctx context.Context, id string) (model.User, error) {
+func (r *Repository) ByID(ctx context.Context, id string) (User, error) {
 	rows, err := r.DB.Query(ctx, `SELECT id, email FROM users WHERE id = $1`, id)
 	if err != nil {
-		return model.User{}, err
+		return User{}, err
 	}
 	defer rows.Close()
 
-	user, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[model.User])
+	user, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[User])
 	if err != nil {
-		return model.User{}, err
+		return User{}, err
 	}
 
 	return user, nil
@@ -49,20 +48,20 @@ func (r *Repository) Delete(id string) error {
 	return err
 }
 
-func (r *Repository) Settings(ctx context.Context, userID string) (model.Settings, error) {
+func (r *Repository) Settings(ctx context.Context, userID string) (Settings, error) {
 	q := `SELECT webhook_url, remind_before FROM settings WHERE user_id = $1`
 	row := r.DB.QueryRow(ctx, q, userID)
-	var vals model.Settings
+	var vals Settings
 	if err := row.Scan(&vals.WebhookURL, &vals.RemindBefore); err != nil {
 		if db.IsErrNoRows(err) {
-			return model.Settings{}, nil
+			return Settings{}, nil
 		}
-		return model.Settings{}, err
+		return Settings{}, err
 	}
 	return vals, nil
 }
 
-func (r *Repository) SaveSettings(ctx context.Context, userID string, settings model.SettingsInput) (model.Settings, error) {
+func (r *Repository) SaveSettings(ctx context.Context, userID string, settings SettingsInput) (Settings, error) {
 	q := `
 	INSERT INTO settings (user_id, webhook_url, remind_before)
 	VALUES (
@@ -74,10 +73,10 @@ func (r *Repository) SaveSettings(ctx context.Context, userID string, settings m
 	SET webhook_url = COALESCE($2, settings.webhook_url),
 		remind_before = COALESCE($3, settings.remind_before)
 	RETURNING webhook_url, remind_before`
-	var s model.Settings
+	var s Settings
 	row := r.DB.QueryRow(ctx, q, userID, settings.WebhookURL, settings.RemindBefore)
 	if err := row.Scan(&s.WebhookURL, &s.RemindBefore); err != nil {
-		return model.Settings{}, err
+		return Settings{}, err
 	}
 	return s, nil
 }

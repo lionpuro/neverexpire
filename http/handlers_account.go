@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/lionpuro/neverexpire/http/views"
-	"github.com/lionpuro/neverexpire/model"
 	"github.com/lionpuro/neverexpire/notification"
+	"github.com/lionpuro/neverexpire/user"
 )
 
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
@@ -18,9 +18,9 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return
 	}
-	if settings == (model.Settings{}) {
+	if settings == (user.Settings{}) {
 		sec := notification.Threshold2Weeks
-		sett, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{
+		sett, err := h.UserService.SaveSettings(u.ID, user.SettingsInput{
 			RemindBefore: &sec,
 		})
 		if err != nil {
@@ -59,7 +59,7 @@ func (h *Handler) UpdateReminders(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("bad request"))
 		return
 	}
-	if _, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{RemindBefore: &seconds}); err != nil {
+	if _, err := h.UserService.SaveSettings(u.ID, user.SettingsInput{RemindBefore: &seconds}); err != nil {
 		h.log.Error("failed to update settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return
@@ -75,7 +75,7 @@ func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("invalid URL"))
 		return
 	}
-	if _, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{WebhookURL: &url}); err != nil {
+	if _, err := h.UserService.SaveSettings(u.ID, user.SettingsInput{WebhookURL: &url}); err != nil {
 		h.log.Error("failed to save settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return
@@ -92,7 +92,7 @@ func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DeleteWebhook(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
 	var s string
-	if _, err := h.UserService.SaveSettings(u.ID, model.SettingsInput{WebhookURL: &s}); err != nil {
+	if _, err := h.UserService.SaveSettings(u.ID, user.SettingsInput{WebhookURL: &s}); err != nil {
 		h.log.Error("failed to save settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return

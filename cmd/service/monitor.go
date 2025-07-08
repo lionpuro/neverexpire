@@ -9,7 +9,6 @@ import (
 
 	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/logging"
-	"github.com/lionpuro/neverexpire/model"
 	"github.com/lionpuro/neverexpire/notification"
 )
 
@@ -60,11 +59,11 @@ func (m *Monitor) poll() error {
 	}
 	workers := make(chan struct{}, 15)
 	wg := sync.WaitGroup{}
-	results := make(chan model.Domain, len(domains))
+	results := make(chan domain.Domain, len(domains))
 
 	for _, dom := range domains {
 		wg.Add(1)
-		go func(d model.Domain) {
+		go func(d domain.Domain) {
 			workers <- struct{}{}
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 			defer func() {
@@ -74,8 +73,8 @@ func (m *Monitor) poll() error {
 			}()
 			cert, err := domain.FetchCert(ctx, d.DomainName)
 			if err != nil {
-				cert = &model.CertificateInfo{
-					Status:    model.CertificateStatusOffline,
+				cert = &domain.CertificateInfo{
+					Status:    domain.CertificateStatusOffline,
 					IssuedBy:  "n/a",
 					CheckedAt: time.Now().UTC(),
 					Error:     err,
@@ -92,8 +91,8 @@ func (m *Monitor) poll() error {
 	return m.updateData(results)
 }
 
-func (m *Monitor) updateData(domainch chan model.Domain) error {
-	domains := make([]model.Domain, len(domainch))
+func (m *Monitor) updateData(domainch chan domain.Domain) error {
+	domains := make([]domain.Domain, len(domainch))
 	i := 0
 	for d := range domainch {
 		domains[i] = d

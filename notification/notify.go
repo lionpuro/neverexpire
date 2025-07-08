@@ -13,7 +13,6 @@ import (
 
 	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/logging"
-	"github.com/lionpuro/neverexpire/model"
 )
 
 const (
@@ -62,14 +61,14 @@ func (n *Notifier) Start(ctx context.Context) {
 	}
 }
 
-func (n *Notifier) send(notif model.Notification) error {
+func (n *Notifier) send(notif Notification) error {
 	return sendNotification(n.log, n.client, notif.Endpoint, notif.Body)
 }
 
-func (n *Notifier) notify(notif model.Notification) error {
+func (n *Notifier) notify(notif Notification) error {
 	if err := n.send(notif); err != nil {
 		attempts := notif.Attempts + 1
-		input := model.NotificationUpdate{
+		input := NotificationUpdate{
 			Attempts: &attempts,
 		}
 		if err := n.notifications.Update(context.Background(), notif.ID, input); err != nil {
@@ -78,7 +77,7 @@ func (n *Notifier) notify(notif model.Notification) error {
 		return fmt.Errorf("failed to send notification: %v", err)
 	}
 	ts := time.Now().UTC()
-	input := model.NotificationUpdate{
+	input := NotificationUpdate{
 		DeliveredAt: &ts,
 	}
 	err := n.notifications.Update(context.Background(), notif.ID, input)
@@ -101,7 +100,7 @@ func (n *Notifier) processNotifications(ctx context.Context) error {
 	var wg sync.WaitGroup
 	for _, notif := range notifs {
 		wg.Add(1)
-		go func(no model.Notification) {
+		go func(no Notification) {
 			defer wg.Done()
 			if err := n.notify(notif); err != nil {
 				n.log.Error("failed to notify user", "error", err.Error())

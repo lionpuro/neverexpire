@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lionpuro/neverexpire/db"
 	"github.com/lionpuro/neverexpire/logging"
-	"github.com/lionpuro/neverexpire/model"
 )
 
 type Repository struct {
@@ -21,7 +20,7 @@ func NewRepository(dbpool *pgxpool.Pool) *Repository {
 	return &Repository{DB: dbpool}
 }
 
-func (r *Repository) ByID(ctx context.Context, userID string, id int) (model.Domain, error) {
+func (r *Repository) ByID(ctx context.Context, userID string, id int) (Domain, error) {
 	row := r.DB.QueryRow(ctx, `
 	SELECT
 		d.id,
@@ -38,7 +37,7 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (model.Dom
 	INNER JOIN user_domains ud
 		ON d.id = ud.domain_id
 	WHERE d.id = $1 AND ud.user_id = $2`, id, userID)
-	var result model.Domain
+	var result Domain
 	err := row.Scan(
 		&result.ID,
 		&result.DomainName,
@@ -52,18 +51,18 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (model.Dom
 		&result.Certificate.Signature,
 	)
 	if err != nil {
-		return model.Domain{}, err
+		return Domain{}, err
 	}
 
 	return result, nil
 }
 
-func (r *Repository) All(ctx context.Context) ([]model.Domain, error) {
+func (r *Repository) All(ctx context.Context) ([]Domain, error) {
 	order := fmt.Sprintf(
 		"array[%d, %d, %d]",
-		model.CertificateStatusUnknown,
-		model.CertificateStatusOffline,
-		model.CertificateStatusInvalid,
+		CertificateStatusUnknown,
+		CertificateStatusOffline,
+		CertificateStatusInvalid,
 	)
 	q := fmt.Sprintf(`
 		SELECT
@@ -89,9 +88,9 @@ func (r *Repository) All(ctx context.Context) ([]model.Domain, error) {
 	}
 	defer rows.Close()
 
-	var domains []model.Domain
+	var domains []Domain
 	for rows.Next() {
-		var d model.Domain
+		var d Domain
 		err := rows.Scan(
 			&d.ID,
 			&d.DomainName,
@@ -113,7 +112,7 @@ func (r *Repository) All(ctx context.Context) ([]model.Domain, error) {
 	return domains, nil
 }
 
-func (r *Repository) Expiring(ctx context.Context) ([]model.DomainWithUser, error) {
+func (r *Repository) Expiring(ctx context.Context) ([]DomainWithUser, error) {
 	q := `
 	SELECT
 		d.id,
@@ -152,9 +151,9 @@ func (r *Repository) Expiring(ctx context.Context) ([]model.DomainWithUser, erro
 	}
 	defer rows.Close()
 
-	var domains []model.DomainWithUser
+	var domains []DomainWithUser
 	for rows.Next() {
-		var record model.DomainWithUser
+		var record DomainWithUser
 		err := rows.Scan(
 			&record.Domain.ID,
 			&record.Domain.DomainName,
@@ -180,12 +179,12 @@ func (r *Repository) Expiring(ctx context.Context) ([]model.DomainWithUser, erro
 	return domains, nil
 }
 
-func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Domain, error) {
+func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Domain, error) {
 	order := fmt.Sprintf(
 		"array[%d, %d, %d]",
-		model.CertificateStatusUnknown,
-		model.CertificateStatusOffline,
-		model.CertificateStatusInvalid,
+		CertificateStatusUnknown,
+		CertificateStatusOffline,
+		CertificateStatusInvalid,
 	)
 	q := fmt.Sprintf(`
 		SELECT
@@ -215,9 +214,9 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Doma
 	}
 	defer rows.Close()
 
-	var domains []model.Domain
+	var domains []Domain
 	for rows.Next() {
-		var d model.Domain
+		var d Domain
 		err := rows.Scan(
 			&d.ID,
 			&d.DomainName,
@@ -239,7 +238,7 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]model.Doma
 	return domains, nil
 }
 
-func (r *Repository) Create(uid string, domains []model.Domain) error {
+func (r *Repository) Create(uid string, domains []Domain) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
 	defer cancel()
 	tx, err := r.DB.Begin(ctx)
@@ -342,7 +341,7 @@ func (r *Repository) Delete(uid string, id int) error {
 	return nil
 }
 
-func (r *Repository) Update(ctx context.Context, domains []model.Domain) error {
+func (r *Repository) Update(ctx context.Context, domains []Domain) error {
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
 		return err

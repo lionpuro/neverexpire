@@ -4,19 +4,20 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/http/views"
-	"github.com/lionpuro/neverexpire/model"
+	"github.com/lionpuro/neverexpire/user"
 )
 
 func TestRender(t *testing.T) {
-	testUser := &model.User{
+	testUser := &user.User{
 		Email: "tester@neverexpire.xyz",
 	}
-	testDomains := []model.Domain{
+	testDomains := []domain.Domain{
 		{
 			ID:          1,
 			DomainName:  "neverexpire.xyz",
-			Certificate: model.CertificateInfo{},
+			Certificate: domain.CertificateInfo{},
 		},
 	}
 	// Home
@@ -61,7 +62,7 @@ func TestRender(t *testing.T) {
 	// Settings
 	t.Run("settings", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		err := views.Settings(&buf, views.LayoutData{User: testUser}, model.Settings{})
+		err := views.Settings(&buf, views.LayoutData{User: testUser}, user.Settings{})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

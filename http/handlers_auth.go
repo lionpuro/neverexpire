@@ -5,7 +5,7 @@ import (
 
 	"github.com/lionpuro/neverexpire/auth"
 	"github.com/lionpuro/neverexpire/http/views"
-	"github.com/lionpuro/neverexpire/model"
+	"github.com/lionpuro/neverexpire/user"
 )
 
 func (h *Handler) LoginPage(w http.ResponseWriter, r *http.Request) {
@@ -83,22 +83,22 @@ func (h *Handler) AuthCallback(a *auth.Client) http.HandlerFunc {
 			return
 		}
 
-		var user struct {
+		var usr struct {
 			ID    string `json:"sub"`
 			Email string `json:"email"`
 		}
-		if err := idToken.Claims(&user); err != nil {
+		if err := idToken.Claims(&usr); err != nil {
 			h.log.Error("failed to unmarshal token claims", "error", err.Error())
 			h.ErrorPage(w, r, "Bad request", http.StatusBadRequest)
 			return
 		}
 
-		if err := h.UserService.Create(user.ID, user.Email); err != nil {
+		if err := h.UserService.Create(usr.ID, usr.Email); err != nil {
 			h.log.Error("failed to create user", "error", err.Error())
 			h.ErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 			return
 		}
-		sess.SetUser(model.User{ID: user.ID, Email: user.Email})
+		sess.SetUser(user.User{ID: usr.ID, Email: usr.Email})
 		if err := sess.Save(w, r); err != nil {
 			h.log.Error("failed to save session", "error", err.Error())
 			h.ErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)

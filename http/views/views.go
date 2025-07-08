@@ -7,8 +7,9 @@ import (
 	"io"
 	"path/filepath"
 
-	"github.com/lionpuro/neverexpire/model"
+	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/notification"
+	"github.com/lionpuro/neverexpire/user"
 )
 
 //go:embed templates
@@ -19,7 +20,7 @@ type viewTemplate struct {
 }
 
 type LayoutData struct {
-	User  *model.User
+	User  *user.User
 	Error error
 }
 
@@ -43,12 +44,12 @@ func Error(w io.Writer, ld LayoutData, code int, msg string) error {
 	return errorPageTmpl.render(w, data)
 }
 
-func Domains(w io.Writer, ld LayoutData, domains []model.Domain) error {
+func Domains(w io.Writer, ld LayoutData, domains []domain.Domain) error {
 	data := map[string]any{"LayoutData": ld, "Domains": domains}
 	return domainsTmpl.render(w, data)
 }
 
-func Domain(w io.Writer, ld LayoutData, d model.Domain) error {
+func Domain(w io.Writer, ld LayoutData, d domain.Domain) error {
 	return domainTmpl.render(w, map[string]any{"LayoutData": ld, "Domain": d})
 }
 
@@ -60,7 +61,7 @@ func NewDomains(w io.Writer, ld LayoutData, inputValue string) error {
 	return newDomainsTmpl.render(w, data)
 }
 
-func Settings(w io.Writer, ld LayoutData, sett model.Settings) error {
+func Settings(w io.Writer, ld LayoutData, sett user.Settings) error {
 	type reminder struct {
 		Value   int
 		Display string

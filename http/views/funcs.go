@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/logging"
-	"github.com/lionpuro/neverexpire/model"
 )
 
 func funcMap() template.FuncMap {
@@ -39,11 +39,11 @@ func datef(t time.Time, layout string) string {
 	return t.Format(layout)
 }
 
-func statusClass(cert model.CertificateInfo) string {
+func statusClass(cert domain.CertificateInfo) string {
 	switch cert.Status {
-	case model.CertificateStatusOffline, model.CertificateStatusUnknown:
+	case domain.CertificateStatusOffline, domain.CertificateStatusUnknown:
 		return "text-base-900 bg-[#cacaca]"
-	case model.CertificateStatusInvalid:
+	case domain.CertificateStatusInvalid:
 		return "text-danger-dark bg-danger-light"
 	}
 	if cert.ExpiresAt == nil {
@@ -55,13 +55,13 @@ func statusClass(cert model.CertificateInfo) string {
 	return "text-healthy-dark bg-healthy-light"
 }
 
-func statusText(cert model.CertificateInfo) string {
+func statusText(cert domain.CertificateInfo) string {
 	switch cert.Status {
-	case model.CertificateStatusUnknown:
+	case domain.CertificateStatusUnknown:
 		return "-"
 	case
-		model.CertificateStatusOffline,
-		model.CertificateStatusInvalid:
+		domain.CertificateStatusOffline,
+		domain.CertificateStatusInvalid:
 		return cert.Status.String()
 	}
 	if cert.ExpiresAt == nil {

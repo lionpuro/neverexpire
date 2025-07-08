@@ -10,19 +10,18 @@ import (
 	"time"
 
 	"github.com/lionpuro/neverexpire/logging"
-	"github.com/lionpuro/neverexpire/model"
 )
 
-func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, error) {
+func FetchCert(ctx context.Context, domain string) (*CertificateInfo, error) {
 	errch := make(chan error, 1)
-	result := make(chan model.CertificateInfo, 1)
+	result := make(chan CertificateInfo, 1)
 	go func() {
 		start := time.Now().UTC()
 		conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", domain), nil)
 		if err != nil {
 			status := errorStatus(err)
-			if status != model.CertificateStatusUnknown {
-				result <- model.CertificateInfo{
+			if status != CertificateStatusUnknown {
+				result <- CertificateInfo{
 					Status:    status,
 					IssuedBy:  "n/a",
 					CheckedAt: start,
@@ -41,11 +40,11 @@ func FetchCert(ctx context.Context, domain string) (*model.CertificateInfo, erro
 
 		state := conn.ConnectionState()
 		cert := state.PeerCertificates[0]
-		status := model.CertificateStatusInvalid
+		status := CertificateStatusInvalid
 		if cert.NotAfter.After(time.Now().UTC()) {
-			status = model.CertificateStatusHealthy
+			status = CertificateStatusHealthy
 		}
-		result <- model.CertificateInfo{
+		result <- CertificateInfo{
 			DNSNames:  strings.Join(cert.DNSNames, ", "),
 			IP:        conn.RemoteAddr().String(),
 			ExpiresAt: &cert.NotAfter,
@@ -72,15 +71,15 @@ func fingerprint(cert *x509.Certificate) string {
 	return fmt.Sprintf("%x", fingerprint)
 }
 
-func errorStatus(err error) model.CertificateStatus {
+func errorStatus(err error) CertificateStatus {
 	switch {
 	case strings.Contains(err.Error(), "tls: failed to verify"):
-		return model.CertificateStatusInvalid
+		return CertificateStatusInvalid
 	case
 		strings.Contains(err.Error(), "connection refused"),
 		strings.Contains(err.Error(), "no such host"),
 		strings.Contains(err.Error(), "Temporary failure in name resolution"):
-		return model.CertificateStatusOffline
+		return CertificateStatusOffline
 	}
-	return model.CertificateStatusUnknown
+	return CertificateStatusUnknown
 }

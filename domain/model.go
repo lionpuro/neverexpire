@@ -1,7 +1,9 @@
-package model
+package domain
 
 import (
 	"time"
+
+	"github.com/lionpuro/neverexpire/user"
 )
 
 type Domain struct {
@@ -24,8 +26,8 @@ type CertificateInfo struct {
 
 type DomainWithUser struct {
 	Domain   Domain
-	User     User
-	Settings Settings
+	User     user.User
+	Settings user.Settings
 }
 
 func (c CertificateInfo) TimeLeft() time.Duration {

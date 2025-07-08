@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lionpuro/neverexpire/model"
+	"github.com/lionpuro/neverexpire/domain"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -17,19 +17,19 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) Create(ctx context.Context, n model.NotificationInput) error {
+func (s *Service) Create(ctx context.Context, n NotificationInput) error {
 	return s.repo.Create(ctx, n)
 }
 
-func (s *Service) Update(ctx context.Context, id int, n model.NotificationUpdate) error {
+func (s *Service) Update(ctx context.Context, id int, n NotificationUpdate) error {
 	return s.repo.Update(ctx, id, n)
 }
 
-func (s *Service) AllDue(ctx context.Context) ([]model.Notification, error) {
+func (s *Service) AllDue(ctx context.Context) ([]Notification, error) {
 	return s.repo.AllDue(ctx)
 }
 
-func (s *Service) CreateReminders(ctx context.Context, domains []model.DomainWithUser) error {
+func (s *Service) CreateReminders(ctx context.Context, domains []domain.DomainWithUser) error {
 	if len(domains) == 0 {
 		return nil
 	}
@@ -54,17 +54,17 @@ func (s *Service) CreateReminders(ctx context.Context, domains []model.DomainWit
 	return nil
 }
 
-func (s *Service) createReminder(ctx context.Context, record model.DomainWithUser) error {
+func (s *Service) createReminder(ctx context.Context, record domain.DomainWithUser) error {
 	exp := record.Domain.Certificate.ExpiresAt
 	if exp == nil {
 		return nil
 	}
 	msg := formatReminder(record.Domain)
 	diff := time.Duration(record.Settings.RemindBefore) * time.Second
-	input := model.NotificationInput{
+	input := NotificationInput{
 		UserID:       record.User.ID,
 		DomainID:     record.Domain.ID,
-		Type:         model.NotificationTypeExpiration,
+		Type:         NotificationTypeExpiration,
 		Body:         msg,
 		Due:          record.Domain.Certificate.ExpiresAt.Add(-diff),
 		DeliveredAt:  nil,
@@ -74,7 +74,7 @@ func (s *Service) createReminder(ctx context.Context, record model.DomainWithUse
 	return s.repo.Create(ctx, input)
 }
 
-func formatReminder(d model.Domain) string {
+func formatReminder(d domain.Domain) string {
 	hours := int(d.Certificate.TimeLeft().Hours())
 	count := hours / 24
 	unit := "days"

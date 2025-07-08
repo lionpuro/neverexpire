@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lionpuro/neverexpire/model"
+	"github.com/lionpuro/neverexpire/user"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -19,27 +19,27 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) ByID(ctx context.Context, id int, userID string) (model.Domain, error) {
+func (s *Service) ByID(ctx context.Context, id int, userID string) (Domain, error) {
 	return s.repo.ByID(ctx, userID, id)
 }
 
-func (s *Service) AllByUser(ctx context.Context, userID string) ([]model.Domain, error) {
+func (s *Service) AllByUser(ctx context.Context, userID string) ([]Domain, error) {
 	return s.repo.AllByUser(ctx, userID)
 }
 
-func (s *Service) All(ctx context.Context) ([]model.Domain, error) {
+func (s *Service) All(ctx context.Context) ([]Domain, error) {
 	return s.repo.All(ctx)
 }
 
-func (s *Service) Expiring(ctx context.Context) ([]model.DomainWithUser, error) {
+func (s *Service) Expiring(ctx context.Context) ([]DomainWithUser, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 	return s.repo.Expiring(ctx)
 }
 
-func (s *Service) Create(user model.User, names []string) error {
-	domainch := make(chan model.Domain, len(names))
-	domains := make([]model.Domain, 0)
+func (s *Service) Create(user user.User, names []string) error {
+	domainch := make(chan Domain, len(names))
+	domains := make([]Domain, 0)
 	eg, ctx := errgroup.WithContext(context.Background())
 	for _, name := range names {
 		eg.Go(func() error {
@@ -53,14 +53,14 @@ func (s *Service) Create(user model.User, names []string) error {
 				if !errors.Is(err, context.DeadlineExceeded) {
 					return fmt.Errorf("fetch cert: %v", err)
 				}
-				info = &model.CertificateInfo{
-					Status:    model.CertificateStatusOffline,
+				info = &CertificateInfo{
+					Status:    CertificateStatusOffline,
 					IssuedBy:  "n/a",
 					CheckedAt: time.Now().UTC(),
 					Error:     err,
 				}
 			}
-			domain := model.Domain{
+			domain := Domain{
 				DomainName:  name,
 				Certificate: *info,
 			}
@@ -83,7 +83,7 @@ func (s *Service) Create(user model.User, names []string) error {
 	return s.repo.Create(user.ID, domains)
 }
 
-func (s *Service) Update(ctx context.Context, domains []model.Domain) error {
+func (s *Service) Update(ctx context.Context, domains []Domain) error {
 	return s.repo.Update(ctx, domains)
 }
 

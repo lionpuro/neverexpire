@@ -7,7 +7,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/lionpuro/neverexpire/auth/redisstore"
-	"github.com/lionpuro/neverexpire/model"
+	"github.com/lionpuro/neverexpire/user"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -15,15 +15,15 @@ type Session struct {
 	session *sessions.Session
 }
 
-func (s *Session) User() *model.User {
-	user, ok := s.session.Values["user"].(model.User)
+func (s *Session) User() *user.User {
+	user, ok := s.session.Values["user"].(user.User)
 	if !ok {
 		return nil
 	}
 	return &user
 }
 
-func (s *Session) SetUser(user model.User) {
+func (s *Session) SetUser(user user.User) {
 	s.session.Values["user"] = user
 }
 
@@ -67,7 +67,7 @@ func newSessionStore(addr string) (*SessionStore, error) {
 		SameSite: 4,
 	})
 
-	gob.Register(model.User{})
+	gob.Register(user.User{})
 
 	return &SessionStore{store}, err
 }

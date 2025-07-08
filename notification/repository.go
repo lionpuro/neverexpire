@@ -6,7 +6,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lionpuro/neverexpire/model"
 )
 
 type Repository struct {
@@ -17,7 +16,7 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{DB: db}
 }
 
-func (r *Repository) AllDue(ctx context.Context) ([]model.Notification, error) {
+func (r *Repository) AllDue(ctx context.Context) ([]Notification, error) {
 	q := `
 	SELECT
 		s.webhook_url as endpoint,
@@ -46,14 +45,14 @@ func (r *Repository) AllDue(ctx context.Context) ([]model.Notification, error) {
 	}
 	defer rows.Close()
 
-	notifs, err := pgx.CollectRows(rows, pgx.RowToStructByName[model.Notification])
+	notifs, err := pgx.CollectRows(rows, pgx.RowToStructByName[Notification])
 	if err != nil {
 		return nil, err
 	}
 	return notifs, nil
 }
 
-func (r *Repository) Create(ctx context.Context, n model.NotificationInput) error {
+func (r *Repository) Create(ctx context.Context, n NotificationInput) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	q := `
@@ -72,7 +71,7 @@ func (r *Repository) Create(ctx context.Context, n model.NotificationInput) erro
 	return err
 }
 
-func (r *Repository) Update(ctx context.Context, id int, n model.NotificationUpdate) error {
+func (r *Repository) Update(ctx context.Context, id int, n NotificationUpdate) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	q := `
