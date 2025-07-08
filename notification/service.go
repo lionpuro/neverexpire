@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/lionpuro/neverexpire/model"
+	"golang.org/x/sync/errgroup"
 )
 
 type Service struct {
@@ -29,13 +30,26 @@ func (s *Service) AllDue(ctx context.Context) ([]model.Notification, error) {
 }
 
 func (s *Service) CreateReminders(ctx context.Context, domains []model.DomainWithUser) error {
+	if len(domains) == 0 {
+		return nil
+	}
+	var eg errgroup.Group
 	for _, d := range domains {
-		now := time.Now().UTC()
-		if !d.Domain.Certificate.ExpiresAt.Before(now) {
-			if err := s.createReminder(ctx, d); err != nil {
-				return err
+		eg.Go(func() error {
+			now := time.Now().UTC()
+			if d.Domain.Certificate.ExpiresAt == nil {
+				return nil
 			}
-		}
+			if !d.Domain.Certificate.ExpiresAt.Before(now) {
+				if err := s.createReminder(ctx, d); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+	}
+	if err := eg.Wait(); err != nil {
+		return err
 	}
 	return nil
 }
