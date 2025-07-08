@@ -78,9 +78,17 @@ func formatReminder(d model.Domain) string {
 	hours := int(d.Certificate.TimeLeft().Hours())
 	count := hours / 24
 	unit := "days"
-	if hours < 24 {
+	switch {
+	case hours < 24:
 		count = hours
 		unit = "hours"
+		if count == 1 {
+			unit = "hour"
+		}
+	default:
+		if count == 1 {
+			unit = "day"
+		}
 	}
 	msg := fmt.Sprintf(
 		"TLS certificate for %s is expiring in %d %s (at %s UTC)",
