@@ -31,10 +31,10 @@ func (s *Service) All(ctx context.Context) ([]model.Domain, error) {
 	return s.repo.All(ctx)
 }
 
-func (s *Service) Notifiable(ctx context.Context) ([]model.DomainWithUser, error) {
+func (s *Service) Expiring(ctx context.Context) ([]model.DomainWithUser, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
-	return s.repo.Notifiable(ctx)
+	return s.repo.Expiring(ctx)
 }
 
 func (s *Service) Create(user model.User, names []string) error {

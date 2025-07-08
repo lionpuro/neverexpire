@@ -86,7 +86,7 @@ func (n *Notifier) notify(notif model.Notification) error {
 }
 
 func (n *Notifier) processNotifications(ctx context.Context) error {
-	domains, err := n.domains.Notifiable(ctx)
+	domains, err := n.domains.Expiring(ctx)
 	if err != nil {
 		return err
 	}

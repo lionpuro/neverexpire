@@ -113,7 +113,7 @@ func (r *Repository) All(ctx context.Context) ([]model.Domain, error) {
 	return domains, nil
 }
 
-func (r *Repository) Notifiable(ctx context.Context) ([]model.DomainWithUser, error) {
+func (r *Repository) Expiring(ctx context.Context) ([]model.DomainWithUser, error) {
 	q := `
 	SELECT
 		d.id,
