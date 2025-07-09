@@ -47,11 +47,12 @@
 							{{statusText $domain.Certificate}}
 						</span>
 					</div>
-					<div
-						class="max-sm:col-span-2 max-sm:text-base col-start-2 flex items-center text-base-900 font-semibold sm:font-medium sm:px-1 sm:py-2 bg-base-white"
+					<a
+						href="/domains/{{$domain.ID}}"
+						class="max-sm:col-span-2 max-sm:text-base col-start-2 flex items-center text-base-900 font-medium sm:px-1 sm:py-2 bg-base-white hover:underline underline-offset-1"
 					>
 						{{$domain.DomainName}}
-					</div>
+					</a>
 					<div
 						class="max-sm:row-start-4 lg:col-start-3 flex items-center text-sm font-medium text-base-600 text-base-700 px-1 py-2 bg-base-white max-lg:hidden"
 					>
