@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -22,16 +23,12 @@ func FetchCert(ctx context.Context, domain string) (*CertificateInfo, error) {
 		conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", domain), nil)
 		if err != nil {
 			status := errorStatus(err)
-			if status != CertificateStatusUnknown {
-				result <- CertificateInfo{
-					Status:    status,
-					IssuedBy:  "n/a",
-					CheckedAt: start,
-					Error:     err,
-				}
-				return
+			result <- CertificateInfo{
+				Status:    status,
+				IssuedBy:  "n/a",
+				CheckedAt: start,
+				Error:     mapError(err),
 			}
-			errch <- err
 			return
 		}
 		defer func() {
@@ -39,7 +36,6 @@ func FetchCert(ctx context.Context, domain string) (*CertificateInfo, error) {
 				logging.DefaultLogger().Error("error closing connection", "error", err.Error())
 			}
 		}()
-
 		state := conn.ConnectionState()
 		cert := state.PeerCertificates[0]
 		status := CertificateStatusInvalid
@@ -62,6 +58,17 @@ func FetchCert(ctx context.Context, domain string) (*CertificateInfo, error) {
 	case err := <-errch:
 		return nil, err
 	case <-ctx.Done():
+		if err := ctx.Err(); err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				cert := &CertificateInfo{
+					Status:    CertificateStatusOffline,
+					IssuedBy:  "n/a",
+					CheckedAt: time.Now().UTC(),
+					Error:     ErrConnTimedout,
+				}
+				return cert, nil
+			}
+		}
 		return nil, ctx.Err()
 	case result := <-result:
 		return &result, nil
@@ -84,4 +91,25 @@ func errorStatus(err error) CertificateStatus {
 		return CertificateStatusOffline
 	}
 	return CertificateStatusUnknown
+}
+
+func mapError(err error) Error {
+	contains := func(s string) bool {
+		return strings.Contains(err.Error(), s)
+	}
+	switch {
+	case errors.Is(err, context.DeadlineExceeded):
+		return ErrConnTimedout
+	case contains("tls: failed to verify"):
+		return ErrCertInvalid
+	case contains("connection refused"):
+		return ErrConnRefused
+	case
+		contains("no such host"),
+		contains("dial tcp: lookup"),
+		contains("failure in name resolution"):
+		return ErrConn
+	default:
+		return ErrUnknown
+	}
 }

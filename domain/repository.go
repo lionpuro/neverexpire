@@ -32,12 +32,14 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (Domain, e
 		d.expires_at,
 		d.checked_at,
 		d.latency,
-		d.signature
+		d.signature,
+		d.error_message
 	FROM domains d
 	INNER JOIN user_domains ud
 		ON d.id = ud.domain_id
 	WHERE d.id = $1 AND ud.user_id = $2`, id, userID)
 	var result Domain
+	var errStr *string
 	err := row.Scan(
 		&result.ID,
 		&result.DomainName,
@@ -49,9 +51,13 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (Domain, e
 		&result.Certificate.CheckedAt,
 		&result.Certificate.Latency,
 		&result.Certificate.Signature,
+		&errStr,
 	)
 	if err != nil {
 		return Domain{}, err
+	}
+	if errStr != nil {
+		result.Certificate.Error = errors.New(*errStr)
 	}
 
 	return result, nil
@@ -75,7 +81,8 @@ func (r *Repository) All(ctx context.Context) ([]Domain, error) {
 			expires_at,
 			checked_at,
 			latency,
-			signature
+			signature,
+			error_message
 		FROM domains
 		ORDER BY
 			array_position(%s, status),
@@ -91,6 +98,7 @@ func (r *Repository) All(ctx context.Context) ([]Domain, error) {
 	var domains []Domain
 	for rows.Next() {
 		var d Domain
+		var errStr *string
 		err := rows.Scan(
 			&d.ID,
 			&d.DomainName,
@@ -102,9 +110,13 @@ func (r *Repository) All(ctx context.Context) ([]Domain, error) {
 			&d.Certificate.CheckedAt,
 			&d.Certificate.Latency,
 			&d.Certificate.Signature,
+			&errStr,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if errStr != nil {
+			d.Certificate.Error = errors.New(*errStr)
 		}
 		domains = append(domains, d)
 	}
@@ -125,6 +137,7 @@ func (r *Repository) Expiring(ctx context.Context) ([]DomainWithUser, error) {
 		d.checked_at,
 		d.latency,
 		d.signature,
+		d.error_message,
 		u.id as user_id,
 		u.email as user_email,
 		s.webhook_url,
@@ -154,6 +167,7 @@ func (r *Repository) Expiring(ctx context.Context) ([]DomainWithUser, error) {
 	var domains []DomainWithUser
 	for rows.Next() {
 		var record DomainWithUser
+		var errStr *string
 		err := rows.Scan(
 			&record.Domain.ID,
 			&record.Domain.DomainName,
@@ -165,6 +179,7 @@ func (r *Repository) Expiring(ctx context.Context) ([]DomainWithUser, error) {
 			&record.Domain.Certificate.CheckedAt,
 			&record.Domain.Certificate.Latency,
 			&record.Domain.Certificate.Signature,
+			&errStr,
 			&record.User.ID,
 			&record.User.Email,
 			&record.Settings.WebhookURL,
@@ -172,6 +187,9 @@ func (r *Repository) Expiring(ctx context.Context) ([]DomainWithUser, error) {
 		)
 		if err != nil {
 			return nil, err
+		}
+		if errStr != nil {
+			record.Domain.Certificate.Error = errors.New(*errStr)
 		}
 		domains = append(domains, record)
 	}
@@ -197,7 +215,8 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Domain, er
 			d.expires_at,
 			d.checked_at,
 			d.latency,
-			d.signature
+			d.signature,
+			d.error_message
 		FROM domains d
 		INNER JOIN user_domains ud
 			ON d.id = ud.domain_id
@@ -217,6 +236,7 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Domain, er
 	var domains []Domain
 	for rows.Next() {
 		var d Domain
+		var errStr *string
 		err := rows.Scan(
 			&d.ID,
 			&d.DomainName,
@@ -228,9 +248,13 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Domain, er
 			&d.Certificate.CheckedAt,
 			&d.Certificate.Latency,
 			&d.Certificate.Signature,
+			&errStr,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if errStr != nil {
+			d.Certificate.Error = errors.New(*errStr)
 		}
 		domains = append(domains, d)
 	}
@@ -253,6 +277,11 @@ func (r *Repository) Create(uid string, domains []Domain) error {
 
 	for _, d := range domains {
 		var id int
+		var errStr *string = nil
+		if d.Certificate.Error != nil {
+			str := d.Certificate.Error.Error()
+			errStr = &str
+		}
 		err := tx.QueryRow(ctx, `
 		INSERT INTO domains (
 			domain_name,
@@ -263,18 +292,20 @@ func (r *Repository) Create(uid string, domains []Domain) error {
 			expires_at,
 			checked_at,
 			latency,
-			signature
+			signature,
+			error_message
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		ON CONFLICT (domain_name) DO UPDATE SET
-			dns_names  = EXCLUDED.dns_names,
-			ip_address = EXCLUDED.ip_address,
-			issued_by  = EXCLUDED.issued_by,
-			status     = EXCLUDED.status,
-			expires_at = EXCLUDED.expires_at,
-			checked_at = EXCLUDED.checked_at,
-			latency    = EXCLUDED.latency,
-			signature  = EXCLUDED.signature
+			dns_names      = EXCLUDED.dns_names,
+			ip_address     = EXCLUDED.ip_address,
+			issued_by      = EXCLUDED.issued_by,
+			status         = EXCLUDED.status,
+			expires_at     = EXCLUDED.expires_at,
+			checked_at     = EXCLUDED.checked_at,
+			latency        = EXCLUDED.latency,
+			signature      = EXCLUDED.signature,
+			error_message  = EXCLUDED.error_message
 		RETURNING id
 		`,
 			d.DomainName,
@@ -286,6 +317,7 @@ func (r *Repository) Create(uid string, domains []Domain) error {
 			d.Certificate.CheckedAt,
 			d.Certificate.Latency,
 			d.Certificate.Signature,
+			errStr,
 		).Scan(&id)
 		if err != nil {
 			return err
@@ -353,6 +385,11 @@ func (r *Repository) Update(ctx context.Context, domains []Domain) error {
 	}()
 
 	for _, d := range domains {
+		var errStr *string = nil
+		if d.Certificate.Error != nil {
+			str := d.Certificate.Error.Error()
+			errStr = &str
+		}
 		_, err := tx.Exec(ctx, `
 		UPDATE domains
 		SET
@@ -364,8 +401,9 @@ func (r *Repository) Update(ctx context.Context, domains []Domain) error {
 			checked_at = $6,
 			latency = $7,
 			signature = $8,
+			error_message = $9,
 			updated_at = (now() at time zone 'utc')
-		WHERE id = $9
+		WHERE id = $10
 		`,
 			d.Certificate.DNSNames,
 			d.Certificate.IP,
@@ -375,6 +413,7 @@ func (r *Repository) Update(ctx context.Context, domains []Domain) error {
 			d.Certificate.CheckedAt,
 			d.Certificate.Latency,
 			d.Certificate.Signature,
+			errStr,
 			d.ID,
 		)
 		if err != nil {
