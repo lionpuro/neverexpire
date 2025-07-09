@@ -29,14 +29,16 @@ const (
 var avatarURL string = os.Getenv("WEBHOOK_AVATAR_URL")
 
 type Notifier struct {
+	interval      time.Duration
 	client        *http.Client
 	notifications *Service
 	domains       *domain.Service
 	log           logging.Logger
 }
 
-func NewNotifier(ns *Service, ds *domain.Service) *Notifier {
+func NewNotifier(interval time.Duration, ns *Service, ds *domain.Service) *Notifier {
 	return &Notifier{
+		interval: interval,
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 		},
@@ -46,7 +48,7 @@ func NewNotifier(ns *Service, ds *domain.Service) *Notifier {
 }
 
 func (n *Notifier) Start(ctx context.Context) {
-	t := time.NewTicker(60 * time.Second)
+	t := time.NewTicker(n.interval)
 	defer t.Stop()
 
 	for {
