@@ -43,9 +43,7 @@ func (s *Service) Create(user user.User, names []string) error {
 	eg, ctx := errgroup.WithContext(context.Background())
 	for _, name := range names {
 		eg.Go(func() error {
-			fetchCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-			defer cancel()
-			info, err := FetchCert(fetchCtx, name)
+			info, err := FetchCert(context.Background(), name)
 			if err != nil {
 				if strings.Contains(err.Error(), "connection refused") || strings.Contains(err.Error(), "Temporary failure in name resolution") {
 					return fmt.Errorf("can't connect to %s", name)

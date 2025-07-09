@@ -15,6 +15,8 @@ import (
 func FetchCert(ctx context.Context, domain string) (*CertificateInfo, error) {
 	errch := make(chan error, 1)
 	result := make(chan CertificateInfo, 1)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
 	go func() {
 		start := time.Now().UTC()
 		conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", domain), nil)

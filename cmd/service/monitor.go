@@ -65,13 +65,11 @@ func (m *Monitor) poll() error {
 		wg.Add(1)
 		go func(d domain.Domain) {
 			workers <- struct{}{}
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 			defer func() {
 				<-workers
 				wg.Done()
-				cancel()
 			}()
-			cert, err := domain.FetchCert(ctx, d.DomainName)
+			cert, err := domain.FetchCert(context.Background(), d.DomainName)
 			if err != nil {
 				cert = &domain.CertificateInfo{
 					Status:    domain.CertificateStatusOffline,
