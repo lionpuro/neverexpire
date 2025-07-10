@@ -31,9 +31,7 @@ func (r *Repository) ByID(ctx context.Context, id string) (User, error) {
 	return user, nil
 }
 
-func (r *Repository) Create(id, email string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
-	defer cancel()
+func (r *Repository) Create(ctx context.Context, id, email string) error {
 	_, err := r.DB.Exec(ctx, `
 		INSERT INTO users (id, email) VALUES ($1, $2)
 		ON CONFLICT DO NOTHING
@@ -41,9 +39,7 @@ func (r *Repository) Create(id, email string) error {
 	return err
 }
 
-func (r *Repository) Delete(id string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
-	defer cancel()
+func (r *Repository) Delete(ctx context.Context, id string) error {
 	_, err := r.DB.Exec(ctx, `DELETE FROM users WHERE id = $1`, id)
 	return err
 }

@@ -78,7 +78,9 @@ func (s *Service) Create(user user.User, names []string) error {
 	for d := range domainch {
 		domains = append(domains, d)
 	}
-	return s.repo.Create(user.ID, domains)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	return s.repo.Create(ctx, user.ID, domains)
 }
 
 func (s *Service) Update(ctx context.Context, domains []Domain) error {
@@ -86,5 +88,7 @@ func (s *Service) Update(ctx context.Context, domains []Domain) error {
 }
 
 func (s *Service) Delete(userID string, id int) error {
-	return s.repo.Delete(userID, id)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	return s.repo.Delete(ctx, userID, id)
 }

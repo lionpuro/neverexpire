@@ -2,7 +2,6 @@ package notification
 
 import (
 	"context"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -53,8 +52,6 @@ func (r *Repository) AllDue(ctx context.Context) ([]Notification, error) {
 }
 
 func (r *Repository) Create(ctx context.Context, n NotificationInput) error {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
 	q := `
 	INSERT INTO notifications (
 		user_id,
@@ -72,8 +69,6 @@ func (r *Repository) Create(ctx context.Context, n NotificationInput) error {
 }
 
 func (r *Repository) Update(ctx context.Context, id int, n NotificationUpdate) error {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
 	q := `
 	UPDATE notifications
 	SET delivered_at = COALESCE($1, delivered_at),

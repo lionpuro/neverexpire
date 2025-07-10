@@ -18,14 +18,20 @@ func NewService(repo *Repository) *Service {
 }
 
 func (s *Service) Create(ctx context.Context, n NotificationInput) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 	return s.repo.Create(ctx, n)
 }
 
 func (s *Service) Update(ctx context.Context, id int, n NotificationUpdate) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 	return s.repo.Update(ctx, id, n)
 }
 
 func (s *Service) AllDue(ctx context.Context) ([]Notification, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 	return s.repo.AllDue(ctx)
 }
 

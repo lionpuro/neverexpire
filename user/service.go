@@ -18,11 +18,15 @@ func (s *Service) ByID(ctx context.Context, id string) (User, error) {
 }
 
 func (s *Service) Create(id, email string) error {
-	return s.repo.Create(id, email)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	return s.repo.Create(ctx, id, email)
 }
 
 func (s *Service) Delete(id string) error {
-	return s.repo.Delete(id)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	return s.repo.Delete(ctx, id)
 }
 
 func (s *Service) Settings(ctx context.Context, userID string) (Settings, error) {

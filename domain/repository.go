@@ -8,7 +8,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/lionpuro/neverexpire/db"
 	"github.com/lionpuro/neverexpire/logging"
 )
 
@@ -262,9 +261,7 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Domain, er
 	return domains, nil
 }
 
-func (r *Repository) Create(uid string, domains []Domain) error {
-	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
-	defer cancel()
+func (r *Repository) Create(ctx context.Context, uid string, domains []Domain) error {
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -341,9 +338,7 @@ func (r *Repository) Create(uid string, domains []Domain) error {
 	return nil
 }
 
-func (r *Repository) Delete(uid string, id int) error {
-	ctx, cancel := context.WithTimeout(context.Background(), db.Timeout)
-	defer cancel()
+func (r *Repository) Delete(ctx context.Context, uid string, id int) error {
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
 		return err
