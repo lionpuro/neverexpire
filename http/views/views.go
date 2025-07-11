@@ -7,6 +7,7 @@ import (
 	"io"
 	"path/filepath"
 
+	"github.com/lionpuro/neverexpire/api"
 	"github.com/lionpuro/neverexpire/domain"
 	"github.com/lionpuro/neverexpire/notification"
 	"github.com/lionpuro/neverexpire/user"
@@ -31,6 +32,7 @@ var (
 	domainTmpl     = parse("pages/domains/domain.html")
 	newDomainsTmpl = parse("pages/domains/new.html")
 	settingsTmpl   = parse("pages/settings.html")
+	apiTmpl        = parse("pages/api.html")
 	loginTmpl      = parse("pages/login.html")
 	partials       = parsePartials()
 )
@@ -80,6 +82,10 @@ func Settings(w io.Writer, ld LayoutData, sett user.Settings) error {
 	return settingsTmpl.render(w, data)
 }
 
+func API(w io.Writer, ld LayoutData, keys []api.Key) error {
+	return apiTmpl.render(w, map[string]any{"LayoutData": ld, "Keys": keys})
+}
+
 func Login(w io.Writer) error {
 	return loginTmpl.render(w, nil)
 }
@@ -90,6 +96,10 @@ func ErrorBanner(w io.Writer, err error) error {
 
 func SuccessBanner(w io.Writer, msg string) error {
 	return partials.renderPartial(w, "success-banner", map[string]any{"Message": msg})
+}
+
+func Component(w io.Writer, name string, data any) error {
+	return partials.renderPartial(w, name, data)
 }
 
 func parse(templates ...string) *viewTemplate {

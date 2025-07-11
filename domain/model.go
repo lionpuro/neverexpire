@@ -30,6 +30,33 @@ type DomainWithUser struct {
 	Settings user.Settings
 }
 
+type APIModel struct {
+	HostName  string     `json:"hostname"`
+	Issuer    *string    `json:"issuer"`
+	ExpiresAt *time.Time `json:"expires_at"`
+	CheckedAt time.Time  `json:"checked_at"`
+	Error     *string    `json:"error"`
+}
+
+func ToAPIModel(d Domain) APIModel {
+	var errMsg *string
+	if err := d.Certificate.Error; err != nil {
+		msg := err.Error()
+		errMsg = &msg
+	}
+	domain := APIModel{
+		HostName:  d.DomainName,
+		Issuer:    &d.Certificate.IssuedBy,
+		ExpiresAt: d.Certificate.ExpiresAt,
+		CheckedAt: d.Certificate.CheckedAt,
+		Error:     errMsg,
+	}
+	if iss := d.Certificate.IssuedBy; iss == "n/a" || iss == "" {
+		domain.Issuer = nil
+	}
+	return domain
+}
+
 func (c CertificateInfo) TimeLeft() time.Duration {
 	exp := c.ExpiresAt
 	now := time.Now().UTC()

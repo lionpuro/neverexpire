@@ -1,0 +1,92 @@
+{{template "layout" .}}
+{{define "title"}}API - NeverExpire{{end}}
+{{define "content"}}
+	<div class="flex flex-col max-w-3xl w-full mx-auto gap-4">
+		{{template "h1" withAttributes "Text" "API"}}
+		<p>
+			You can use our API to access and manage your hosts. To authenticate with
+			the API, generate a new access key and pass it in the
+			<code class="bg-primary-100 text-primary-600 rounded-md px-1.5 py-0.5"
+				>access_key</code
+			>
+			URL parameter when making a request.
+		</p>
+		<span class="flex flex-col gap-2">
+			<strong class="font-semibold">Example API request:</strong>
+			<code class="border border-base-200 rounded-md px-2 py-0.5">
+				https://neverexpire.xyz/api/hosts<span class="text-primary-600"
+					>?access_key=$YOUR_ACCESS_KEY</span
+				>
+			</code>
+		</span>
+		<div class="flex items-center justify-between mt-2">
+			{{template "h2" withAttributes "Text" "Access keys"}}
+			<button
+				hx-get="/account/tokens/new"
+				hx-target="#raw-key"
+				hx-swap="innerHTML"
+				hx-on::after-request="htmx.find('#display-key').showModal()"
+				class="bg-base-950 hover:bg-base-900 text-base-white rounded-md py-1 px-4 w-fit"
+			>
+				Generate key
+			</button>
+		</div>
+		<dialog
+			id="display-key"
+			class="m-auto rounded-md backdrop:bg-[rgba(0,0,0,0.75)] max-w-3xl"
+		>
+			<div class="flex flex-col p-6 gap-6">
+				{{template "h2" withAttributes "Text" "Your API Key"}}
+				The key won't be displayed again so please save it somewhere safe.
+				<div id="raw-key"></div>
+				<a
+					href="/api"
+					hx-boost="true"
+					class="bg-base-950 hover:bg-base-900 text-base-white rounded-md py-1 px-5 w-fit"
+				>
+					Continue
+				</a>
+			</div>
+		</dialog>
+		<div
+			class="w-full grid
+			grid-cols-[minmax(0,1fr)_repeat(2,auto)] bg-base-100 gap-y-px text-sm sm:text-base max-sm:font-medium"
+		>
+			<div class="contents">
+				<div class="text-base-500 font-medium p-1 bg-base-white">ID</div>
+				<div class="text-base-500 font-medium p-1 bg-base-white">Created</div>
+				<div class="text-base-500 font-medium p-1 bg-base-white">Action</div>
+			</div>
+			{{range $key := .Keys}}
+				<div class="contents">
+					<div
+						class="col-start-1 font-medium text-sm px-1 py-2 bg-base-white flex items-center"
+					>
+						{{$key.ID}}
+					</div>
+					<div
+						class="col-start-2 flex items-center text-base-600 font-medium text-sm sm:px-1 sm:py-2 bg-base-white"
+					>
+						<local-time
+							datetime="{{datef $key.CreatedAt "2006-01-02T15:04:05.000Z"}}"
+						>
+							{{$key.CreatedAt}}
+						</local-time>
+					</div>
+					<div
+						class="col-start-3 flex items-center justify-center font-medium bg-base-white"
+					>
+						<button
+							hx-delete="/account/tokens/{{$key.ID}}"
+							title="Delete"
+							class="flex items-center justify-center text-xl p-2
+							size-10 text-base-600 hover:text-red-600/80"
+						>
+							×
+						</button>
+					</div>
+				</div>
+			{{end}}
+		</div>
+	</div>
+{{end}}

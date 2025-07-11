@@ -30,9 +30,9 @@ func (h *Handler) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func contentType(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		next(w, r)
-	}
+func contentType(next http.Handler, val string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", val)
+		next.ServeHTTP(w, r)
+	})
 }

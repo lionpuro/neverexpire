@@ -1,0 +1,23 @@
+{{define "api-key"}}
+	<div class="flex gap-2">
+		<span class="overflow-x-auto bg-base-100 rounded-md flex items-center px-2"
+			>{{.RawKey}}</span
+		>
+		<button
+			id="copy-key"
+			class="bg-primary-500 text-base-white rounded-md p-1 px-2.5"
+		>
+			Copy
+		</button>
+	</div>
+	<script>
+		document.querySelector("#copy-key")?.addEventListener("click", (e) => {
+			const txt = "{{.RawKey}}";
+			navigator.clipboard.writeText(txt);
+			e.target.textContent = "Copied!";
+			setTimeout(() => {
+				e.target.textContent = "Copy";
+			}, 2000);
+		});
+	</script>
+{{end}}
