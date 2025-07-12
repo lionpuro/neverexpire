@@ -48,45 +48,49 @@
 				</a>
 			</div>
 		</dialog>
-		<div
-			class="w-full grid
-			grid-cols-[minmax(0,1fr)_repeat(2,auto)] bg-base-100 gap-y-px text-sm sm:text-base max-sm:font-medium"
-		>
-			<div class="contents">
-				<div class="text-base-500 font-medium p-1 bg-base-white">ID</div>
-				<div class="text-base-500 font-medium p-1 bg-base-white">Created</div>
-				<div class="text-base-500 font-medium p-1 bg-base-white">Action</div>
-			</div>
-			{{range $key := .Keys}}
+		{{if .Keys}}
+			<div
+				class="w-full grid
+				grid-cols-[minmax(0,1fr)_repeat(2,auto)] bg-base-100 gap-y-px text-sm sm:text-base max-sm:font-medium"
+			>
 				<div class="contents">
-					<div
-						class="col-start-1 font-medium text-sm px-1 py-2 bg-base-white flex items-center"
-					>
-						{{$key.ID}}
-					</div>
-					<div
-						class="col-start-2 flex items-center text-base-600 font-medium text-sm sm:px-1 sm:py-2 bg-base-white"
-					>
-						<local-time
-							datetime="{{datef $key.CreatedAt "2006-01-02T15:04:05.000Z"}}"
-						>
-							{{$key.CreatedAt}}
-						</local-time>
-					</div>
-					<div
-						class="col-start-3 flex items-center justify-center font-medium bg-base-white"
-					>
-						<button
-							hx-delete="/account/tokens/{{$key.ID}}"
-							title="Delete"
-							class="flex items-center justify-center text-xl p-2
-							size-10 text-base-600 hover:text-red-600/80"
-						>
-							×
-						</button>
-					</div>
+					<div class="text-base-500 font-medium p-1 bg-base-white">ID</div>
+					<div class="text-base-500 font-medium p-1 bg-base-white">Created</div>
+					<div class="text-base-500 font-medium p-1 bg-base-white">Action</div>
 				</div>
-			{{end}}
-		</div>
+				{{range $key := .Keys}}
+					<div class="contents">
+						<div
+							class="col-start-1 font-medium text-sm px-1 py-2 bg-base-white flex items-center"
+						>
+							{{$key.ID}}
+						</div>
+						<div
+							class="col-start-2 flex items-center text-base-600 font-medium text-sm sm:px-1 sm:py-2 bg-base-white"
+						>
+							<local-time
+								datetime="{{datef $key.CreatedAt "2006-01-02T15:04:05.000Z"}}"
+							>
+								{{$key.CreatedAt}}
+							</local-time>
+						</div>
+						<div
+							class="col-start-3 flex items-center justify-center font-medium bg-base-white"
+						>
+							<button
+								hx-delete="/account/tokens/{{$key.ID}}"
+								title="Delete"
+								class="flex items-center justify-center text-xl p-2
+								size-10 text-base-600 hover:text-red-600/80"
+							>
+								×
+							</button>
+						</div>
+					</div>
+				{{end}}
+			</div>
+		{{else}}
+			<div class="flex bg-base-white text-base-500">No keys</div>
+		{{end}}
 	</div>
 {{end}}
