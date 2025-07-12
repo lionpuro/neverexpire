@@ -23,12 +23,13 @@ func main() {
 
 	ds := domain.NewService(domain.NewRepository(pool))
 	ns := notification.NewService(notification.NewRepository(pool))
-	monitor := NewMonitor(30*time.Minute, ds, ns, logging.NewLogger())
-	notifier := notification.NewNotifier(60*time.Second, ns, ds)
+	logger := logging.NewLogger()
+	updater := domain.NewWorker(30*time.Minute, ds, logger)
+	notifier := notification.NewWorker(60*time.Second, ns, ds, logger)
 
 	fmt.Println("Starting notification service...")
 	go notifier.Start(context.Background())
 
 	fmt.Println("Starting domain monitoring service...")
-	monitor.Start()
+	updater.Start()
 }

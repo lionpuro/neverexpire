@@ -24,7 +24,7 @@ services:
   worker:
     build: .
     image: neverexpire:latest
-    command: ["./service"]
+    command: ["./worker"]
     env_file: ".env"
     environment:
       - APP_ENV=production

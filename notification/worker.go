@@ -15,20 +15,9 @@ import (
 	"github.com/lionpuro/neverexpire/logging"
 )
 
-const (
-	ThresholdDay    = 24 * 60 * 60
-	Threshold2Days  = ThresholdDay * 2
-	ThresholdWeek   = ThresholdDay * 7
-	Threshold2Weeks = ThresholdDay * 7 * 2
-)
-
-const (
-	testMessage = "Hello! Your notification webhook for neverexpire.xyz is set up correctly."
-)
-
 var avatarURL string = os.Getenv("WEBHOOK_AVATAR_URL")
 
-type Notifier struct {
+type Worker struct {
 	interval      time.Duration
 	client        *http.Client
 	notifications *Service
@@ -36,26 +25,32 @@ type Notifier struct {
 	log           logging.Logger
 }
 
-func NewNotifier(interval time.Duration, ns *Service, ds *domain.Service) *Notifier {
-	return &Notifier{
+func NewWorker(
+	interval time.Duration,
+	ns *Service,
+	ds *domain.Service,
+	logger logging.Logger,
+) *Worker {
+	return &Worker{
 		interval: interval,
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 		},
 		notifications: ns,
 		domains:       ds,
+		log:           logger,
 	}
 }
 
-func (n *Notifier) Start(ctx context.Context) {
-	t := time.NewTicker(n.interval)
+func (w *Worker) Start(ctx context.Context) {
+	t := time.NewTicker(w.interval)
 	defer t.Stop()
 
 	for {
 		select {
 		case <-t.C:
-			if err := n.processNotifications(ctx); err != nil {
-				n.log.Error("failed to process notifications", "error", err.Error())
+			if err := w.processNotifications(ctx); err != nil {
+				w.log.Error("failed to process notifications", "error", err.Error())
 			}
 		case <-ctx.Done():
 			return
@@ -63,17 +58,17 @@ func (n *Notifier) Start(ctx context.Context) {
 	}
 }
 
-func (n *Notifier) send(notif Notification) error {
-	return sendNotification(n.log, n.client, notif.Endpoint, notif.Body)
+func (w *Worker) send(notif Notification) error {
+	return sendNotification(w.log, w.client, notif.Endpoint, notif.Body)
 }
 
-func (n *Notifier) notify(notif Notification) error {
-	if err := n.send(notif); err != nil {
+func (w *Worker) notify(notif Notification) error {
+	if err := w.send(notif); err != nil {
 		attempts := notif.Attempts + 1
 		input := NotificationUpdate{
 			Attempts: &attempts,
 		}
-		if err := n.notifications.Update(context.Background(), notif.ID, input); err != nil {
+		if err := w.notifications.Update(context.Background(), notif.ID, input); err != nil {
 			return err
 		}
 		return fmt.Errorf("failed to send notification: %v", err)
@@ -82,19 +77,19 @@ func (n *Notifier) notify(notif Notification) error {
 	input := NotificationUpdate{
 		DeliveredAt: &ts,
 	}
-	err := n.notifications.Update(context.Background(), notif.ID, input)
+	err := w.notifications.Update(context.Background(), notif.ID, input)
 	return err
 }
 
-func (n *Notifier) processNotifications(ctx context.Context) error {
-	domains, err := n.domains.Expiring(ctx)
+func (w *Worker) processNotifications(ctx context.Context) error {
+	domains, err := w.domains.Expiring(ctx)
 	if err != nil {
 		return err
 	}
-	if err := n.notifications.CreateReminders(ctx, domains); err != nil {
+	if err := w.notifications.CreateReminders(ctx, domains); err != nil {
 		return err
 	}
-	notifs, err := n.notifications.AllDue(ctx)
+	notifs, err := w.notifications.AllDue(ctx)
 	if err != nil {
 		return err
 	}
@@ -104,8 +99,8 @@ func (n *Notifier) processNotifications(ctx context.Context) error {
 		wg.Add(1)
 		go func(no Notification) {
 			defer wg.Done()
-			if err := n.notify(notif); err != nil {
-				n.log.Error("failed to notify user", "error", err.Error())
+			if err := w.notify(notif); err != nil {
+				w.log.Error("failed to notify user", "error", err.Error())
 			}
 		}(notif)
 	}
@@ -150,11 +145,4 @@ func sendNotification(logger logging.Logger, client *http.Client, url, msg strin
 		return fmt.Errorf("response status: %s", res.Status)
 	}
 	return nil
-}
-
-func SendTestNotification(url string) error {
-	c := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-	return sendNotification(logging.DefaultLogger(), c, url, testMessage)
 }
