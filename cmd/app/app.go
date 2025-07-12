@@ -9,7 +9,7 @@ import (
 	"github.com/lionpuro/neverexpire/auth"
 	"github.com/lionpuro/neverexpire/config"
 	"github.com/lionpuro/neverexpire/db"
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/user"
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	us := user.NewService(user.NewRepository(pool))
-	ds := domain.NewService(domain.NewRepository(pool))
+	hs := hosts.NewService(hosts.NewRepository(pool))
 	as, err := auth.NewService(conf)
 	ks := keys.NewService(keys.NewRepository(pool))
 	if err != nil {
@@ -33,8 +33,8 @@ func main() {
 	}
 
 	logger := logging.NewLogger()
-	webh := web.NewHandler(logger, us, ds, ks, as)
-	apih := api.NewHandler(logger, us, ds, ks)
+	webh := web.NewHandler(logger, us, hs, ks, as)
+	apih := api.NewHandler(logger, us, hs, ks)
 	srv := newServer(3000, web.NewRouter(webh), api.NewRouter(apih))
 
 	fmt.Printf("Listening on %s...\n", srv.Addr)

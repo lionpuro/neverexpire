@@ -4,30 +4,30 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/user"
 )
 
 type Handler struct {
-	userService   *user.Service
-	domainService *domain.Service
-	keyService    *keys.Service
-	log           logging.Logger
+	userService *user.Service
+	hostService *hosts.Service
+	keyService  *keys.Service
+	log         logging.Logger
 }
 
 func New(
 	logger logging.Logger,
 	us *user.Service,
-	ds *domain.Service,
+	hs *hosts.Service,
 	ks *keys.Service,
 ) *Handler {
 	return &Handler{
-		userService:   us,
-		domainService: ds,
-		keyService:    ks,
-		log:           logger,
+		userService: us,
+		hostService: hs,
+		keyService:  ks,
+		log:         logger,
 	}
 }
 

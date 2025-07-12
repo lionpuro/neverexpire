@@ -33,13 +33,13 @@ func parseWebhookURL(input string) (string, error) {
 	return "", fmt.Errorf("invalid webhook url")
 }
 
-func parseDomain(input string) (string, error) {
+func parseHostname(input string) (string, error) {
 	if len(input) > 200 {
-		return "", fmt.Errorf("domain too long")
+		return "", fmt.Errorf("hostname too long")
 	}
 	s := strings.TrimSpace(input)
 	if s == "" {
-		return "", fmt.Errorf("domain can't be empty")
+		return "", fmt.Errorf("hostname can't be empty")
 	}
 	split := strings.Split(s, "://")
 	if len(split) > 1 {
@@ -58,14 +58,14 @@ func parseDomain(input string) (string, error) {
 	}
 	dn := u.Hostname()
 	if dn == "" {
-		return "", fmt.Errorf("invalid domain")
+		return "", fmt.Errorf("invalid hostname")
 	}
 	for _, s := range strings.Split(dn, ".") {
 		if len(s) == 0 {
-			return "", fmt.Errorf("invalid domain")
+			return "", fmt.Errorf("invalid hostname")
 		}
 		if !isAlphanumeric(rune(s[0])) || !isAlphanumeric(rune(s[len(s)-1])) {
-			return "", fmt.Errorf("illegal character in domain name")
+			return "", fmt.Errorf("illegal character in hostname")
 		}
 	}
 

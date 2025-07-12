@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/user"
 	"github.com/lionpuro/neverexpire/web/views"
@@ -14,11 +14,11 @@ func TestRender(t *testing.T) {
 	testUser := &user.User{
 		Email: "tester@neverexpire.xyz",
 	}
-	testDomains := []domain.Domain{
+	testHosts := []hosts.Host{
 		{
 			ID:          1,
-			DomainName:  "neverexpire.xyz",
-			Certificate: domain.CertificateInfo{},
+			HostName:    "neverexpire.xyz",
+			Certificate: hosts.CertificateInfo{},
 		},
 	}
 	// Home
@@ -36,26 +36,26 @@ func TestRender(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 	})
-	// Domains
-	t.Run("domains", func(t *testing.T) {
+	// Hosts
+	t.Run("hosts", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		err := views.Domains(&buf, views.LayoutData{User: testUser}, testDomains)
+		err := views.Hosts(&buf, views.LayoutData{User: testUser}, testHosts)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 	})
-	// Domain
-	t.Run("domain", func(t *testing.T) {
+	// Host
+	t.Run("host", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		err := views.Domain(&buf, views.LayoutData{User: testUser}, testDomains[0])
+		err := views.Host(&buf, views.LayoutData{User: testUser}, testHosts[0])
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 	})
-	// NewDomain
-	t.Run("new domain", func(t *testing.T) {
+	// NewHost
+	t.Run("new host", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		err := views.NewDomains(&buf, views.LayoutData{User: testUser}, "")
+		err := views.NewHosts(&buf, views.LayoutData{User: testUser}, "")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

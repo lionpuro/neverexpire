@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -35,19 +35,19 @@ func (s *Service) AllDue(ctx context.Context) ([]Notification, error) {
 	return s.repo.AllDue(ctx)
 }
 
-func (s *Service) CreateReminders(ctx context.Context, domains []domain.DomainWithUser) error {
-	if len(domains) == 0 {
+func (s *Service) CreateReminders(ctx context.Context, hosts []hosts.HostWithUser) error {
+	if len(hosts) == 0 {
 		return nil
 	}
 	var eg errgroup.Group
-	for _, d := range domains {
+	for _, h := range hosts {
 		eg.Go(func() error {
 			now := time.Now().UTC()
-			if d.Domain.Certificate.ExpiresAt == nil {
+			if h.Host.Certificate.ExpiresAt == nil {
 				return nil
 			}
-			if !d.Domain.Certificate.ExpiresAt.Before(now) {
-				if err := s.createReminder(ctx, d); err != nil {
+			if !h.Host.Certificate.ExpiresAt.Before(now) {
+				if err := s.createReminder(ctx, h); err != nil {
 					return err
 				}
 			}
@@ -60,19 +60,19 @@ func (s *Service) CreateReminders(ctx context.Context, domains []domain.DomainWi
 	return nil
 }
 
-func (s *Service) createReminder(ctx context.Context, record domain.DomainWithUser) error {
-	exp := record.Domain.Certificate.ExpiresAt
+func (s *Service) createReminder(ctx context.Context, record hosts.HostWithUser) error {
+	exp := record.Host.Certificate.ExpiresAt
 	if exp == nil {
 		return nil
 	}
-	msg := formatReminder(record.Domain)
+	msg := formatReminder(record.Host)
 	diff := time.Duration(record.Settings.RemindBefore) * time.Second
 	input := NotificationInput{
 		UserID:       record.User.ID,
-		DomainID:     record.Domain.ID,
+		HostID:       record.Host.ID,
 		Type:         NotificationTypeExpiration,
 		Body:         msg,
-		Due:          record.Domain.Certificate.ExpiresAt.Add(-diff),
+		Due:          record.Host.Certificate.ExpiresAt.Add(-diff),
 		DeliveredAt:  nil,
 		Attempts:     0,
 		DeletedAfter: *exp,
@@ -80,7 +80,7 @@ func (s *Service) createReminder(ctx context.Context, record domain.DomainWithUs
 	return s.repo.Create(ctx, input)
 }
 
-func formatReminder(d domain.Domain) string {
+func formatReminder(d hosts.Host) string {
 	hours := int(d.Certificate.TimeLeft().Hours())
 	count := hours / 24
 	unit := "days"
@@ -98,7 +98,7 @@ func formatReminder(d domain.Domain) string {
 	}
 	msg := fmt.Sprintf(
 		"TLS certificate for %s is expiring in %d %s (at %s UTC)",
-		d.DomainName,
+		d.HostName,
 		count,
 		unit,
 		d.Certificate.ExpiresAt.Format(time.DateTime),

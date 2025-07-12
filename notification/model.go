@@ -20,7 +20,7 @@ type Notification struct {
 	ID           int              `db:"id"`
 	Endpoint     string           `db:"endpoint"`
 	UserID       string           `db:"user_id"`
-	DomainID     int              `db:"domain_id"`
+	HostID       int              `db:"host_id"`
 	Type         NotificationType `db:"notification_type"`
 	Body         string           `db:"body"`
 	Due          time.Time        `db:"due"`
@@ -31,7 +31,7 @@ type Notification struct {
 
 type NotificationInput struct {
 	UserID       string
-	DomainID     int
+	HostID       int
 	Type         NotificationType
 	Body         string
 	Due          time.Time
@@ -42,7 +42,7 @@ type NotificationInput struct {
 
 type NotificationUpdate struct {
 	UserID       *string
-	DomainID     *int
+	HostID       *int
 	Type         *NotificationType
 	Body         *string
 	Due          *time.Time

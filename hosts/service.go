@@ -1,4 +1,4 @@
-package domain
+package hosts
 
 import (
 	"context"
@@ -19,27 +19,27 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) ByID(ctx context.Context, id int, userID string) (Domain, error) {
+func (s *Service) ByID(ctx context.Context, id int, userID string) (Host, error) {
 	return s.repo.ByID(ctx, userID, id)
 }
 
-func (s *Service) AllByUser(ctx context.Context, userID string) ([]Domain, error) {
+func (s *Service) AllByUser(ctx context.Context, userID string) ([]Host, error) {
 	return s.repo.AllByUser(ctx, userID)
 }
 
-func (s *Service) All(ctx context.Context) ([]Domain, error) {
+func (s *Service) All(ctx context.Context) ([]Host, error) {
 	return s.repo.All(ctx)
 }
 
-func (s *Service) Expiring(ctx context.Context) ([]DomainWithUser, error) {
+func (s *Service) Expiring(ctx context.Context) ([]HostWithUser, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 	return s.repo.Expiring(ctx)
 }
 
 func (s *Service) Create(user user.User, names []string) error {
-	domainch := make(chan Domain, len(names))
-	domains := make([]Domain, 0)
+	hostch := make(chan Host, len(names))
+	hosts := make([]Host, 0)
 	eg, ctx := errgroup.WithContext(context.Background())
 	for _, name := range names {
 		eg.Go(func() error {
@@ -58,12 +58,12 @@ func (s *Service) Create(user user.User, names []string) error {
 					Error:     err,
 				}
 			}
-			domain := Domain{
-				DomainName:  name,
+			host := Host{
+				HostName:    name,
 				Certificate: *info,
 			}
 			select {
-			case domainch <- domain:
+			case hostch <- host:
 			case <-ctx.Done():
 				return context.Canceled
 			default:
@@ -74,17 +74,17 @@ func (s *Service) Create(user user.User, names []string) error {
 	if err := eg.Wait(); err != nil {
 		return err
 	}
-	close(domainch)
-	for d := range domainch {
-		domains = append(domains, d)
+	close(hostch)
+	for h := range hostch {
+		hosts = append(hosts, h)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	return s.repo.Create(ctx, user.ID, domains)
+	return s.repo.Create(ctx, user.ID, hosts)
 }
 
-func (s *Service) Update(ctx context.Context, domains []Domain) error {
-	return s.repo.Update(ctx, domains)
+func (s *Service) Update(ctx context.Context, hosts []Host) error {
+	return s.repo.Update(ctx, hosts)
 }
 
 func (s *Service) Delete(userID string, id int) error {

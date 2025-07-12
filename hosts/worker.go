@@ -1,4 +1,4 @@
-package domain
+package hosts
 
 import (
 	"context"
@@ -12,15 +12,15 @@ import (
 
 type Worker struct {
 	interval time.Duration
-	domains  *Service
+	hosts    *Service
 	quit     chan struct{}
 	log      logging.Logger
 }
 
-func NewWorker(interval time.Duration, ds *Service, logger logging.Logger) *Worker {
+func NewWorker(interval time.Duration, hs *Service, logger logging.Logger) *Worker {
 	return &Worker{
 		interval: interval,
-		domains:  ds,
+		hosts:    hs,
 		quit:     make(chan struct{}),
 		log:      logger,
 	}
@@ -38,7 +38,7 @@ func (w *Worker) Start() {
 			start := time.Now()
 			w.log.Info(fmt.Sprintf("start polling at %v", t))
 			if err := w.poll(); err != nil {
-				w.log.Error("error polling domains", "error", err.Error())
+				w.log.Error("error polling hosts", "error", err.Error())
 			}
 			w.log.Info(fmt.Sprintf("finish polling in %v", time.Since(start)))
 		case <-w.quit:
@@ -49,23 +49,23 @@ func (w *Worker) Start() {
 }
 
 func (w *Worker) poll() error {
-	domains, err := w.domains.All(context.Background())
+	hosts, err := w.hosts.All(context.Background())
 	if err != nil {
 		return err
 	}
 	workers := make(chan struct{}, 15)
 	wg := sync.WaitGroup{}
-	results := make(chan Domain, len(domains))
+	results := make(chan Host, len(hosts))
 
-	for _, dom := range domains {
+	for _, hst := range hosts {
 		wg.Add(1)
-		go func(d Domain) {
+		go func(h Host) {
 			workers <- struct{}{}
 			defer func() {
 				<-workers
 				wg.Done()
 			}()
-			cert, err := FetchCert(context.Background(), d.DomainName)
+			cert, err := FetchCert(context.Background(), h.HostName)
 			if err != nil {
 				cert = &CertificateInfo{
 					Status:    CertificateStatusOffline,
@@ -74,10 +74,10 @@ func (w *Worker) poll() error {
 					Error:     err,
 				}
 			}
-			domain := d
-			domain.Certificate = *cert
-			results <- domain
-		}(dom)
+			host := h
+			host.Certificate = *cert
+			results <- host
+		}(hst)
 	}
 
 	wg.Wait()
@@ -85,14 +85,14 @@ func (w *Worker) poll() error {
 	return w.updateData(results)
 }
 
-func (w *Worker) updateData(domainch chan Domain) error {
-	domains := make([]Domain, len(domainch))
+func (w *Worker) updateData(hostch chan Host) error {
+	hosts := make([]Host, len(hostch))
 	i := 0
-	for d := range domainch {
-		domains[i] = d
+	for h := range hostch {
+		hosts[i] = h
 		i++
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	return w.domains.Update(ctx, domains)
+	return w.hosts.Update(ctx, hosts)
 }

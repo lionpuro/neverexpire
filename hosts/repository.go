@@ -1,4 +1,4 @@
-package domain
+package hosts
 
 import (
 	"context"
@@ -19,29 +19,29 @@ func NewRepository(dbpool *pgxpool.Pool) *Repository {
 	return &Repository{DB: dbpool}
 }
 
-func (r *Repository) ByID(ctx context.Context, userID string, id int) (Domain, error) {
+func (r *Repository) ByID(ctx context.Context, userID string, id int) (Host, error) {
 	row := r.DB.QueryRow(ctx, `
 	SELECT
-		d.id,
-		d.domain_name,
-		d.dns_names,
-		d.ip_address,
-		d.issued_by,
-		d.status,
-		d.expires_at,
-		d.checked_at,
-		d.latency,
-		d.signature,
-		d.error_message
-	FROM domains d
-	INNER JOIN user_domains ud
-		ON d.id = ud.domain_id
-	WHERE d.id = $1 AND ud.user_id = $2`, id, userID)
-	var result Domain
+		h.id,
+		h.hostname,
+		h.dns_names,
+		h.ip_address,
+		h.issued_by,
+		h.status,
+		h.expires_at,
+		h.checked_at,
+		h.latency,
+		h.signature,
+		h.error_message
+	FROM hosts h
+	INNER JOIN user_hosts uh
+		ON h.id = uh.host_id
+	WHERE h.id = $1 AND uh.user_id = $2`, id, userID)
+	var result Host
 	var errStr *string
 	err := row.Scan(
 		&result.ID,
-		&result.DomainName,
+		&result.HostName,
 		&result.Certificate.DNSNames,
 		&result.Certificate.IP,
 		&result.Certificate.IssuedBy,
@@ -53,7 +53,7 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (Domain, e
 		&errStr,
 	)
 	if err != nil {
-		return Domain{}, err
+		return Host{}, err
 	}
 	if errStr != nil {
 		result.Certificate.Error = errors.New(*errStr)
@@ -62,7 +62,7 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (Domain, e
 	return result, nil
 }
 
-func (r *Repository) All(ctx context.Context) ([]Domain, error) {
+func (r *Repository) All(ctx context.Context) ([]Host, error) {
 	order := fmt.Sprintf(
 		"array[%d, %d, %d]",
 		CertificateStatusUnknown,
@@ -72,7 +72,7 @@ func (r *Repository) All(ctx context.Context) ([]Domain, error) {
 	q := fmt.Sprintf(`
 		SELECT
 			id,
-			domain_name,
+			hostname,
 			dns_names,
 			ip_address,
 			issued_by,
@@ -82,7 +82,7 @@ func (r *Repository) All(ctx context.Context) ([]Domain, error) {
 			latency,
 			signature,
 			error_message
-		FROM domains
+		FROM hosts
 		ORDER BY
 			array_position(%s, status),
 			expires_at`,
@@ -94,65 +94,65 @@ func (r *Repository) All(ctx context.Context) ([]Domain, error) {
 	}
 	defer rows.Close()
 
-	var domains []Domain
+	var hosts []Host
 	for rows.Next() {
-		var d Domain
+		var h Host
 		var errStr *string
 		err := rows.Scan(
-			&d.ID,
-			&d.DomainName,
-			&d.Certificate.DNSNames,
-			&d.Certificate.IP,
-			&d.Certificate.IssuedBy,
-			&d.Certificate.Status,
-			&d.Certificate.ExpiresAt,
-			&d.Certificate.CheckedAt,
-			&d.Certificate.Latency,
-			&d.Certificate.Signature,
+			&h.ID,
+			&h.HostName,
+			&h.Certificate.DNSNames,
+			&h.Certificate.IP,
+			&h.Certificate.IssuedBy,
+			&h.Certificate.Status,
+			&h.Certificate.ExpiresAt,
+			&h.Certificate.CheckedAt,
+			&h.Certificate.Latency,
+			&h.Certificate.Signature,
 			&errStr,
 		)
 		if err != nil {
 			return nil, err
 		}
 		if errStr != nil {
-			d.Certificate.Error = errors.New(*errStr)
+			h.Certificate.Error = errors.New(*errStr)
 		}
-		domains = append(domains, d)
+		hosts = append(hosts, h)
 	}
 
-	return domains, nil
+	return hosts, nil
 }
 
-func (r *Repository) Expiring(ctx context.Context) ([]DomainWithUser, error) {
+func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
 	q := `
 	SELECT
-		d.id,
-		d.domain_name,
-		d.dns_names,
-		d.ip_address,
-		d.issued_by,
-		d.status,
-		d.expires_at,
-		d.checked_at,
-		d.latency,
-		d.signature,
-		d.error_message,
+		h.id,
+		h.hostname,
+		h.dns_names,
+		h.ip_address,
+		h.issued_by,
+		h.status,
+		h.expires_at,
+		h.checked_at,
+		h.latency,
+		h.signature,
+		h.error_message,
 		u.id as user_id,
 		u.email as user_email,
 		s.webhook_url,
 		s.remind_before
-	FROM domains d
-	INNER JOIN user_domains ud
-		ON d.id = ud.domain_id
+	FROM hosts h
+	INNER JOIN user_hosts uh
+		ON h.id = uh.host_id
 	INNER JOIN users u
-		ON ud.user_id = u.id
+		ON uh.user_id = u.id
 	INNER JOIN settings s
 		ON u.id = s.user_id
-	WHERE (d.expires_at - (s.remind_before * interval '1 second')) <= (now() at time zone 'utc')
+	WHERE (h.expires_at - (s.remind_before * interval '1 second')) <= (now() at time zone 'utc')
 	AND NOT EXISTS(
 		SELECT 1 FROM notifications n
-		WHERE n.domain_id = d.id
-		AND n.due = (d.expires_at - (s.remind_before * interval '1 second'))
+		WHERE n.host_id = h.id
+		AND n.due = (h.expires_at - (s.remind_before * interval '1 second'))
 		AND n.delivered_at IS NOT NULL
 		AND n.attempts < 3
 	)
@@ -163,21 +163,21 @@ func (r *Repository) Expiring(ctx context.Context) ([]DomainWithUser, error) {
 	}
 	defer rows.Close()
 
-	var domains []DomainWithUser
+	var hosts []HostWithUser
 	for rows.Next() {
-		var record DomainWithUser
+		var record HostWithUser
 		var errStr *string
 		err := rows.Scan(
-			&record.Domain.ID,
-			&record.Domain.DomainName,
-			&record.Domain.Certificate.DNSNames,
-			&record.Domain.Certificate.IP,
-			&record.Domain.Certificate.IssuedBy,
-			&record.Domain.Certificate.Status,
-			&record.Domain.Certificate.ExpiresAt,
-			&record.Domain.Certificate.CheckedAt,
-			&record.Domain.Certificate.Latency,
-			&record.Domain.Certificate.Signature,
+			&record.Host.ID,
+			&record.Host.HostName,
+			&record.Host.Certificate.DNSNames,
+			&record.Host.Certificate.IP,
+			&record.Host.Certificate.IssuedBy,
+			&record.Host.Certificate.Status,
+			&record.Host.Certificate.ExpiresAt,
+			&record.Host.Certificate.CheckedAt,
+			&record.Host.Certificate.Latency,
+			&record.Host.Certificate.Signature,
 			&errStr,
 			&record.User.ID,
 			&record.User.Email,
@@ -188,15 +188,15 @@ func (r *Repository) Expiring(ctx context.Context) ([]DomainWithUser, error) {
 			return nil, err
 		}
 		if errStr != nil {
-			record.Domain.Certificate.Error = errors.New(*errStr)
+			record.Host.Certificate.Error = errors.New(*errStr)
 		}
-		domains = append(domains, record)
+		hosts = append(hosts, record)
 	}
 
-	return domains, nil
+	return hosts, nil
 }
 
-func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Domain, error) {
+func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Host, error) {
 	order := fmt.Sprintf(
 		"array[%d, %d, %d]",
 		CertificateStatusUnknown,
@@ -205,25 +205,25 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Domain, er
 	)
 	q := fmt.Sprintf(`
 		SELECT
-			d.id,
-			d.domain_name,
-			d.dns_names,
-			d.ip_address,
-			d.issued_by,
-			d.status,
-			d.expires_at,
-			d.checked_at,
-			d.latency,
-			d.signature,
-			d.error_message
-		FROM domains d
-		INNER JOIN user_domains ud
-			ON d.id = ud.domain_id
-		WHERE ud.user_id = $1
+			h.id,
+			h.hostname,
+			h.dns_names,
+			h.ip_address,
+			h.issued_by,
+			h.status,
+			h.expires_at,
+			h.checked_at,
+			h.latency,
+			h.signature,
+			h.error_message
+		FROM hosts h
+		INNER JOIN user_hosts uh
+			ON h.id = uh.host_id
+		WHERE uh.user_id = $1
 		ORDER BY
 			array_position(%s, status),
 			expires_at,
-			domain_name`,
+			hostname`,
 		order,
 	)
 	rows, err := r.DB.Query(ctx, q, userID)
@@ -232,36 +232,36 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Domain, er
 	}
 	defer rows.Close()
 
-	var domains []Domain
+	var hosts []Host
 	for rows.Next() {
-		var d Domain
+		var h Host
 		var errStr *string
 		err := rows.Scan(
-			&d.ID,
-			&d.DomainName,
-			&d.Certificate.DNSNames,
-			&d.Certificate.IP,
-			&d.Certificate.IssuedBy,
-			&d.Certificate.Status,
-			&d.Certificate.ExpiresAt,
-			&d.Certificate.CheckedAt,
-			&d.Certificate.Latency,
-			&d.Certificate.Signature,
+			&h.ID,
+			&h.HostName,
+			&h.Certificate.DNSNames,
+			&h.Certificate.IP,
+			&h.Certificate.IssuedBy,
+			&h.Certificate.Status,
+			&h.Certificate.ExpiresAt,
+			&h.Certificate.CheckedAt,
+			&h.Certificate.Latency,
+			&h.Certificate.Signature,
 			&errStr,
 		)
 		if err != nil {
 			return nil, err
 		}
 		if errStr != nil {
-			d.Certificate.Error = errors.New(*errStr)
+			h.Certificate.Error = errors.New(*errStr)
 		}
-		domains = append(domains, d)
+		hosts = append(hosts, h)
 	}
 
-	return domains, nil
+	return hosts, nil
 }
 
-func (r *Repository) Create(ctx context.Context, uid string, domains []Domain) error {
+func (r *Repository) Create(ctx context.Context, uid string, hosts []Host) error {
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -272,16 +272,16 @@ func (r *Repository) Create(ctx context.Context, uid string, domains []Domain) e
 		}
 	}()
 
-	for _, d := range domains {
+	for _, h := range hosts {
 		var id int
 		var errStr *string = nil
-		if d.Certificate.Error != nil {
-			str := d.Certificate.Error.Error()
+		if h.Certificate.Error != nil {
+			str := h.Certificate.Error.Error()
 			errStr = &str
 		}
 		err := tx.QueryRow(ctx, `
-		INSERT INTO domains (
-			domain_name,
+		INSERT INTO hosts (
+			hostname,
 			dns_names,
 			ip_address,
 			issued_by,
@@ -293,7 +293,7 @@ func (r *Repository) Create(ctx context.Context, uid string, domains []Domain) e
 			error_message
 		)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		ON CONFLICT (domain_name) DO UPDATE SET
+		ON CONFLICT (hostname) DO UPDATE SET
 			dns_names      = EXCLUDED.dns_names,
 			ip_address     = EXCLUDED.ip_address,
 			issued_by      = EXCLUDED.issued_by,
@@ -305,15 +305,15 @@ func (r *Repository) Create(ctx context.Context, uid string, domains []Domain) e
 			error_message  = EXCLUDED.error_message
 		RETURNING id
 		`,
-			d.DomainName,
-			d.Certificate.DNSNames,
-			d.Certificate.IP,
-			d.Certificate.IssuedBy,
-			d.Certificate.Status,
-			d.Certificate.ExpiresAt,
-			d.Certificate.CheckedAt,
-			d.Certificate.Latency,
-			d.Certificate.Signature,
+			h.HostName,
+			h.Certificate.DNSNames,
+			h.Certificate.IP,
+			h.Certificate.IssuedBy,
+			h.Certificate.Status,
+			h.Certificate.ExpiresAt,
+			h.Certificate.CheckedAt,
+			h.Certificate.Latency,
+			h.Certificate.Signature,
 			errStr,
 		).Scan(&id)
 		if err != nil {
@@ -321,13 +321,13 @@ func (r *Repository) Create(ctx context.Context, uid string, domains []Domain) e
 		}
 
 		_, err = tx.Exec(ctx,
-			`INSERT INTO user_domains (domain_id, user_id) VALUES ($1, $2)`,
+			`INSERT INTO user_hosts (host_id, user_id) VALUES ($1, $2)`,
 			id, uid,
 		)
 		if err != nil {
-			str := `duplicate key value violates unique constraint "uq_user_domains_user_id_domain_id"`
+			str := `duplicate key value violates unique constraint "uq_user_hosts_user_id_host_id"`
 			if strings.Contains(err.Error(), str) {
-				return fmt.Errorf("already tracking %s", d.DomainName)
+				return fmt.Errorf("already tracking %s", h.HostName)
 			}
 			return err
 		}
@@ -348,16 +348,16 @@ func (r *Repository) Delete(ctx context.Context, uid string, id int) error {
 			logging.DefaultLogger().Error("failed to rollback tx", "error", err.Error())
 		}
 	}()
-	_, err = tx.Exec(ctx, `DELETE FROM user_domains WHERE domain_id = $1 AND user_id = $2`, id, uid)
+	_, err = tx.Exec(ctx, `DELETE FROM user_hosts WHERE host_id = $1 AND user_id = $2`, id, uid)
 	if err != nil {
 		return err
 	}
 	_, err = tx.Exec(ctx, `
-		DELETE FROM domains
+		DELETE FROM hosts
 		WHERE id = $1
 		AND NOT EXISTS (
-			SELECT 1 FROM user_domains ud
-			WHERE ud.domain_id = $1
+			SELECT 1 FROM user_hosts uh
+			WHERE uh.host_id = $1
 		)`, id)
 	if err != nil {
 		return err
@@ -368,7 +368,7 @@ func (r *Repository) Delete(ctx context.Context, uid string, id int) error {
 	return nil
 }
 
-func (r *Repository) Update(ctx context.Context, domains []Domain) error {
+func (r *Repository) Update(ctx context.Context, hosts []Host) error {
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
 		return err
@@ -379,14 +379,14 @@ func (r *Repository) Update(ctx context.Context, domains []Domain) error {
 		}
 	}()
 
-	for _, d := range domains {
+	for _, h := range hosts {
 		var errStr *string = nil
-		if d.Certificate.Error != nil {
-			str := d.Certificate.Error.Error()
+		if h.Certificate.Error != nil {
+			str := h.Certificate.Error.Error()
 			errStr = &str
 		}
 		_, err := tx.Exec(ctx, `
-		UPDATE domains
+		UPDATE hosts
 		SET
 			dns_names = $1,
 			ip_address = $2,
@@ -400,16 +400,16 @@ func (r *Repository) Update(ctx context.Context, domains []Domain) error {
 			updated_at = (now() at time zone 'utc')
 		WHERE id = $10
 		`,
-			d.Certificate.DNSNames,
-			d.Certificate.IP,
-			d.Certificate.IssuedBy,
-			d.Certificate.Status,
-			d.Certificate.ExpiresAt,
-			d.Certificate.CheckedAt,
-			d.Certificate.Latency,
-			d.Certificate.Signature,
+			h.Certificate.DNSNames,
+			h.Certificate.IP,
+			h.Certificate.IssuedBy,
+			h.Certificate.Status,
+			h.Certificate.ExpiresAt,
+			h.Certificate.CheckedAt,
+			h.Certificate.Latency,
+			h.Certificate.Signature,
 			errStr,
-			d.ID,
+			h.ID,
 		)
 		if err != nil {
 			return err

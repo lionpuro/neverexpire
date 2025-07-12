@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/logging"
 )
 
@@ -21,14 +21,14 @@ type Worker struct {
 	interval      time.Duration
 	client        *http.Client
 	notifications *Service
-	domains       *domain.Service
+	hosts         *hosts.Service
 	log           logging.Logger
 }
 
 func NewWorker(
 	interval time.Duration,
 	ns *Service,
-	ds *domain.Service,
+	hs *hosts.Service,
 	logger logging.Logger,
 ) *Worker {
 	return &Worker{
@@ -37,7 +37,7 @@ func NewWorker(
 			Timeout: 10 * time.Second,
 		},
 		notifications: ns,
-		domains:       ds,
+		hosts:         hs,
 		log:           logger,
 	}
 }
@@ -82,11 +82,11 @@ func (w *Worker) notify(notif Notification) error {
 }
 
 func (w *Worker) processNotifications(ctx context.Context) error {
-	domains, err := w.domains.Expiring(ctx)
+	hosts, err := w.hosts.Expiring(ctx)
 	if err != nil {
 		return err
 	}
-	if err := w.notifications.CreateReminders(ctx, domains); err != nil {
+	if err := w.notifications.CreateReminders(ctx, hosts); err != nil {
 		return err
 	}
 	notifs, err := w.notifications.AllDue(ctx)

@@ -8,7 +8,7 @@ import (
 
 	"github.com/lionpuro/neverexpire/config"
 	"github.com/lionpuro/neverexpire/db"
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/notification"
 )
@@ -21,15 +21,15 @@ func main() {
 		return
 	}
 
-	ds := domain.NewService(domain.NewRepository(pool))
+	hs := hosts.NewService(hosts.NewRepository(pool))
 	ns := notification.NewService(notification.NewRepository(pool))
 	logger := logging.NewLogger()
-	updater := domain.NewWorker(30*time.Minute, ds, logger)
-	notifier := notification.NewWorker(60*time.Second, ns, ds, logger)
+	updater := hosts.NewWorker(30*time.Minute, hs, logger)
+	notifier := notification.NewWorker(60*time.Second, ns, hs, logger)
 
 	fmt.Println("Starting notification service...")
 	go notifier.Start(context.Background())
 
-	fmt.Println("Starting domain monitoring service...")
+	fmt.Println("Starting monitoring service...")
 	updater.Start()
 }

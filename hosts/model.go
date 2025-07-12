@@ -1,4 +1,4 @@
-package domain
+package hosts
 
 import (
 	"time"
@@ -6,9 +6,9 @@ import (
 	"github.com/lionpuro/neverexpire/user"
 )
 
-type Domain struct {
+type Host struct {
 	ID          int    `db:"id"`
-	DomainName  string `db:"domain_name"`
+	HostName    string `db:"hostname"`
 	Certificate CertificateInfo
 }
 
@@ -24,8 +24,8 @@ type CertificateInfo struct {
 	Error     error             `db:"-"`
 }
 
-type DomainWithUser struct {
-	Domain   Domain
+type HostWithUser struct {
+	Host     Host
 	User     user.User
 	Settings user.Settings
 }
@@ -38,23 +38,23 @@ type APIModel struct {
 	Error     *string    `json:"error"`
 }
 
-func ToAPIModel(d Domain) APIModel {
+func ToAPIModel(h Host) APIModel {
 	var errMsg *string
-	if err := d.Certificate.Error; err != nil {
+	if err := h.Certificate.Error; err != nil {
 		msg := err.Error()
 		errMsg = &msg
 	}
-	domain := APIModel{
-		HostName:  d.DomainName,
-		Issuer:    &d.Certificate.IssuedBy,
-		ExpiresAt: d.Certificate.ExpiresAt,
-		CheckedAt: d.Certificate.CheckedAt,
+	result := APIModel{
+		HostName:  h.HostName,
+		Issuer:    &h.Certificate.IssuedBy,
+		ExpiresAt: h.Certificate.ExpiresAt,
+		CheckedAt: h.Certificate.CheckedAt,
 		Error:     errMsg,
 	}
-	if iss := d.Certificate.IssuedBy; iss == "n/a" || iss == "" {
-		domain.Issuer = nil
+	if iss := h.Certificate.IssuedBy; iss == "n/a" || iss == "" {
+		result.Issuer = nil
 	}
-	return domain
+	return result
 }
 
 func (c CertificateInfo) TimeLeft() time.Duration {

@@ -21,7 +21,7 @@ func (r *Repository) AllDue(ctx context.Context) ([]Notification, error) {
 		s.webhook_url as endpoint,
 		n.id,
 		n.user_id,
-		n.domain_id,
+		n.host_id,
 		n.notification_type,
 		n.body,
 		n.due,
@@ -55,7 +55,7 @@ func (r *Repository) Create(ctx context.Context, n NotificationInput) error {
 	q := `
 	INSERT INTO notifications (
 		user_id,
-		domain_id,
+		host_id,
 		notification_type,
 		body,
 		due,
@@ -63,8 +63,8 @@ func (r *Repository) Create(ctx context.Context, n NotificationInput) error {
 		deleted_after
 	)
 	VALUES ($1, $2, $3, $4, $5, $6, $7)
-	ON CONFLICT (domain_id, due) DO NOTHING`
-	_, err := r.DB.Exec(ctx, q, n.UserID, n.DomainID, n.Type, n.Body, n.Due, n.Attempts, n.DeletedAfter)
+	ON CONFLICT (host_id, due) DO NOTHING`
+	_, err := r.DB.Exec(ctx, q, n.UserID, n.HostID, n.Type, n.Body, n.Due, n.Attempts, n.DeletedAfter)
 	return err
 }
 

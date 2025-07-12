@@ -19,11 +19,11 @@ func NewRouter(h *handlers.Handler) *http.ServeMux {
 	}
 
 	handle("GET /{$}", h.HomePage)
-	handle("GET /domains", h.RequireAuth(h.DomainsPage))
-	handle("GET /domains/new", h.RequireAuth(h.NewDomainsPage))
-	handle("POST /domains", h.RequireAuth(h.CreateDomains))
-	handle("GET /domains/{id}", h.RequireAuth(h.DomainPage))
-	handle("DELETE /domains/{id}", h.RequireAuth(h.DeleteDomain))
+	handle("GET /hosts", h.RequireAuth(h.HostsPage))
+	handle("GET /hosts/new", h.RequireAuth(h.NewHostsPage))
+	handle("POST /hosts", h.RequireAuth(h.CreateHosts))
+	handle("GET /hosts/{id}", h.RequireAuth(h.HostPage))
+	handle("DELETE /hosts/{id}", h.RequireAuth(h.DeleteHost))
 	handle("GET /login", h.LoginPage)
 	handle("GET /logout", h.Logout)
 	handle("DELETE /account", h.RequireAuth(h.DeleteAccount))

@@ -7,7 +7,7 @@ import (
 	"io"
 	"path/filepath"
 
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/notification"
 	"github.com/lionpuro/neverexpire/user"
@@ -26,15 +26,15 @@ type LayoutData struct {
 }
 
 var (
-	homeTmpl       = parse("pages/index.html")
-	errorPageTmpl  = parse("pages/error.html")
-	domainsTmpl    = parse("pages/domains/domains.html")
-	domainTmpl     = parse("pages/domains/domain.html")
-	newDomainsTmpl = parse("pages/domains/new.html")
-	settingsTmpl   = parse("pages/settings.html")
-	apiTmpl        = parse("pages/api.html")
-	loginTmpl      = parse("pages/login.html")
-	partials       = parsePartials()
+	homeTmpl      = parse("pages/index.html")
+	errorPageTmpl = parse("pages/error.html")
+	hostsTmpl     = parse("pages/hosts/hosts.html")
+	hostTmpl      = parse("pages/hosts/host.html")
+	newHostsTmpl  = parse("pages/hosts/new.html")
+	settingsTmpl  = parse("pages/settings.html")
+	apiTmpl       = parse("pages/api.html")
+	loginTmpl     = parse("pages/login.html")
+	partials      = parsePartials()
 )
 
 func Home(w io.Writer, ld LayoutData) error {
@@ -46,21 +46,21 @@ func Error(w io.Writer, ld LayoutData, code int, msg string) error {
 	return errorPageTmpl.render(w, data)
 }
 
-func Domains(w io.Writer, ld LayoutData, domains []domain.Domain) error {
-	data := map[string]any{"LayoutData": ld, "Domains": domains}
-	return domainsTmpl.render(w, data)
+func Hosts(w io.Writer, ld LayoutData, hosts []hosts.Host) error {
+	data := map[string]any{"LayoutData": ld, "Hosts": hosts}
+	return hostsTmpl.render(w, data)
 }
 
-func Domain(w io.Writer, ld LayoutData, d domain.Domain) error {
-	return domainTmpl.render(w, map[string]any{"LayoutData": ld, "Domain": d})
+func Host(w io.Writer, ld LayoutData, h hosts.Host) error {
+	return hostTmpl.render(w, map[string]any{"LayoutData": ld, "Host": h})
 }
 
-func NewDomains(w io.Writer, ld LayoutData, inputValue string) error {
+func NewHosts(w io.Writer, ld LayoutData, inputValue string) error {
 	data := map[string]any{"LayoutData": ld, "InputValue": inputValue}
 	if inputValue == "" {
 		data["InputValue"] = nil
 	}
-	return newDomainsTmpl.render(w, data)
+	return newHostsTmpl.render(w, data)
 }
 
 func Settings(w io.Writer, ld LayoutData, sett user.Settings) error {

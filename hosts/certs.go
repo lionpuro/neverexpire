@@ -1,4 +1,4 @@
-package domain
+package hosts
 
 import (
 	"context"
@@ -13,14 +13,14 @@ import (
 	"github.com/lionpuro/neverexpire/logging"
 )
 
-func FetchCert(ctx context.Context, domain string) (*CertificateInfo, error) {
+func FetchCert(ctx context.Context, hostname string) (*CertificateInfo, error) {
 	errch := make(chan error, 1)
 	result := make(chan CertificateInfo, 1)
 	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 	go func() {
 		start := time.Now().UTC()
-		conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", domain), nil)
+		conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", hostname), nil)
 		if err != nil {
 			status := errorStatus(err)
 			result <- CertificateInfo{

@@ -1,26 +1,26 @@
 {{template "layout" .}}
-{{define "title"}}Add domains - NeverExpire{{end}}
+{{define "title"}}Add hosts - NeverExpire{{end}}
 {{define "content"}}
 	<div class="flex flex-col max-w-3xl gap-4 w-full mx-auto">
 		{{template "h1" withAttributes
-			"Text" "Add domains"
+			"Text" "Add hosts"
 		}}
 		<form
 			class="flex flex-col gap-4"
-			action="/domains"
+			action="/hosts"
 			method="POST"
 			hx-boost="true"
 			hx-push-url="false"
 			hx-disabled-elt="#submit"
 		>
 			<span class="text-base-600">
-				Enter a single domain or a comma separated list of all the domains you
-				want to track.
+				Enter a single domain or a comma separated list of all the domain names
+				you want to track.
 			</span>
 			{{/*prettier-ignore-start*/}}
 			<textarea
-				id="domains"
-				name="domains"
+				id="hosts"
+				name="hosts"
 				placeholder="example.com, google.com"
 				rows="2"
 				class="border border-base-200 p-3 rounded-md focus:outline-2 outline-blue-500 -outline-offset-2"
@@ -35,7 +35,7 @@
 			</button>
 		</form>
 		<script>
-			document.querySelector("#domains").addEventListener("keypress", (e) => {
+			document.querySelector("#hosts").addEventListener("keypress", (e) => {
 				if (e.key === "Enter" && !e.shiftKey) {
 					e.preventDefault();
 					const event = new Event("submit", { cancelable: true });

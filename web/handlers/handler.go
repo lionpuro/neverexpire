@@ -2,33 +2,33 @@ package handlers
 
 import (
 	"github.com/lionpuro/neverexpire/auth"
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/user"
 )
 
 type Handler struct {
-	UserService   *user.Service
-	DomainService *domain.Service
-	AuthService   *auth.Service
-	KeyService    *keys.Service
-	log           logging.Logger
+	UserService *user.Service
+	HostService *hosts.Service
+	AuthService *auth.Service
+	KeyService  *keys.Service
+	log         logging.Logger
 }
 
 func New(
 	logger logging.Logger,
 	us *user.Service,
-	ds *domain.Service,
+	hs *hosts.Service,
 	ks *keys.Service,
 	as *auth.Service,
 ) *Handler {
 	return &Handler{
-		UserService:   us,
-		DomainService: ds,
-		AuthService:   as,
-		KeyService:    ks,
-		log:           logger,
+		UserService: us,
+		HostService: hs,
+		AuthService: as,
+		KeyService:  ks,
+		log:         logger,
 	}
 }
 

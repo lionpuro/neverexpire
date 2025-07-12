@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/lionpuro/neverexpire/api/handlers"
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/user"
@@ -11,8 +11,8 @@ import (
 func NewHandler(
 	logger logging.Logger,
 	us *user.Service,
-	ds *domain.Service,
+	hs *hosts.Service,
 	ks *keys.Service,
 ) *handlers.Handler {
-	return handlers.New(logger, us, ds, ks)
+	return handlers.New(logger, us, hs, ks)
 }

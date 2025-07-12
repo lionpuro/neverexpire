@@ -46,80 +46,80 @@ func TestParseWebhookURL(t *testing.T) {
 	}
 }
 
-func TestParseDomain(t *testing.T) {
+func TestParseHostname(t *testing.T) {
 	var longStr string
 	for range 10 {
 		longStr = longStr + "abcdefghijklmnopqrstuvwxyz"
 	}
 	tests := []struct {
 		name           string
-		domain         string
+		hostname       string
 		expectedResult string
 		expectErr      bool
 	}{
 		{
 			name:           "Empty string",
-			domain:         "",
+			hostname:       "",
 			expectedResult: "",
 			expectErr:      true,
 		},
 		{
 			name:           "No TLD",
-			domain:         "localhost",
+			hostname:       "localhost",
 			expectedResult: "localhost",
 			expectErr:      false,
 		},
 		{
 			name:           "No TLD with port",
-			domain:         "localhost:80",
+			hostname:       "localhost:80",
 			expectedResult: "localhost",
 			expectErr:      false,
 		},
 		{
 			name:           "Valid domain",
-			domain:         "example.com",
+			hostname:       "example.com",
 			expectedResult: "example.com",
 			expectErr:      false,
 		},
 		{
 			name:           "Valid subdomain",
-			domain:         "www.example.com",
+			hostname:       "www.example.com",
 			expectedResult: "www.example.com",
 			expectErr:      false,
 		},
 		{
 			name:           "Valid domain with protocol",
-			domain:         "https://example.com",
+			hostname:       "https://example.com",
 			expectedResult: "example.com",
 			expectErr:      false,
 		},
 		{
 			name:           "Valid domain with leading and trailing whitespaces",
-			domain:         " example.com ",
+			hostname:       " example.com ",
 			expectedResult: "example.com",
 			expectErr:      false,
 		},
 		{
 			name:           "Invalid domain (starts with '-')",
-			domain:         "-example.com",
+			hostname:       "-example.com",
 			expectedResult: "",
 			expectErr:      true,
 		},
 		{
 			name:           "Invalid protocol",
-			domain:         "htp://example.com",
+			hostname:       "htp://example.com",
 			expectedResult: "",
 			expectErr:      true,
 		},
 		{
 			name:           "No host",
-			domain:         "https://",
+			hostname:       "https://",
 			expectedResult: "",
 			expectErr:      true,
 		},
 		{
 			name:           "Too long",
-			domain:         longStr,
+			hostname:       longStr,
 			expectedResult: "",
 			expectErr:      true,
 		},
@@ -127,7 +127,7 @@ func TestParseDomain(t *testing.T) {
 
 	for _, ts := range tests {
 		t.Run(ts.name, func(t *testing.T) {
-			result, err := parseDomain(ts.domain)
+			result, err := parseHostname(ts.hostname)
 			if ts.expectErr && err == nil {
 				t.Error("expected error and got none")
 			} else if !ts.expectErr && err != nil {

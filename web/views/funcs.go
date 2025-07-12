@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/logging"
 )
 
@@ -39,11 +39,11 @@ func datef(t time.Time, layout string) string {
 	return t.Format(layout)
 }
 
-func statusClass(cert domain.CertificateInfo) string {
+func statusClass(cert hosts.CertificateInfo) string {
 	switch cert.Status {
-	case domain.CertificateStatusOffline, domain.CertificateStatusUnknown:
+	case hosts.CertificateStatusOffline, hosts.CertificateStatusUnknown:
 		return "text-base-900 bg-[#cacaca]"
-	case domain.CertificateStatusInvalid:
+	case hosts.CertificateStatusInvalid:
 		return "text-danger-dark bg-danger-light"
 	}
 	if cert.ExpiresAt == nil {
@@ -55,13 +55,13 @@ func statusClass(cert domain.CertificateInfo) string {
 	return "text-healthy-dark bg-healthy-light"
 }
 
-func statusText(cert domain.CertificateInfo) string {
+func statusText(cert hosts.CertificateInfo) string {
 	switch cert.Status {
-	case domain.CertificateStatusUnknown:
+	case hosts.CertificateStatusUnknown:
 		return "-"
 	case
-		domain.CertificateStatusOffline,
-		domain.CertificateStatusInvalid:
+		hosts.CertificateStatusOffline,
+		hosts.CertificateStatusInvalid:
 		return cert.Status.String()
 	}
 	if cert.ExpiresAt == nil {

@@ -1,20 +1,20 @@
 {{template "layout" .}}
-{{define "title"}}{{.Domain.DomainName}} - NeverExpire{{end}}
+{{define "title"}}{{.Host.HostName}} - NeverExpire{{end}}
 {{define "content"}}
 	<div class="flex flex-col max-w-3xl w-full mx-auto gap-6">
 		<a
-			href="/domains"
+			href="/hosts"
 			hx-boost="true"
 			class="flex items-center gap-1 font-medium text-primary-500 w-fit"
 		>
 			{{template "icon-arrow-left" withAttributes "size" "20"}}
-			Domains
+			Hosts
 		</a>
 		<div class="flex flex-col gap-1">
 			<h1 class="flex gap-3 items-center font-semibold text-xl text-base-950">
-				{{.Domain.DomainName}}
+				{{.Host.HostName}}
 				<a
-					href="https://{{.Domain.DomainName}}"
+					href="https://{{.Host.HostName}}"
 					target="_blank"
 					rel="noopener noreferrer"
 					class="text-base-400 hover:text-base-500"
@@ -23,7 +23,7 @@
 				</a>
 			</h1>
 			<span class="text-base-500 font-medium max-sm:text-sm">
-				{{.Domain.Certificate.IP}}
+				{{.Host.Certificate.IP}}
 			</span>
 		</div>
 		<ul
@@ -32,41 +32,41 @@
 			<li class="contents">
 				<span class="font-medium text-base-800">Status</span>
 				<span
-					class="{{statusClass .Domain.Certificate | cn "w-20 rounded-full flex justify-center items-center px-2 py-0.5 text-sm font-medium"}}"
+					class="{{statusClass .Host.Certificate | cn "w-20 rounded-full flex justify-center items-center px-2 py-0.5 text-sm font-medium"}}"
 				>
-					{{statusText .Domain.Certificate}}
+					{{statusText .Host.Certificate}}
 				</span>
 			</li>
 			{{template "li" withAttributes
 				"key" "Issuer"
-				"val" .Domain.Certificate.IssuedBy
+				"val" .Host.Certificate.IssuedBy
 			}}
 			<li class="contents">
 				<span class="font-medium text-base-800"> Expires </span>
 				<span class="font-medium text-base-600">
 					{{$datetime := "n/a"}}
-					{{if .Domain.Certificate.ExpiresAt}}
-						{{$datetime = datef .Domain.Certificate.ExpiresAt "2006-01-02T15:04:05.000Z"}}
+					{{if .Host.Certificate.ExpiresAt}}
+						{{$datetime = datef .Host.Certificate.ExpiresAt "2006-01-02T15:04:05.000Z"}}
 					{{end}}
 					{{if eq $datetime "n/a"}}
 						{{$datetime}}
 					{{else}}
 						<local-time datetime="{{$datetime}}">
-							{{datef .Domain.Certificate.ExpiresAt "2006-01-02 15:04:05"}}
+							{{datef .Host.Certificate.ExpiresAt "2006-01-02 15:04:05"}}
 						</local-time>
 					{{end}}
 				</span>
 			</li>
 			{{template "li" withAttributes
 				"key" "Latency"
-				"val" (sprintf "%d ms" .Domain.Certificate.Latency)
+				"val" (sprintf "%d ms" .Host.Certificate.Latency)
 			}}
 			{{template "li" withAttributes
 				"key" "DNS"
-				"val" .Domain.Certificate.DNSNames
+				"val" .Host.Certificate.DNSNames
 			}}
-			{{$signature := .Domain.Certificate.Signature}}
-			{{if eq .Domain.Certificate.Signature ""}}
+			{{$signature := .Host.Certificate.Signature}}
+			{{if eq .Host.Certificate.Signature ""}}
 				{{$signature = "n/a"}}
 			{{end}}
 			{{template "li" withAttributes
@@ -74,10 +74,10 @@
 				"val" $signature
 				"class" "break-all"
 			}}
-			{{if .Domain.Certificate.Error}}
+			{{if .Host.Certificate.Error}}
 				{{template "li" withAttributes
 					"key"   "Error"
-					"val"   .Domain.Certificate.Error.Error
+					"val"   .Host.Certificate.Error.Error
 					"class" "text-red-600/90 font-normal"
 				}}
 			{{end}}
@@ -85,15 +85,15 @@
 				<span class="font-medium text-base-800"> Last checked </span>
 				<span class="font-medium text-base-600">
 					<local-time
-						datetime="{{datef .Domain.Certificate.CheckedAt "2006-01-02T15:04:05.000Z"}}"
+						datetime="{{datef .Host.Certificate.CheckedAt "2006-01-02T15:04:05.000Z"}}"
 					>
-						{{datef .Domain.Certificate.CheckedAt "2006-01-02 15:04:05"}}
+						{{datef .Host.Certificate.CheckedAt "2006-01-02 15:04:05"}}
 					</local-time>
 				</span>
 			</li>
 		</ul>
 		<button
-			hx-delete="/domains/{{.Domain.ID}}"
+			hx-delete="/hosts/{{.Host.ID}}"
 			class="w-fit px-4 py-1.5 rounded-md bg-red-600/80 text-base-white font-medium"
 		>
 			Delete
