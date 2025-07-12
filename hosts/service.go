@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/users"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -37,7 +37,7 @@ func (s *Service) Expiring(ctx context.Context) ([]HostWithUser, error) {
 	return s.repo.Expiring(ctx)
 }
 
-func (s *Service) Create(user user.User, names []string) error {
+func (s *Service) Create(user users.User, names []string) error {
 	hostch := make(chan Host, len(names))
 	hosts := make([]Host, 0)
 	eg, ctx := errgroup.WithContext(context.Background())

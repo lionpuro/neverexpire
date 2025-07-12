@@ -6,12 +6,12 @@ import (
 
 	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
-	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/users"
 	"github.com/lionpuro/neverexpire/web/views"
 )
 
 func TestRender(t *testing.T) {
-	testUser := &user.User{
+	testUser := &users.User{
 		Email: "tester@neverexpire.xyz",
 	}
 	testHosts := []hosts.Host{
@@ -63,7 +63,7 @@ func TestRender(t *testing.T) {
 	// Settings
 	t.Run("settings", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		err := views.Settings(&buf, views.LayoutData{User: testUser}, user.Settings{})
+		err := views.Settings(&buf, views.LayoutData{User: testUser}, users.Settings{})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

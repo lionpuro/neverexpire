@@ -5,11 +5,11 @@ import (
 	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/logging"
-	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/users"
 )
 
 type Handler struct {
-	UserService *user.Service
+	UserService *users.Service
 	HostService *hosts.Service
 	AuthService *auth.Service
 	KeyService  *keys.Service
@@ -18,7 +18,7 @@ type Handler struct {
 
 func New(
 	logger logging.Logger,
-	us *user.Service,
+	us *users.Service,
 	hs *hosts.Service,
 	ks *keys.Service,
 	as *auth.Service,

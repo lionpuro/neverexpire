@@ -3,7 +3,7 @@ package hosts
 import (
 	"time"
 
-	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/users"
 )
 
 type Host struct {
@@ -26,8 +26,8 @@ type CertificateInfo struct {
 
 type HostWithUser struct {
 	Host     Host
-	User     user.User
-	Settings user.Settings
+	User     users.User
+	Settings users.Settings
 }
 
 type APIModel struct {

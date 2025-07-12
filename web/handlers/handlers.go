@@ -3,12 +3,12 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/users"
 	"github.com/lionpuro/neverexpire/web/views"
 )
 
 func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {
-	var usr *user.User
+	var usr *users.User
 	if u, ok := userFromContext(r.Context()); ok {
 		usr = &u
 	}
@@ -29,7 +29,7 @@ func (h *Handler) htmxError(w http.ResponseWriter, err error) {
 }
 
 func (h *Handler) ErrorPage(w http.ResponseWriter, r *http.Request, msg string, code int) {
-	var usr *user.User
+	var usr *users.User
 	if u, ok := userFromContext(r.Context()); ok {
 		usr = &u
 	}

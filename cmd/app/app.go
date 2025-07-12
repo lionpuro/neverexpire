@@ -12,7 +12,7 @@ import (
 	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/logging"
-	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/users"
 	"github.com/lionpuro/neverexpire/web"
 )
 
@@ -24,7 +24,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	us := user.NewService(user.NewRepository(pool))
+	us := users.NewService(users.NewRepository(pool))
 	hs := hosts.NewService(hosts.NewRepository(pool))
 	as, err := auth.NewService(conf)
 	ks := keys.NewService(keys.NewRepository(pool))

@@ -10,7 +10,7 @@ import (
 	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/notification"
-	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/users"
 )
 
 //go:embed templates
@@ -21,7 +21,7 @@ type viewTemplate struct {
 }
 
 type LayoutData struct {
-	User  *user.User
+	User  *users.User
 	Error error
 }
 
@@ -63,7 +63,7 @@ func NewHosts(w io.Writer, ld LayoutData, inputValue string) error {
 	return newHostsTmpl.render(w, data)
 }
 
-func Settings(w io.Writer, ld LayoutData, sett user.Settings) error {
+func Settings(w io.Writer, ld LayoutData, sett users.Settings) error {
 	type reminder struct {
 		Value   int
 		Display string

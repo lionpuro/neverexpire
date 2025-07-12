@@ -5,13 +5,13 @@ import (
 	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/logging"
-	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/users"
 	"github.com/lionpuro/neverexpire/web/handlers"
 )
 
 func NewHandler(
 	logger logging.Logger,
-	u *user.Service,
+	u *users.Service,
 	h *hosts.Service,
 	k *keys.Service,
 	a *auth.Service,

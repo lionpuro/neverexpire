@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/lionpuro/neverexpire/auth"
-	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/users"
 	"github.com/lionpuro/neverexpire/web/views"
 )
 
@@ -94,11 +94,11 @@ func (h *Handler) AuthCallback(a *auth.Client) http.HandlerFunc {
 		}
 
 		if err := h.UserService.Create(usr.ID, usr.Email); err != nil {
-			h.log.Error("failed to create user", "error", err.Error())
+			h.log.Error("failed to create users", "error", err.Error())
 			h.ErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 			return
 		}
-		sess.SetUser(user.User{ID: usr.ID, Email: usr.Email})
+		sess.SetUser(users.User{ID: usr.ID, Email: usr.Email})
 		if err := sess.Save(w, r); err != nil {
 			h.log.Error("failed to save session", "error", err.Error())
 			h.ErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
