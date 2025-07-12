@@ -62,6 +62,49 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (Host, err
 	return result, nil
 }
 
+func (r *Repository) ByName(ctx context.Context, userID, name string) (Host, error) {
+	row := r.DB.QueryRow(ctx, `
+	SELECT
+		h.id,
+		h.hostname,
+		h.dns_names,
+		h.ip_address,
+		h.issued_by,
+		h.status,
+		h.expires_at,
+		h.checked_at,
+		h.latency,
+		h.signature,
+		h.error_message
+	FROM hosts h
+	INNER JOIN user_hosts uh
+		ON h.id = uh.host_id
+	WHERE h.hostname = $1 AND uh.user_id = $2`, name, userID)
+	var result Host
+	var errStr *string
+	err := row.Scan(
+		&result.ID,
+		&result.HostName,
+		&result.Certificate.DNSNames,
+		&result.Certificate.IP,
+		&result.Certificate.IssuedBy,
+		&result.Certificate.Status,
+		&result.Certificate.ExpiresAt,
+		&result.Certificate.CheckedAt,
+		&result.Certificate.Latency,
+		&result.Certificate.Signature,
+		&errStr,
+	)
+	if err != nil {
+		return Host{}, err
+	}
+	if errStr != nil {
+		result.Certificate.Error = errors.New(*errStr)
+	}
+
+	return result, nil
+}
+
 func (r *Repository) All(ctx context.Context) ([]Host, error) {
 	order := fmt.Sprintf(
 		"array[%d, %d, %d]",

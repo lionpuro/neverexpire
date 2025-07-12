@@ -23,6 +23,10 @@ func (s *Service) ByID(ctx context.Context, id int, userID string) (Host, error)
 	return s.repo.ByID(ctx, userID, id)
 }
 
+func (s *Service) ByName(ctx context.Context, name, userID string) (Host, error) {
+	return s.repo.ByName(ctx, userID, name)
+}
+
 func (s *Service) AllByUser(ctx context.Context, userID string) ([]Host, error) {
 	return s.repo.AllByUser(ctx, userID)
 }
