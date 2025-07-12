@@ -9,7 +9,7 @@ import (
 
 func (h *Handler) APIPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
-	keys, err := h.KeyService.ByUser(r.Context(), u.ID)
+	keys, err := h.keyService.ByUser(r.Context(), u.ID)
 	if err != nil {
 		h.htmxError(w, fmt.Errorf("failed to load api keys"))
 		h.log.Error("failed to load api keys", "error", err.Error())
@@ -20,7 +20,7 @@ func (h *Handler) APIPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) CreateAPIKey(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
-	raw, _, err := h.KeyService.Create(u.ID)
+	raw, _, err := h.keyService.Create(u.ID)
 	if err != nil {
 		h.htmxError(w, fmt.Errorf("failed to generate key"))
 		return
@@ -35,7 +35,7 @@ func (h *Handler) DeleteAPIKey(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("failed to delete token"))
 		return
 	}
-	if err := h.KeyService.Delete(id, u.ID); err != nil {
+	if err := h.keyService.Delete(id, u.ID); err != nil {
 		h.htmxError(w, fmt.Errorf("failed to delete token"))
 		return
 	}

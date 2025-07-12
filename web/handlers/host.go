@@ -19,7 +19,7 @@ func (h *Handler) HostPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u, _ := userFromContext(r.Context())
-	host, err := h.HostService.ByID(r.Context(), id, u.ID)
+	host, err := h.hostService.ByID(r.Context(), id, u.ID)
 	if err != nil {
 		errCode := http.StatusNotFound
 		errMsg := "Host not found"
@@ -36,7 +36,7 @@ func (h *Handler) HostPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) HostsPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
-	hosts, err := h.HostService.AllByUser(r.Context(), u.ID)
+	hosts, err := h.hostService.AllByUser(r.Context(), u.ID)
 	if err != nil {
 		h.log.Error("failed to get hosts", "error", err.Error())
 		h.ErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
@@ -58,7 +58,7 @@ func (h *Handler) DeleteHost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u, _ := userFromContext(r.Context())
-	if err := h.HostService.Delete(u.ID, id); err != nil {
+	if err := h.hostService.Delete(u.ID, id); err != nil {
 		h.log.Error("failed to delete host", "error", err.Error())
 		if isHXrequest(r) {
 			h.ErrorPage(w, r, "Error deleting host", http.StatusInternalServerError)
@@ -104,7 +104,7 @@ func (h *Handler) CreateHosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.HostService.Create(u, names); err != nil {
+	if err := h.hostService.Create(u, names); err != nil {
 		e := fmt.Errorf("error adding host")
 		switch {
 		case

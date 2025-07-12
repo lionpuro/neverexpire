@@ -12,7 +12,7 @@ import (
 
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
-	settings, err := h.UserService.Settings(r.Context(), u.ID)
+	settings, err := h.userService.Settings(r.Context(), u.ID)
 	if err != nil {
 		h.log.Error("failed to retrieve settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
@@ -20,7 +20,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 	}
 	if settings == (users.Settings{}) {
 		sec := notifications.Threshold2Weeks
-		sett, err := h.UserService.SaveSettings(u.ID, users.SettingsInput{
+		sett, err := h.userService.SaveSettings(u.ID, users.SettingsInput{
 			RemindBefore: &sec,
 		})
 		if err != nil {
@@ -35,7 +35,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
-	if err := h.UserService.Delete(u.ID); err != nil {
+	if err := h.userService.Delete(u.ID); err != nil {
 		h.htmxError(w, fmt.Errorf("error deleting account"))
 		return
 	}
@@ -59,7 +59,7 @@ func (h *Handler) UpdateReminders(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("bad request"))
 		return
 	}
-	if _, err := h.UserService.SaveSettings(u.ID, users.SettingsInput{RemindBefore: &seconds}); err != nil {
+	if _, err := h.userService.SaveSettings(u.ID, users.SettingsInput{RemindBefore: &seconds}); err != nil {
 		h.log.Error("failed to update settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return
@@ -75,7 +75,7 @@ func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("invalid URL"))
 		return
 	}
-	if _, err := h.UserService.SaveSettings(u.ID, users.SettingsInput{WebhookURL: &url}); err != nil {
+	if _, err := h.userService.SaveSettings(u.ID, users.SettingsInput{WebhookURL: &url}); err != nil {
 		h.log.Error("failed to save settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return
@@ -92,7 +92,7 @@ func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DeleteWebhook(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
 	var s string
-	if _, err := h.UserService.SaveSettings(u.ID, users.SettingsInput{WebhookURL: &s}); err != nil {
+	if _, err := h.userService.SaveSettings(u.ID, users.SettingsInput{WebhookURL: &s}); err != nil {
 		h.log.Error("failed to save settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return

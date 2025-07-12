@@ -93,7 +93,7 @@ func (h *Handler) AuthCallback(a *auth.Client) http.HandlerFunc {
 			return
 		}
 
-		if err := h.UserService.Create(usr.ID, usr.Email); err != nil {
+		if err := h.userService.Create(usr.ID, usr.Email); err != nil {
 			h.log.Error("failed to create users", "error", err.Error())
 			h.ErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 			return
