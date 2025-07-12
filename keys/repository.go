@@ -1,4 +1,4 @@
-package api
+package keys
 
 import (
 	"context"
@@ -7,43 +7,43 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type KeyRepository struct {
+type Repository struct {
 	db *pgxpool.Pool
 }
 
-func NewKeyRepository(db *pgxpool.Pool) *KeyRepository {
-	return &KeyRepository{db: db}
+func NewRepository(db *pgxpool.Pool) *Repository {
+	return &Repository{db: db}
 }
 
-func (r *KeyRepository) ByUser(ctx context.Context, uid string) ([]Key, error) {
+func (r *Repository) ByUser(ctx context.Context, uid string) ([]AccessKey, error) {
 	q := `SELECT id, hash, user_id, created_at FROM api_keys WHERE user_id = $1`
 	rows, err := r.db.Query(ctx, q, uid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	keys, err := pgx.CollectRows(rows, pgx.RowToStructByName[Key])
+	keys, err := pgx.CollectRows(rows, pgx.RowToStructByName[AccessKey])
 	if err != nil {
 		return nil, err
 	}
 	return keys, nil
 }
 
-func (r *KeyRepository) ByID(ctx context.Context, id string) (Key, error) {
+func (r *Repository) ByID(ctx context.Context, id string) (AccessKey, error) {
 	q := `SELECT id, hash, user_id, created_at FROM api_keys WHERE id = $1`
 	rows, err := r.db.Query(ctx, q, id)
 	if err != nil {
-		return Key{}, err
+		return AccessKey{}, err
 	}
 	defer rows.Close()
-	key, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[Key])
+	key, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[AccessKey])
 	if err != nil {
-		return Key{}, err
+		return AccessKey{}, err
 	}
 	return key, nil
 }
 
-func (r *KeyRepository) Create(ctx context.Context, key Key) error {
+func (r *Repository) Create(ctx context.Context, key AccessKey) error {
 	q := `
 		INSERT INTO api_keys (id, hash, user_id)
 		VALUES ($1, $2, $3)
@@ -53,7 +53,7 @@ func (r *KeyRepository) Create(ctx context.Context, key Key) error {
 	return err
 }
 
-func (r *KeyRepository) Delete(ctx context.Context, id, uid string) error {
+func (r *Repository) Delete(ctx context.Context, id, uid string) error {
 	q := `DELETE FROM api_keys WHERE id = $1 AND user_id = $2`
 	_, err := r.db.Exec(ctx, q, id, uid)
 	return err

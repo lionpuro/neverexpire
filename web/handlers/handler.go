@@ -1,9 +1,9 @@
-package http
+package handlers
 
 import (
-	"github.com/lionpuro/neverexpire/api"
 	"github.com/lionpuro/neverexpire/auth"
 	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/logging"
 	"github.com/lionpuro/neverexpire/user"
 )
@@ -12,16 +12,16 @@ type Handler struct {
 	UserService   *user.Service
 	DomainService *domain.Service
 	AuthService   *auth.Service
-	KeyService    *api.KeyService
+	KeyService    *keys.Service
 	log           logging.Logger
 }
 
-func NewHandler(
+func New(
 	logger logging.Logger,
 	us *user.Service,
 	ds *domain.Service,
+	ks *keys.Service,
 	as *auth.Service,
-	ks *api.KeyService,
 ) *Handler {
 	return &Handler{
 		UserService:   us,

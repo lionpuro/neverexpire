@@ -1,4 +1,4 @@
-package api
+package keys
 
 import (
 	"crypto/rand"
@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-type Key struct {
+type AccessKey struct {
 	ID        string    `db:"id"`
 	Hash      string    `db:"hash"`
 	UserID    string    `db:"user_id"`
 	CreatedAt time.Time `db:"created_at"`
 }
 
-func GenerateKey() (string, error) {
+func GenerateAccessKey() (string, error) {
 	b := make([]byte, 64)
 	if _, err := rand.Read(b); err != nil {
 		return "", err
@@ -29,15 +29,15 @@ func HashKey(key []byte) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func CompareKey(input, hash string) (match bool) {
+func CompareAccessKey(input, hash string) (match bool) {
 	hashed := HashKey([]byte(input))
 	return subtle.ConstantTimeCompare([]byte(hashed), []byte(hash)) == 1
 }
 
-func NewKey(raw, userID string) (*Key, error) {
+func NewAccessKey(raw, userID string) (*AccessKey, error) {
 	h := HashKey([]byte(raw))
 	id := raw[:8]
-	key := &Key{
+	key := &AccessKey{
 		ID:     id,
 		Hash:   h,
 		UserID: userID,

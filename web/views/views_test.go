@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/lionpuro/neverexpire/api"
 	"github.com/lionpuro/neverexpire/domain"
-	"github.com/lionpuro/neverexpire/http/views"
+	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/web/views"
 )
 
 func TestRender(t *testing.T) {
@@ -70,7 +70,7 @@ func TestRender(t *testing.T) {
 	})
 	// API
 	t.Run("api", func(t *testing.T) {
-		err := views.API(&bytes.Buffer{}, views.LayoutData{User: testUser}, []api.Key{})
+		err := views.API(&bytes.Buffer{}, views.LayoutData{User: testUser}, []keys.AccessKey{})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

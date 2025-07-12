@@ -1,10 +1,10 @@
-package http
+package handlers
 
 import (
 	"fmt"
 	"net/http"
 
-	"github.com/lionpuro/neverexpire/http/views"
+	"github.com/lionpuro/neverexpire/web/views"
 )
 
 func (h *Handler) APIPage(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +39,6 @@ func (h *Handler) DeleteAPIKey(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("failed to delete token"))
 		return
 	}
-	w.Header().Set("HX-Location", "/api")
+	w.Header().Set("HX-Location", "/account/api")
 	w.WriteHeader(http.StatusNoContent)
 }

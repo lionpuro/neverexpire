@@ -1,10 +1,10 @@
-package http
+package handlers
 
 import (
 	"net/http"
 
-	"github.com/lionpuro/neverexpire/http/views"
 	"github.com/lionpuro/neverexpire/user"
+	"github.com/lionpuro/neverexpire/web/views"
 )
 
 func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {

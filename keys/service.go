@@ -1,19 +1,19 @@
-package api
+package keys
 
 import (
 	"context"
 	"time"
 )
 
-type KeyService struct {
-	repo *KeyRepository
+type Service struct {
+	repo *Repository
 }
 
-func NewKeyService(repo *KeyRepository) *KeyService {
-	return &KeyService{repo: repo}
+func NewService(repo *Repository) *Service {
+	return &Service{repo: repo}
 }
 
-func (s *KeyService) ByUser(ctx context.Context, uid string) ([]Key, error) {
+func (s *Service) ByUser(ctx context.Context, uid string) ([]AccessKey, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 	keys, err := s.repo.ByUser(ctx, uid)
@@ -23,22 +23,22 @@ func (s *KeyService) ByUser(ctx context.Context, uid string) ([]Key, error) {
 	return keys, nil
 }
 
-func (s *KeyService) ByID(ctx context.Context, id string) (Key, error) {
+func (s *Service) ByID(ctx context.Context, id string) (AccessKey, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 	key, err := s.repo.ByID(ctx, id)
 	if err != nil {
-		return Key{}, err
+		return AccessKey{}, err
 	}
 	return key, nil
 }
 
-func (s *KeyService) Create(uid string) (string, *Key, error) {
-	raw, err := GenerateKey()
+func (s *Service) Create(uid string) (string, *AccessKey, error) {
+	raw, err := GenerateAccessKey()
 	if err != nil {
 		return "", nil, err
 	}
-	key, err := NewKey(raw, uid)
+	key, err := NewAccessKey(raw, uid)
 	if err != nil {
 		return "", nil, err
 	}
@@ -50,7 +50,7 @@ func (s *KeyService) Create(uid string) (string, *Key, error) {
 	return raw, key, nil
 }
 
-func (s *KeyService) Delete(id, uid string) error {
+func (s *Service) Delete(id, uid string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	return s.repo.Delete(ctx, id, uid)

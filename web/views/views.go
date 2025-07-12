@@ -7,8 +7,8 @@ import (
 	"io"
 	"path/filepath"
 
-	"github.com/lionpuro/neverexpire/api"
 	"github.com/lionpuro/neverexpire/domain"
+	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/notification"
 	"github.com/lionpuro/neverexpire/user"
 )
@@ -82,7 +82,7 @@ func Settings(w io.Writer, ld LayoutData, sett user.Settings) error {
 	return settingsTmpl.render(w, data)
 }
 
-func API(w io.Writer, ld LayoutData, keys []api.Key) error {
+func API(w io.Writer, ld LayoutData, keys []keys.AccessKey) error {
 	return apiTmpl.render(w, map[string]any{"LayoutData": ld, "Keys": keys})
 }
 
