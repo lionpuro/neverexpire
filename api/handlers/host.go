@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/lionpuro/neverexpire/db"
 	"github.com/lionpuro/neverexpire/hosts"
+	"github.com/lionpuro/neverexpire/users"
 )
 
 func (h *Handler) ListHosts(w http.ResponseWriter, r *http.Request) {
@@ -48,4 +51,34 @@ func (h *Handler) FindHost(w http.ResponseWriter, r *http.Request) {
 		"data": result,
 	}
 	h.json(w, http.StatusOK, data)
+}
+
+func (h *Handler) CreateHost(w http.ResponseWriter, r *http.Request) {
+	uid, _ := userIDFromContext(r.Context())
+	var body struct {
+		Hostname string `json:"hostname"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		h.json(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+	s := strings.TrimSpace(body.Hostname)
+	if s == "" {
+		h.json(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+	name, err := hosts.ParseHostname(body.Hostname)
+	if err != nil {
+		h.json(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+	if err := h.hostService.Create(users.User{ID: uid}, []string{name}); err != nil {
+		if strings.Contains(err.Error(), "already tracking") {
+			h.json(w, http.StatusBadRequest, "The host is already being tracked")
+			return
+		}
+		h.json(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+	h.json(w, http.StatusCreated, "Created successfully")
 }

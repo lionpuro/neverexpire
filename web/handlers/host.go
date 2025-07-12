@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/lionpuro/neverexpire/db"
+	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/web/views"
 )
 
@@ -86,7 +87,7 @@ func (h *Handler) CreateHosts(w http.ResponseWriter, r *http.Request) {
 	var names []string
 	var errs []error
 	for _, h := range hs {
-		name, err := parseHostname(h)
+		name, err := hosts.ParseHostname(h)
 		if err != nil {
 			errs = append(errs, err)
 		}
