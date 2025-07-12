@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/lionpuro/neverexpire/notification"
+	"github.com/lionpuro/neverexpire/notifications"
 	"github.com/lionpuro/neverexpire/users"
 	"github.com/lionpuro/neverexpire/web/views"
 )
@@ -19,7 +19,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if settings == (users.Settings{}) {
-		sec := notification.Threshold2Weeks
+		sec := notifications.Threshold2Weeks
 		sett, err := h.UserService.SaveSettings(u.ID, users.SettingsInput{
 			RemindBefore: &sec,
 		})
@@ -80,7 +80,7 @@ func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return
 	}
-	if err := notification.SendTestNotification(url); err != nil {
+	if err := notifications.SendTestNotification(url); err != nil {
 		h.log.Error("failed to test notification webhook", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("error sending test notification"))
 		return

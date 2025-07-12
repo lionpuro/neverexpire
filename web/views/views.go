@@ -9,7 +9,7 @@ import (
 
 	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
-	"github.com/lionpuro/neverexpire/notification"
+	"github.com/lionpuro/neverexpire/notifications"
 	"github.com/lionpuro/neverexpire/users"
 )
 
@@ -69,10 +69,10 @@ func Settings(w io.Writer, ld LayoutData, sett users.Settings) error {
 		Display string
 	}
 	opts := []reminder{
-		{Value: notification.ThresholdDay, Display: "1 day before"},
-		{Value: notification.Threshold2Days, Display: "2 days before"},
-		{Value: notification.ThresholdWeek, Display: "1 week before"},
-		{Value: notification.Threshold2Weeks, Display: "2 weeks before"},
+		{Value: notifications.ThresholdDay, Display: "1 day before"},
+		{Value: notifications.Threshold2Days, Display: "2 days before"},
+		{Value: notifications.ThresholdWeek, Display: "1 week before"},
+		{Value: notifications.Threshold2Weeks, Display: "2 weeks before"},
 	}
 	data := map[string]any{
 		"LayoutData":      ld,
