@@ -82,3 +82,24 @@ func (h *Handler) CreateHost(w http.ResponseWriter, r *http.Request) {
 	}
 	h.json(w, http.StatusCreated, "Created successfully")
 }
+
+func (h *Handler) DeleteHost(w http.ResponseWriter, r *http.Request) {
+	uid, _ := userIDFromContext(r.Context())
+	name := r.PathValue("hostname")
+	host, err := h.hostService.ByName(r.Context(), name, uid)
+	if err != nil {
+		if db.IsErrNoRows(err) {
+			h.json(w, http.StatusNotFound, "Host not found")
+			return
+		}
+		h.log.Error("failed to get host", "error", err.Error())
+		h.json(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+	if err := h.hostService.Delete(uid, host.ID); err != nil {
+		h.log.Error("failed to delete host", "error", err.Error())
+		h.json(w, http.StatusInternalServerError, "failed to delete host")
+		return
+	}
+	h.json(w, http.StatusAccepted, "Deleted successfully")
+}

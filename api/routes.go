@@ -20,6 +20,7 @@ func NewRouter(h *handlers.Handler) *http.ServeMux {
 	handle("GET /hosts", h.ListHosts)
 	handle("GET /hosts/{hostname}", h.FindHost)
 	handle("POST /hosts", h.CreateHost)
+	handle("DELETE /hosts/{hostname}", h.DeleteHost)
 
 	return r
 }
