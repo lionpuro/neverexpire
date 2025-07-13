@@ -18,7 +18,7 @@ func NewRouter(h *handlers.Handler) *http.ServeMux {
 		))
 	}
 
-	handle("GET /{$}", h.HomePage)
+	handle("GET /", h.HomePage)
 	handle("GET /hosts", h.RequireAuth(h.HostsPage))
 	handle("GET /hosts/new", h.RequireAuth(h.NewHostsPage))
 	handle("POST /hosts", h.RequireAuth(h.CreateHosts))
