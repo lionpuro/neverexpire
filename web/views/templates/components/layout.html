@@ -19,6 +19,8 @@
 			<script src="/static/scripts/htmx.min.js" defer></script>
 			<script src="/static/scripts/index.js" type="module"></script>
 			<script src="/static/scripts/local-time.js" type="module"></script>
+			{{block "head" .}}
+			{{end}}
 		</head>
 		<body>
 			{{block "body" .}}
