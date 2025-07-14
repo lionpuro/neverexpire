@@ -80,7 +80,14 @@ func (h *Handler) CreateHost(w http.ResponseWriter, r *http.Request) {
 		h.json(w, http.StatusBadRequest, "Bad request")
 		return
 	}
-	h.json(w, http.StatusCreated, "Created successfully")
+	host, err := h.hostService.ByName(r.Context(), name, uid)
+	if err != nil {
+		h.log.Error("failed to retrieve new host by name", "error", err.Error())
+		h.json(w, http.StatusInternalServerError, "Error retrieving created host")
+		return
+	}
+	data := map[string]interface{}{"data": host}
+	h.json(w, http.StatusCreated, data)
 }
 
 func (h *Handler) DeleteHost(w http.ResponseWriter, r *http.Request) {
