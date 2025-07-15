@@ -26,30 +26,32 @@ func main() {
 
 	us := users.NewService(users.NewRepository(pool))
 	hs := hosts.NewService(hosts.NewRepository(pool))
-	as, err := auth.NewService(conf)
 	ks := keys.NewService(keys.NewRepository(pool))
+	as, err := auth.NewService(conf)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	logger := logging.NewLogger()
+
+	mux := http.NewServeMux()
+
 	webh := web.NewHandler(logger, us, hs, ks, as)
-	apih := api.NewHandler(logger, us, hs, ks)
-	srv := newServer(3000, web.NewRouter(webh), api.NewRouter(apih))
+
+	mux.Handle("/", web.NewRouter(webh))
+	api := api.New(mux, logger, us, hs, ks)
+	api.Register()
+
+	srv := newServer(3000, mux)
 
 	fmt.Printf("Listening on %s...\n", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }
 
-func newServer(port int, web *http.ServeMux, api *http.ServeMux) *http.Server {
-	r := http.NewServeMux()
-
-	r.Handle("/", web)
-	r.Handle("/api/", http.StripPrefix("/api", api))
-
+func newServer(port int, mux *http.ServeMux) *http.Server {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: r,
+		Handler: mux,
 	}
 	return srv
 }

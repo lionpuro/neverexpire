@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/lionpuro/neverexpire/users"
 	"github.com/lionpuro/neverexpire/web/views"
@@ -13,6 +14,14 @@ func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request) {
 		usr = &u
 	}
 	if r.URL.Path != "/" {
+		if strings.HasPrefix(r.URL.Path, "/api") {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			if _, err := w.Write([]byte("Not found")); err != nil {
+				h.log.Error("failed to write response", "error", err.Error())
+			}
+			return
+		}
 		h.render(views.Error(w, views.LayoutData{User: usr}, http.StatusNotFound, "Page not found"))
 		return
 	}

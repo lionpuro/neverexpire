@@ -30,33 +30,6 @@ type HostWithUser struct {
 	Settings users.Settings
 }
 
-type APIModel struct {
-	HostName  string     `json:"hostname"`
-	Issuer    *string    `json:"issuer"`
-	ExpiresAt *time.Time `json:"expires_at"`
-	CheckedAt time.Time  `json:"checked_at"`
-	Error     *string    `json:"error"`
-}
-
-func ToAPIModel(h Host) APIModel {
-	var errMsg *string
-	if err := h.Certificate.Error; err != nil {
-		msg := err.Error()
-		errMsg = &msg
-	}
-	result := APIModel{
-		HostName:  h.HostName,
-		Issuer:    &h.Certificate.IssuedBy,
-		ExpiresAt: h.Certificate.ExpiresAt,
-		CheckedAt: h.Certificate.CheckedAt,
-		Error:     errMsg,
-	}
-	if iss := h.Certificate.IssuedBy; iss == "n/a" || iss == "" {
-		result.Issuer = nil
-	}
-	return result
-}
-
 func (c CertificateInfo) TimeLeft() time.Duration {
 	exp := c.ExpiresAt
 	now := time.Now().UTC()
