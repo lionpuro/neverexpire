@@ -26,7 +26,7 @@ type services struct {
 
 func New(mux *http.ServeMux, logger logging.Logger, u *users.Service, h *hosts.Service, k *keys.Service) *API {
 	conf := huma.DefaultConfig("neverexpire.xyz", "1.0.0")
-	conf.DocsPath = "/docs"
+	conf.DocsPath = ""
 	conf.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
 		"bearer": {
 			Type:   "http",
@@ -34,6 +34,7 @@ func New(mux *http.ServeMux, logger logging.Logger, u *users.Service, h *hosts.S
 		},
 	}
 	api := humago.NewWithPrefix(mux, "/api", conf)
+	mux.HandleFunc("/docs/api", docsHandler(logger))
 
 	services := services{
 		users: u,
