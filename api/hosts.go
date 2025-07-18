@@ -38,13 +38,11 @@ func toAPISchema(h hosts.Host) Host {
 	return result
 }
 
-type HostsInput struct {
-	CommonInput
-}
+type HostsInput struct{}
 
 func (a *API) ListHosts(ctx context.Context, input *HostsInput) (*Response[[]Host], error) {
-	uid, err := a.Authenticate(ctx, input.AccessKey)
-	if err != nil {
+	uid, ok := currentUID(ctx)
+	if !ok {
 		return nil, huma.Error401Unauthorized("unauthorized")
 	}
 	hsts, err := a.services.hosts.AllByUser(ctx, uid)
@@ -61,13 +59,12 @@ func (a *API) ListHosts(ctx context.Context, input *HostsInput) (*Response[[]Hos
 }
 
 type HostInput struct {
-	CommonInput
 	Name string `path:"name"`
 }
 
 func (a *API) GetHost(ctx context.Context, input *HostInput) (*Response[Host], error) {
-	uid, err := a.Authenticate(ctx, input.AccessKey)
-	if err != nil {
+	uid, ok := currentUID(ctx)
+	if !ok {
 		return nil, huma.Error401Unauthorized("unauthorized")
 	}
 	host, err := a.services.hosts.ByName(ctx, input.Name, uid)
@@ -83,15 +80,14 @@ func (a *API) GetHost(ctx context.Context, input *HostInput) (*Response[Host], e
 }
 
 type CreateHostInput struct {
-	CommonInput
 	Body struct {
 		Name string `json:"name" required:"true"`
 	}
 }
 
 func (a *API) CreateHost(ctx context.Context, input *CreateHostInput) (*Response[Host], error) {
-	uid, err := a.Authenticate(ctx, input.AccessKey)
-	if err != nil {
+	uid, ok := currentUID(ctx)
+	if !ok {
 		return nil, huma.Error401Unauthorized("unauthorized")
 	}
 	name, err := hosts.ParseHostname(input.Body.Name)
@@ -118,8 +114,8 @@ func (a *API) CreateHost(ctx context.Context, input *CreateHostInput) (*Response
 }
 
 func (a *API) DeleteHost(ctx context.Context, input *HostInput) (*struct{}, error) {
-	uid, err := a.Authenticate(ctx, input.AccessKey)
-	if err != nil {
+	uid, ok := currentUID(ctx)
+	if !ok {
 		return nil, huma.Error401Unauthorized("unauthorized")
 	}
 	host, err := a.services.hosts.ByName(ctx, input.Name, uid)
