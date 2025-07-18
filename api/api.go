@@ -27,6 +27,12 @@ type services struct {
 func New(mux *http.ServeMux, logger logging.Logger, u *users.Service, h *hosts.Service, k *keys.Service) *API {
 	conf := huma.DefaultConfig("neverexpire.xyz", "1.0.0")
 	conf.DocsPath = "/docs"
+	conf.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
+		"bearer": {
+			Type:   "http",
+			Scheme: "bearer",
+		},
+	}
 	api := humago.NewWithPrefix(mux, "/api", conf)
 
 	services := services{
@@ -45,12 +51,14 @@ func New(mux *http.ServeMux, logger logging.Logger, u *users.Service, h *hosts.S
 
 func (a *API) Register() {
 	mw := huma.Middlewares{newAuthMiddleware(a)}
+	security := []map[string][]string{{"bearer": {}}}
 	huma.Register(a.huma, huma.Operation{
 		OperationID: "get-hosts",
 		Method:      http.MethodGet,
 		Path:        "/hosts",
 		Description: "List tracked hosts",
 		Middlewares: mw,
+		Security:    security,
 	}, a.ListHosts)
 	huma.Register(a.huma, huma.Operation{
 		OperationID: "get-host",
@@ -58,6 +66,7 @@ func (a *API) Register() {
 		Path:        "/hosts/{name}",
 		Description: "Get host by name",
 		Middlewares: mw,
+		Security:    security,
 	}, a.GetHost)
 	huma.Register(a.huma, huma.Operation{
 		OperationID: "create-host",
@@ -65,6 +74,7 @@ func (a *API) Register() {
 		Path:        "/hosts",
 		Description: "Add host",
 		Middlewares: mw,
+		Security:    security,
 	}, a.CreateHost)
 	huma.Register(a.huma, huma.Operation{
 		OperationID: "delete-host",
@@ -72,6 +82,7 @@ func (a *API) Register() {
 		Path:        "/hosts/{name}",
 		Description: "Delete host",
 		Middlewares: mw,
+		Security:    security,
 	}, a.DeleteHost)
 }
 
