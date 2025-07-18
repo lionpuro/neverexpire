@@ -24,7 +24,7 @@ type services struct {
 }
 
 func New(mux *http.ServeMux, logger logging.Logger, u *users.Service, h *hosts.Service, k *keys.Service) *API {
-	conf := huma.DefaultConfig("Host management API", "1.0.0")
+	conf := huma.DefaultConfig("neverexpire.xyz", "1.0.0")
 	conf.DocsPath = "/docs"
 	api := humago.NewWithPrefix(mux, "/api", conf)
 
