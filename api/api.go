@@ -60,6 +60,7 @@ func (a *API) Register() {
 		Description: "List tracked hosts",
 		Middlewares: mw,
 		Security:    security,
+		Tags:        []string{"Hosts"},
 	}, a.ListHosts)
 	huma.Register(a.huma, huma.Operation{
 		OperationID: "get-host",
@@ -68,6 +69,7 @@ func (a *API) Register() {
 		Description: "Get host by name",
 		Middlewares: mw,
 		Security:    security,
+		Tags:        []string{"Hosts"},
 	}, a.GetHost)
 	huma.Register(a.huma, huma.Operation{
 		OperationID: "create-host",
@@ -76,6 +78,7 @@ func (a *API) Register() {
 		Description: "Add host",
 		Middlewares: mw,
 		Security:    security,
+		Tags:        []string{"Hosts"},
 	}, a.CreateHost)
 	huma.Register(a.huma, huma.Operation{
 		OperationID: "delete-host",
@@ -84,6 +87,7 @@ func (a *API) Register() {
 		Description: "Delete host",
 		Middlewares: mw,
 		Security:    security,
+		Tags:        []string{"Hosts"},
 	}, a.DeleteHost)
 }
 
