@@ -3,8 +3,8 @@ services:
   web:
     build: .
     image: neverexpire:latest
-    command: ["./app"]
     env_file: ".env"
+    command: ["./web"]
     environment:
       - APP_ENV=production
       - POSTGRES_HOST=postgres

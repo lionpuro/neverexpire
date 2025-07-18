@@ -9,5 +9,5 @@ trap cleanup EXIT
 
 wgo -debounce 100ms -xdir assets/public \
 	npm run build \
-	:: go run ./cmd/app \
+	:: go run ./cmd/web \
 	:: wgo go run ./cmd/worker
