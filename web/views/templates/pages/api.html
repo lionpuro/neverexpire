@@ -7,16 +7,19 @@
 			You can use our API to access and manage your hosts. To authenticate with
 			the API, generate a new access key and pass it in the
 			<code class="bg-primary-100 text-primary-600 rounded-md px-1.5 py-0.5"
-				>access_key</code
+				>Authorization</code
 			>
-			URL parameter when making a request.
+			header with the
+			<code class="bg-primary-100 text-primary-600 rounded-md px-1.5 py-0.5"
+				>Bearer</code
+			>
+			scheme, like in the following example.
 		</p>
 		<span class="flex flex-col gap-2">
-			<strong class="font-semibold">Example API request:</strong>
+			<strong class="font-semibold">Example request header:</strong>
 			<code class="border border-base-200 rounded-md px-2 py-0.5">
-				https://neverexpire.xyz/api/hosts<span class="text-primary-600"
-					>?access_key=$YOUR_ACCESS_KEY</span
-				>
+				Authorization: Bearer
+				<span class="text-primary-600">{YOUR_ACCESS_KEY}</span>
 			</code>
 		</span>
 		<div class="">

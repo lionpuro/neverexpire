@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
@@ -94,7 +95,7 @@ func (a *API) writeErr(ctx huma.Context, status int, msg string, errs ...error) 
 
 func newAuthMiddleware(a *API) func(ctx huma.Context, next func(huma.Context)) {
 	return func(ctx huma.Context, next func(huma.Context)) {
-		rawkey := ctx.Query("access_key")
+		rawkey := strings.TrimPrefix(ctx.Header("Authorization"), "Bearer ")
 		if len(rawkey) != 128 {
 			a.writeErr(ctx, http.StatusUnauthorized, "unauthorized")
 			return
