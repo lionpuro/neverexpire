@@ -4,8 +4,8 @@
 	<div class="flex flex-col max-w-3xl w-full mx-auto gap-4">
 		{{template "h1" withAttributes "Text" "API"}}
 		<p>
-			You can use our API to access and manage your hosts. To authenticate with
-			the API, generate a new access key and pass it in the
+			You can access and manage your hosts through our API. Provide your API
+			access key in the
 			<code class="bg-primary-100 text-primary-600 rounded-md px-1.5 py-0.5"
 				>Authorization</code
 			>
@@ -13,10 +13,10 @@
 			<code class="bg-primary-100 text-primary-600 rounded-md px-1.5 py-0.5"
 				>Bearer</code
 			>
-			scheme, like in the following example.
+			scheme when making requests.
 		</p>
-		<span class="flex flex-col gap-2">
-			<strong class="font-semibold">Example request header:</strong>
+		<span class="flex flex-wrap items-center gap-2">
+			<strong class="font-semibold">Example:</strong>
 			<code class="border border-base-200 rounded-md px-2 py-0.5">
 				Authorization: Bearer
 				<span class="text-primary-600">{YOUR_ACCESS_KEY}</span>
