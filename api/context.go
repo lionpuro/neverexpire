@@ -1,14 +1,18 @@
 package api
 
-import "context"
+import (
+	"context"
+
+	"github.com/lionpuro/neverexpire/keys"
+)
 
 type ctxKey int
 
 const (
-	ctxKeyUID ctxKey = iota
+	ctxKeyAPIKey ctxKey = iota
 )
 
-func currentUID(ctx context.Context) (string, bool) {
-	uid, ok := ctx.Value(ctxKeyUID).(string)
-	return uid, ok
+func ctxAPIKey(ctx context.Context) (keys.AccessKey, bool) {
+	key, ok := ctx.Value(ctxKeyAPIKey).(keys.AccessKey)
+	return key, ok
 }

@@ -41,11 +41,11 @@ func newHost(h hosts.Host) Host {
 type HostsInput struct{}
 
 func (a *API) ListHosts(ctx context.Context, input *HostsInput) (*Response[[]Host], error) {
-	uid, ok := currentUID(ctx)
+	key, ok := ctxAPIKey(ctx)
 	if !ok {
 		return nil, huma.Error401Unauthorized("unauthorized")
 	}
-	hsts, err := a.services.hosts.AllByUser(ctx, uid)
+	hsts, err := a.services.hosts.AllByUser(ctx, key.UserID)
 	if err != nil {
 		a.logger.Error("failed to get hosts", "error", err.Error())
 		return nil, huma.Error500InternalServerError("failed to retrieve hosts")
@@ -62,11 +62,11 @@ type HostInput struct {
 }
 
 func (a *API) GetHost(ctx context.Context, input *HostInput) (*Response[Host], error) {
-	uid, ok := currentUID(ctx)
+	key, ok := ctxAPIKey(ctx)
 	if !ok {
 		return nil, huma.Error401Unauthorized("unauthorized")
 	}
-	host, err := a.services.hosts.ByName(ctx, input.Name, uid)
+	host, err := a.services.hosts.ByName(ctx, input.Name, key.UserID)
 	if err != nil {
 		if db.IsErrNoRows(err) {
 			return nil, huma.Error404NotFound("host not found")
@@ -84,10 +84,11 @@ type CreateHostInput struct {
 }
 
 func (a *API) CreateHost(ctx context.Context, input *CreateHostInput) (*Response[Host], error) {
-	uid, ok := currentUID(ctx)
+	key, ok := ctxAPIKey(ctx)
 	if !ok {
 		return nil, huma.Error401Unauthorized("unauthorized")
 	}
+	uid := key.UserID
 	name, err := hosts.ParseHostname(input.Body.Name)
 	if err != nil {
 		return nil, huma.Error400BadRequest("bad request")
@@ -112,10 +113,11 @@ func (a *API) CreateHost(ctx context.Context, input *CreateHostInput) (*Response
 }
 
 func (a *API) DeleteHost(ctx context.Context, input *HostInput) (*struct{}, error) {
-	uid, ok := currentUID(ctx)
+	key, ok := ctxAPIKey(ctx)
 	if !ok {
 		return nil, huma.Error401Unauthorized("unauthorized")
 	}
+	uid := key.UserID
 	host, err := a.services.hosts.ByName(ctx, input.Name, uid)
 	if err != nil {
 		if db.IsErrNoRows(err) {

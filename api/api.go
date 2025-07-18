@@ -127,6 +127,6 @@ func newAuthMiddleware(a *API) func(ctx huma.Context, next func(huma.Context)) {
 			a.writeErr(ctx, http.StatusUnauthorized, "unauthorized")
 			return
 		}
-		next(huma.WithValue(ctx, ctxKeyUID, key.UserID))
+		next(huma.WithValue(ctx, ctxKeyAPIKey, key))
 	}
 }
