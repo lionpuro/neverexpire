@@ -19,7 +19,7 @@ type Host struct {
 	Error     *string    `json:"error"`
 }
 
-func toAPISchema(h hosts.Host) Host {
+func newHost(h hosts.Host) Host {
 	var errMsg *string
 	if err := h.Certificate.Error; err != nil {
 		msg := err.Error()
@@ -52,8 +52,7 @@ func (a *API) ListHosts(ctx context.Context, input *HostsInput) (*Response[[]Hos
 	}
 	var result []Host
 	for _, h := range hsts {
-		host := toAPISchema(h)
-		result = append(result, host)
+		result = append(result, newHost(h))
 	}
 	return newResponse(result), nil
 }
@@ -75,8 +74,7 @@ func (a *API) GetHost(ctx context.Context, input *HostInput) (*Response[Host], e
 		a.logger.Error("failed to get host", "error", err.Error())
 		return nil, huma.Error500InternalServerError("failed to retrieve host information")
 	}
-	result := toAPISchema(host)
-	return newResponse(result), nil
+	return newResponse(newHost(host)), nil
 }
 
 type CreateHostInput struct {
@@ -101,7 +99,7 @@ func (a *API) CreateHost(ctx context.Context, input *CreateHostInput) (*Response
 				a.logger.Error("failed to retrieve new host by name", "error", err.Error())
 				return nil, huma.Error500InternalServerError("failed to get created host")
 			}
-			return newResponse(toAPISchema(host)), nil
+			return newResponse(newHost(host)), nil
 		}
 		return nil, huma.Error500InternalServerError("failed to create host")
 	}
@@ -110,7 +108,7 @@ func (a *API) CreateHost(ctx context.Context, input *CreateHostInput) (*Response
 		a.logger.Error("failed to retrieve new host by name", "error", err.Error())
 		return nil, huma.Error500InternalServerError("failed to retrieve information for created host")
 	}
-	return newResponse(toAPISchema(host)), nil
+	return newResponse(newHost(host)), nil
 }
 
 func (a *API) DeleteHost(ctx context.Context, input *HostInput) (*struct{}, error) {
