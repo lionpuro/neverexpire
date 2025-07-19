@@ -7,24 +7,10 @@
 		<link rel="icon" href="/static/favicon.ico" />
 		<link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
 		<title>API reference - NeverExpire</title>
-		<link
-			rel="stylesheet"
-			href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css"
-		/>
+		<link rel="stylesheet" href="/static/css/swagger-ui.css" />
 	</head>
 	<body>
 		<div id="swagger-ui"></div>
-		<script
-			src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"
-			crossorigin
-		></script>
-		<script>
-			window.onload = () => {
-				window.ui = SwaggerUIBundle({
-					url: "/api/openapi.json",
-					dom_id: "#swagger-ui",
-				});
-			};
-		</script>
+		<script src="/static/scripts/swagger-ui.js"></script>
 	</body>
 </html>
