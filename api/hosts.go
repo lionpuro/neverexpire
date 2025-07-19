@@ -12,7 +12,7 @@ import (
 )
 
 type Host struct {
-	HostName  string     `json:"hostname"`
+	Hostname  string     `json:"hostname"`
 	Issuer    *string    `json:"issuer"`
 	ExpiresAt *time.Time `json:"expires_at"`
 	CheckedAt time.Time  `json:"checked_at"`
@@ -26,7 +26,7 @@ func newHost(h hosts.Host) Host {
 		errMsg = &msg
 	}
 	result := Host{
-		HostName:  h.HostName,
+		Hostname:  h.Hostname,
 		Issuer:    &h.Certificate.IssuedBy,
 		ExpiresAt: h.Certificate.ExpiresAt,
 		CheckedAt: h.Certificate.CheckedAt,

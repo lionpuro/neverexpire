@@ -65,7 +65,7 @@ func (w *Worker) poll() error {
 				<-workers
 				wg.Done()
 			}()
-			cert, err := FetchCert(context.Background(), h.HostName)
+			cert, err := FetchCert(context.Background(), h.Hostname)
 			if err != nil {
 				cert = &CertificateInfo{
 					Status:    CertificateStatusOffline,

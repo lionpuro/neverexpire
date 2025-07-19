@@ -8,7 +8,7 @@ import (
 
 type Host struct {
 	ID          int    `db:"id"`
-	HostName    string `db:"hostname"`
+	Hostname    string `db:"hostname"`
 	Certificate CertificateInfo
 }
 

@@ -17,7 +17,7 @@ func TestRender(t *testing.T) {
 	testHosts := []hosts.Host{
 		{
 			ID:          1,
-			HostName:    "neverexpire.xyz",
+			Hostname:    "neverexpire.xyz",
 			Certificate: hosts.CertificateInfo{},
 		},
 	}

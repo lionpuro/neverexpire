@@ -63,7 +63,7 @@ func (s *Service) Create(user users.User, names []string) error {
 				}
 			}
 			host := Host{
-				HostName:    name,
+				Hostname:    name,
 				Certificate: *info,
 			}
 			select {

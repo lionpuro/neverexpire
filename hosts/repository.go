@@ -41,7 +41,7 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (Host, err
 	var errStr *string
 	err := row.Scan(
 		&result.ID,
-		&result.HostName,
+		&result.Hostname,
 		&result.Certificate.DNSNames,
 		&result.Certificate.IP,
 		&result.Certificate.IssuedBy,
@@ -84,7 +84,7 @@ func (r *Repository) ByName(ctx context.Context, userID, name string) (Host, err
 	var errStr *string
 	err := row.Scan(
 		&result.ID,
-		&result.HostName,
+		&result.Hostname,
 		&result.Certificate.DNSNames,
 		&result.Certificate.IP,
 		&result.Certificate.IssuedBy,
@@ -143,7 +143,7 @@ func (r *Repository) All(ctx context.Context) ([]Host, error) {
 		var errStr *string
 		err := rows.Scan(
 			&h.ID,
-			&h.HostName,
+			&h.Hostname,
 			&h.Certificate.DNSNames,
 			&h.Certificate.IP,
 			&h.Certificate.IssuedBy,
@@ -212,7 +212,7 @@ func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
 		var errStr *string
 		err := rows.Scan(
 			&record.Host.ID,
-			&record.Host.HostName,
+			&record.Host.Hostname,
 			&record.Host.Certificate.DNSNames,
 			&record.Host.Certificate.IP,
 			&record.Host.Certificate.IssuedBy,
@@ -281,7 +281,7 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Host, erro
 		var errStr *string
 		err := rows.Scan(
 			&h.ID,
-			&h.HostName,
+			&h.Hostname,
 			&h.Certificate.DNSNames,
 			&h.Certificate.IP,
 			&h.Certificate.IssuedBy,
@@ -348,7 +348,7 @@ func (r *Repository) Create(ctx context.Context, uid string, hosts []Host) error
 			error_message  = EXCLUDED.error_message
 		RETURNING id
 		`,
-			h.HostName,
+			h.Hostname,
 			h.Certificate.DNSNames,
 			h.Certificate.IP,
 			h.Certificate.IssuedBy,
@@ -370,7 +370,7 @@ func (r *Repository) Create(ctx context.Context, uid string, hosts []Host) error
 		if err != nil {
 			str := `duplicate key value violates unique constraint "uq_user_hosts_user_id_host_id"`
 			if strings.Contains(err.Error(), str) {
-				return fmt.Errorf("already tracking %s", h.HostName)
+				return fmt.Errorf("already tracking %s", h.Hostname)
 			}
 			return err
 		}
