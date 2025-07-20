@@ -36,7 +36,7 @@ func NewRouter(h *handlers.Handler) *http.ServeMux {
 	handle("DELETE /account/tokens/{id}", h.RequireAuth(h.DeleteAPIKey))
 	r.HandleFunc("GET /auth/google/login", h.Login(h.AuthService.GoogleClient))
 	r.HandleFunc("GET /auth/google/callback", h.AuthCallback(h.AuthService.GoogleClient))
-	r.Handle("GET /static/", http.StripPrefix("/static", http.FileServer(http.Dir("assets/public"))))
+	r.Handle("GET /assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("assets/public"))))
 
 	return r
 }
