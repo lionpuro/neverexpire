@@ -12,7 +12,6 @@ export default defineConfig({
 				resolve(__dirname, "assets/src/index.ts"),
 				resolve(__dirname, "assets/src/local-time.ts"),
 				resolve(__dirname, "assets/src/account.ts"),
-				resolve(__dirname, "assets/src/swagger-ui.ts"),
 			],
 			output: {
 				entryFileNames: "[name].js",
@@ -33,7 +32,14 @@ export default defineConfig({
 				{
 					src: resolve(
 						__dirname,
-						"node_modules/swagger-ui/dist/swagger-ui.css",
+						"node_modules/swagger-ui-dist/swagger-ui-bundle.js",
+					),
+					dest: resolve(__dirname, "assets/public/scripts"),
+				},
+				{
+					src: resolve(
+						__dirname,
+						"node_modules/swagger-ui-dist/swagger-ui.css",
 					),
 					dest: resolve(__dirname, "assets/public/css"),
 				},

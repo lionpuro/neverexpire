@@ -8,7 +8,6 @@ cleanup() {
 trap cleanup EXIT
 
 wgo -debounce 100ms -xdir assets/public \
-	npm run build:tw \
+	npm run build \
 	:: go run ./cmd/web \
-	:: wgo go run ./cmd/worker \
-	:: wgo -xdir assets/public npm run build:scripts
+	:: wgo go run ./cmd/worker
