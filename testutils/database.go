@@ -16,7 +16,7 @@ import (
 )
 
 // Initializes a postgres container and a connection pool
-func NewPostgresConn() (conn *pgxpool.Pool, cleanup func() error, err error) {
+func NewDatabase() (conn *pgxpool.Pool, cleanup func() error, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	var container *postgres.PostgresContainer
 	clean := func() error {

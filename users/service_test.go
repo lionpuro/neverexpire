@@ -15,7 +15,7 @@ var service *users.Service
 var currentUser users.User
 
 func TestMain(m *testing.M) {
-	conn, cleanup, err := testutils.NewPostgresConn()
+	conn, cleanup, err := testutils.NewDatabase()
 	defer func() {
 		if err := cleanup(); err != nil {
 			log.Printf("error calling cleanup function: %v", err)
