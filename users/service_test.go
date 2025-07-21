@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/lionpuro/neverexpire/notifications"
 	"github.com/lionpuro/neverexpire/testutils"
 	"github.com/lionpuro/neverexpire/users"
 )
@@ -36,6 +37,25 @@ func TestCreateUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	_, err := service.ByID(context.Background(), "test-id")
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestSaveSettings(t *testing.T) {
+	wh := "webhook.example.com"
+	th := notifications.ThresholdWeek
+	_, err := service.SaveSettings("test-id", users.SettingsInput{
+		WebhookURL:   &wh,
+		RemindBefore: &th,
+	})
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestGetSettings(t *testing.T) {
+	_, err := service.Settings(context.Background(), "test-id")
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
