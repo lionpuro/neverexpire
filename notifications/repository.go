@@ -4,15 +4,15 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/lionpuro/neverexpire/db"
 )
 
 type Repository struct {
-	DB *pgxpool.Pool
+	DB db.Connection
 }
 
-func NewRepository(db *pgxpool.Pool) *Repository {
-	return &Repository{DB: db}
+func NewRepository(conn db.Connection) *Repository {
+	return &Repository{DB: conn}
 }
 
 func (r *Repository) AllDue(ctx context.Context) ([]Notification, error) {
