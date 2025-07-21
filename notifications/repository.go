@@ -8,11 +8,11 @@ import (
 )
 
 type Repository struct {
-	DB db.Connection
+	db db.Connection
 }
 
 func NewRepository(conn db.Connection) *Repository {
-	return &Repository{DB: conn}
+	return &Repository{db: conn}
 }
 
 func (r *Repository) AllDue(ctx context.Context) ([]Notification, error) {
@@ -38,7 +38,7 @@ func (r *Repository) AllDue(ctx context.Context) ([]Notification, error) {
 		AND n.due <= (now() at time zone 'utc')
 		AND s.webhook_url != ''
 	ORDER BY due`
-	rows, err := r.DB.Query(ctx, q)
+	rows, err := r.db.Query(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (r *Repository) Create(ctx context.Context, n NotificationInput) error {
 	)
 	VALUES ($1, $2, $3, $4, $5, $6, $7)
 	ON CONFLICT (host_id, due) DO NOTHING`
-	_, err := r.DB.Exec(ctx, q, n.UserID, n.HostID, n.Type, n.Body, n.Due, n.Attempts, n.DeletedAfter)
+	_, err := r.db.Exec(ctx, q, n.UserID, n.HostID, n.Type, n.Body, n.Due, n.Attempts, n.DeletedAfter)
 	return err
 }
 
@@ -74,6 +74,6 @@ func (r *Repository) Update(ctx context.Context, id int, n NotificationUpdate) e
 	SET delivered_at = COALESCE($1, delivered_at),
 		attempts = COALESCE($2, attempts)
 	WHERE id = $3`
-	_, err := r.DB.Exec(ctx, q, n.DeliveredAt, n.Attempts, id)
+	_, err := r.db.Exec(ctx, q, n.DeliveredAt, n.Attempts, id)
 	return err
 }

@@ -12,15 +12,15 @@ import (
 )
 
 type Repository struct {
-	DB db.Connection
+	db db.Connection
 }
 
 func NewRepository(conn db.Connection) *Repository {
-	return &Repository{DB: conn}
+	return &Repository{db: conn}
 }
 
 func (r *Repository) ByID(ctx context.Context, userID string, id int) (Host, error) {
-	row := r.DB.QueryRow(ctx, `
+	row := r.db.QueryRow(ctx, `
 	SELECT
 		h.id,
 		h.hostname,
@@ -63,7 +63,7 @@ func (r *Repository) ByID(ctx context.Context, userID string, id int) (Host, err
 }
 
 func (r *Repository) ByName(ctx context.Context, userID, name string) (Host, error) {
-	row := r.DB.QueryRow(ctx, `
+	row := r.db.QueryRow(ctx, `
 	SELECT
 		h.id,
 		h.hostname,
@@ -131,7 +131,7 @@ func (r *Repository) All(ctx context.Context) ([]Host, error) {
 			expires_at`,
 		order,
 	)
-	rows, err := r.DB.Query(ctx, q)
+	rows, err := r.db.Query(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
 		AND n.attempts < 3
 	)
 	FOR UPDATE SKIP LOCKED`
-	rows, err := r.DB.Query(ctx, q)
+	rows, err := r.db.Query(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Host, erro
 			hostname`,
 		order,
 	)
-	rows, err := r.DB.Query(ctx, q, userID)
+	rows, err := r.db.Query(ctx, q, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +305,7 @@ func (r *Repository) AllByUser(ctx context.Context, userID string) ([]Host, erro
 }
 
 func (r *Repository) Create(ctx context.Context, uid string, hosts []Host) error {
-	tx, err := r.DB.Begin(ctx)
+	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return err
 	}
@@ -382,7 +382,7 @@ func (r *Repository) Create(ctx context.Context, uid string, hosts []Host) error
 }
 
 func (r *Repository) Delete(ctx context.Context, uid string, id int) error {
-	tx, err := r.DB.Begin(ctx)
+	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return err
 	}
@@ -412,7 +412,7 @@ func (r *Repository) Delete(ctx context.Context, uid string, id int) error {
 }
 
 func (r *Repository) Update(ctx context.Context, hosts []Host) error {
-	tx, err := r.DB.Begin(ctx)
+	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return err
 	}

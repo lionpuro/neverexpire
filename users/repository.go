@@ -8,15 +8,15 @@ import (
 )
 
 type Repository struct {
-	DB db.Connection
+	db db.Connection
 }
 
 func NewRepository(conn db.Connection) *Repository {
-	return &Repository{DB: conn}
+	return &Repository{db: conn}
 }
 
 func (r *Repository) ByID(ctx context.Context, id string) (User, error) {
-	rows, err := r.DB.Query(ctx, `SELECT id, email FROM users WHERE id = $1`, id)
+	rows, err := r.db.Query(ctx, `SELECT id, email FROM users WHERE id = $1`, id)
 	if err != nil {
 		return User{}, err
 	}
@@ -31,7 +31,7 @@ func (r *Repository) ByID(ctx context.Context, id string) (User, error) {
 }
 
 func (r *Repository) Create(ctx context.Context, id, email string) error {
-	_, err := r.DB.Exec(ctx, `
+	_, err := r.db.Exec(ctx, `
 		INSERT INTO users (id, email) VALUES ($1, $2)
 		ON CONFLICT DO NOTHING
 	`, id, email)
@@ -39,13 +39,13 @@ func (r *Repository) Create(ctx context.Context, id, email string) error {
 }
 
 func (r *Repository) Delete(ctx context.Context, id string) error {
-	_, err := r.DB.Exec(ctx, `DELETE FROM users WHERE id = $1`, id)
+	_, err := r.db.Exec(ctx, `DELETE FROM users WHERE id = $1`, id)
 	return err
 }
 
 func (r *Repository) Settings(ctx context.Context, userID string) (Settings, error) {
 	q := `SELECT webhook_url, remind_before FROM settings WHERE user_id = $1`
-	row := r.DB.QueryRow(ctx, q, userID)
+	row := r.db.QueryRow(ctx, q, userID)
 	var vals Settings
 	if err := row.Scan(&vals.WebhookURL, &vals.RemindBefore); err != nil {
 		if db.IsErrNoRows(err) {
@@ -69,7 +69,7 @@ func (r *Repository) SaveSettings(ctx context.Context, userID string, settings S
 		remind_before = COALESCE($3, settings.remind_before)
 	RETURNING webhook_url, remind_before`
 	var s Settings
-	row := r.DB.QueryRow(ctx, q, userID, settings.WebhookURL, settings.RemindBefore)
+	row := r.db.QueryRow(ctx, q, userID, settings.WebhookURL, settings.RemindBefore)
 	if err := row.Scan(&s.WebhookURL, &s.RemindBefore); err != nil {
 		return Settings{}, err
 	}
