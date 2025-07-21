@@ -15,7 +15,6 @@ func TestAPIKey(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		t.Logf("raw key: %s", k)
 		rawKey = k
 		storedHash = keys.HashKey([]byte(k))
 	})
