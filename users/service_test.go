@@ -12,6 +12,7 @@ import (
 )
 
 var service *users.Service
+var currentUser users.User
 
 func TestMain(m *testing.M) {
 	conn, cleanup, err := testutils.NewPostgresConn()
@@ -29,14 +30,20 @@ func TestMain(m *testing.M) {
 }
 
 func TestCreateUser(t *testing.T) {
-	err := service.Create("test-id", "tester@neverexpire.xyz")
+	user, err := testutils.NewTestUser()
+	if err != nil {
+		t.Errorf("failed to create test data: %v", err)
+		return
+	}
+	err = service.Create(user.ID, user.Email)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
+	currentUser = user
 }
 
 func TestGetUser(t *testing.T) {
-	_, err := service.ByID(context.Background(), "test-id")
+	_, err := service.ByID(context.Background(), currentUser.ID)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -45,7 +52,7 @@ func TestGetUser(t *testing.T) {
 func TestSaveSettings(t *testing.T) {
 	wh := "webhook.example.com"
 	th := notifications.ThresholdWeek
-	_, err := service.SaveSettings("test-id", users.SettingsInput{
+	_, err := service.SaveSettings(currentUser.ID, users.SettingsInput{
 		WebhookURL:   &wh,
 		RemindBefore: &th,
 	})
@@ -55,14 +62,14 @@ func TestSaveSettings(t *testing.T) {
 }
 
 func TestGetSettings(t *testing.T) {
-	_, err := service.Settings(context.Background(), "test-id")
+	_, err := service.Settings(context.Background(), currentUser.ID)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 }
 
 func TestDeleteUser(t *testing.T) {
-	err := service.Delete("test-id")
+	err := service.Delete(currentUser.ID)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
