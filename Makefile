@@ -5,7 +5,7 @@ DATABASE=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_H
 .PHONY: lint test docker-deploy create-migration migrate-up migrate-down migrate-force
 
 lint:
-	@docker run -t --rm -v ${PWD}:/app -w /app golangci/golangci-lint:v2.1.6 golangci-lint run
+	@docker run -t --rm -v ${PWD}:/app -w /app golangci/golangci-lint:v2.2.2 golangci-lint run
 
 test:
 	@go test -v ./...
