@@ -17,7 +17,6 @@ func (t NotificationType) String() string {
 }
 
 type Notification struct {
-	ID           int              `db:"id"`
 	Endpoint     string           `db:"endpoint"`
 	UserID       string           `db:"user_id"`
 	HostID       int              `db:"host_id"`

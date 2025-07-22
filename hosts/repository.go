@@ -166,7 +166,7 @@ func (r *Repository) All(ctx context.Context) ([]Host, error) {
 	return hosts, nil
 }
 
-func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
+func (r *Repository) Expiring(ctx context.Context) ([]NotifiableHost, error) {
 	q := `
 	SELECT
 		h.id,
@@ -181,9 +181,9 @@ func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
 		h.signature,
 		h.error_message,
 		u.id as user_id,
-		u.email as user_email,
 		s.webhook_url,
-		s.reminder_threshold
+		s.reminder_threshold,
+		COALESCE(n.attempts, 0)
 	FROM hosts h
 	INNER JOIN user_hosts uh
 		ON h.id = uh.host_id
@@ -191,24 +191,23 @@ func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
 		ON uh.user_id = u.id
 	INNER JOIN settings s
 		ON u.id = s.user_id
-	WHERE (h.expires_at - (s.reminder_threshold * interval '1 second')) <= (now() at time zone 'utc')
-	AND NOT EXISTS(
-		SELECT 1 FROM notifications n
-		WHERE n.host_id = h.id
+		AND s.webhook_url != ''
+	LEFT JOIN notifications n
+		ON n.user_id = u.id
+		AND n.host_id = h.id
 		AND n.due = (h.expires_at - (s.reminder_threshold * interval '1 second'))
-		AND n.delivered_at IS NOT NULL
-		AND n.attempts < 3
-	)
-	FOR UPDATE SKIP LOCKED`
+	WHERE (h.expires_at - (s.reminder_threshold * interval '1 second')) <= (now() at time zone 'utc')
+	AND (n.id IS NULL OR (n.delivered_at IS NULL AND n.attempts < 3))
+	ORDER BY h.expires_at`
 	rows, err := r.db.Query(ctx, q)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var hosts []HostWithUser
+	var hosts []NotifiableHost
 	for rows.Next() {
-		var record HostWithUser
+		var record NotifiableHost
 		var errStr *string
 		err := rows.Scan(
 			&record.Host.ID,
@@ -222,10 +221,10 @@ func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
 			&record.Host.Certificate.Latency,
 			&record.Host.Certificate.Signature,
 			&errStr,
-			&record.User.ID,
-			&record.User.Email,
-			&record.Settings.WebhookURL,
-			&record.Settings.ReminderThreshold,
+			&record.UserID,
+			&record.WebhookURL,
+			&record.Threshold,
+			&record.Attempts,
 		)
 		if err != nil {
 			return nil, err

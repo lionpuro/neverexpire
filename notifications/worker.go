@@ -63,35 +63,29 @@ func (w *Worker) send(notif Notification) error {
 }
 
 func (w *Worker) notify(notif Notification) error {
+	notif.Attempts++
 	if err := w.send(notif); err != nil {
-		attempts := notif.Attempts + 1
-		input := NotificationUpdate{
-			Attempts: &attempts,
-		}
-		if err := w.notifications.Update(context.Background(), notif.ID, input); err != nil {
+		if err := w.notifications.Upsert(context.Background(), notif); err != nil {
 			return err
 		}
 		return fmt.Errorf("failed to send notification: %v", err)
 	}
-	ts := time.Now().UTC()
-	input := NotificationUpdate{
-		DeliveredAt: &ts,
-	}
-	err := w.notifications.Update(context.Background(), notif.ID, input)
-	return err
+	t := time.Now().UTC()
+	notif.DeliveredAt = &t
+	return w.notifications.Upsert(context.Background(), notif)
 }
 
 func (w *Worker) processNotifications(ctx context.Context) error {
-	hosts, err := w.hosts.Expiring(ctx)
+	records, err := w.hosts.Expiring(ctx)
 	if err != nil {
 		return err
 	}
-	if err := w.notifications.CreateReminders(ctx, hosts); err != nil {
-		return err
-	}
-	notifs, err := w.notifications.AllDue(ctx)
-	if err != nil {
-		return err
+	var notifs []Notification
+	for _, rec := range records {
+		n := newReminder(rec)
+		if n != nil {
+			notifs = append(notifs, *n)
+		}
 	}
 
 	var wg sync.WaitGroup
@@ -109,6 +103,53 @@ func (w *Worker) processNotifications(ctx context.Context) error {
 	}()
 
 	return nil
+}
+
+func newReminder(record hosts.NotifiableHost) *Notification {
+	exp := record.Host.Certificate.ExpiresAt
+	if exp == nil {
+		return nil
+	}
+	msg := formatReminderMsg(record.Host)
+	diff := time.Duration(record.Threshold) * time.Second
+	n := &Notification{
+		Endpoint:     record.WebhookURL,
+		UserID:       record.UserID,
+		HostID:       record.Host.ID,
+		Type:         NotificationTypeExpiration,
+		Body:         msg,
+		Due:          record.Host.Certificate.ExpiresAt.Add(-diff),
+		DeliveredAt:  nil,
+		Attempts:     record.Attempts,
+		DeletedAfter: *exp,
+	}
+	return n
+}
+
+func formatReminderMsg(d hosts.Host) string {
+	hours := int(d.Certificate.TimeLeft().Hours())
+	count := hours / 24
+	unit := "days"
+	switch {
+	case hours < 24:
+		count = hours
+		unit = "hours"
+		if count == 1 {
+			unit = "hour"
+		}
+	default:
+		if count == 1 {
+			unit = "day"
+		}
+	}
+	msg := fmt.Sprintf(
+		"TLS certificate for %s is expiring in %d %s (at %s UTC)",
+		d.Hostname,
+		count,
+		unit,
+		d.Certificate.ExpiresAt.Format(time.DateTime),
+	)
+	return msg
 }
 
 func sendNotification(logger logging.Logger, client *http.Client, url, msg string) error {

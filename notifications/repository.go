@@ -3,7 +3,6 @@ package notifications
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/lionpuro/neverexpire/db"
 )
 
@@ -15,65 +14,32 @@ func NewRepository(conn db.Connection) *Repository {
 	return &Repository{db: conn}
 }
 
-func (r *Repository) AllDue(ctx context.Context) ([]Notification, error) {
-	q := `
-	SELECT
-		s.webhook_url as endpoint,
-		n.id,
-		n.user_id,
-		n.host_id,
-		n.notification_type,
-		n.body,
-		n.due,
-		n.delivered_at,
-		attempts,
-		deleted_after
-	FROM notifications n
-	INNER JOIN settings s
-		ON n.user_id = s.user_id
-	WHERE
-		n.deleted_after > (now() at time zone 'utc')
-		AND n.delivered_at IS NULL
-		AND n.attempts < 3
-		AND n.due <= (now() at time zone 'utc')
-		AND s.webhook_url != ''
-	ORDER BY due`
-	rows, err := r.db.Query(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	notifs, err := pgx.CollectRows(rows, pgx.RowToStructByName[Notification])
-	if err != nil {
-		return nil, err
-	}
-	return notifs, nil
-}
-
-func (r *Repository) Create(ctx context.Context, n NotificationInput) error {
-	q := `
+func (r *Repository) Upsert(ctx context.Context, n Notification) error {
+	sql := `
 	INSERT INTO notifications (
 		user_id,
 		host_id,
 		notification_type,
 		body,
 		due,
+		delivered_at,
 		attempts,
 		deleted_after
 	)
-	VALUES ($1, $2, $3, $4, $5, $6, $7)
-	ON CONFLICT (host_id, due) DO NOTHING`
-	_, err := r.db.Exec(ctx, q, n.UserID, n.HostID, n.Type, n.Body, n.Due, n.Attempts, n.DeletedAfter)
-	return err
-}
-
-func (r *Repository) Update(ctx context.Context, id int, n NotificationUpdate) error {
-	q := `
-	UPDATE notifications
-	SET delivered_at = COALESCE($1, delivered_at),
-		attempts = COALESCE($2, attempts)
-	WHERE id = $3`
-	_, err := r.db.Exec(ctx, q, n.DeliveredAt, n.Attempts, id)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	ON CONFLICT (user_id, host_id, due) DO UPDATE SET
+		delivered_at = EXCLUDED.delivered_at,
+		attempts     = EXCLUDED.attempts
+	`
+	_, err := r.db.Exec(ctx, sql,
+		n.UserID,
+		n.HostID,
+		n.Type,
+		n.Body,
+		n.Due,
+		n.DeliveredAt,
+		n.Attempts,
+		n.DeletedAfter,
+	)
 	return err
 }

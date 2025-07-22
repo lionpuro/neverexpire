@@ -2,8 +2,6 @@ package hosts
 
 import (
 	"time"
-
-	"github.com/lionpuro/neverexpire/users"
 )
 
 type Host struct {
@@ -24,10 +22,12 @@ type CertificateInfo struct {
 	Error     error             `db:"-"`
 }
 
-type HostWithUser struct {
-	Host     Host
-	User     users.User
-	Settings users.Settings
+type NotifiableHost struct {
+	Host       Host
+	UserID     string
+	WebhookURL string
+	Threshold  int
+	Attempts   int
 }
 
 func (c CertificateInfo) TimeLeft() time.Duration {

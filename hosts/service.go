@@ -34,7 +34,7 @@ func (s *Service) All(ctx context.Context) ([]Host, error) {
 	return s.repo.All(ctx)
 }
 
-func (s *Service) Expiring(ctx context.Context) ([]HostWithUser, error) {
+func (s *Service) Expiring(ctx context.Context) ([]NotifiableHost, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 	return s.repo.Expiring(ctx)
