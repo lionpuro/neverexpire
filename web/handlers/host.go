@@ -105,7 +105,7 @@ func (h *Handler) CreateHosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.hostService.Create(u, names); err != nil {
+	if err := h.hostService.Create(u.ID, names); err != nil {
 		e := fmt.Errorf("error adding host")
 		switch {
 		case

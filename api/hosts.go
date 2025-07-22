@@ -8,7 +8,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/lionpuro/neverexpire/db"
 	"github.com/lionpuro/neverexpire/hosts"
-	"github.com/lionpuro/neverexpire/users"
 )
 
 type Host struct {
@@ -93,7 +92,7 @@ func (a *API) CreateHost(ctx context.Context, input *CreateHostInput) (*Response
 	if err != nil {
 		return nil, huma.Error400BadRequest("bad request")
 	}
-	if err := a.services.hosts.Create(users.User{ID: uid}, []string{name}); err != nil {
+	if err := a.services.hosts.Create(uid, []string{name}); err != nil {
 		if strings.Contains(err.Error(), "already tracking") {
 			host, err := a.services.hosts.ByName(ctx, name, uid)
 			if err != nil {
