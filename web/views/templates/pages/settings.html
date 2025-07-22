@@ -120,11 +120,11 @@
 						class="grow flex items-center rounded-md bg-base-100 overflow-hidden"
 					>
 						<select
-							id="remind_before"
-							name="remind_before"
+							id="reminder_threshold"
+							name="reminder_threshold"
 							class="grow px-3 py-1.5 text-base-600 border-r-6 border-transparent"
 						>
-							{{$selected := .Settings.RemindBefore}}
+							{{$selected := .Settings.ReminderThreshold}}
 							{{range $opt := .ReminderOptions}}
 								<option
 									value="{{$opt.Value}}"

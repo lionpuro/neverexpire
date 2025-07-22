@@ -183,7 +183,7 @@ func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
 		u.id as user_id,
 		u.email as user_email,
 		s.webhook_url,
-		s.remind_before
+		s.reminder_threshold
 	FROM hosts h
 	INNER JOIN user_hosts uh
 		ON h.id = uh.host_id
@@ -191,11 +191,11 @@ func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
 		ON uh.user_id = u.id
 	INNER JOIN settings s
 		ON u.id = s.user_id
-	WHERE (h.expires_at - (s.remind_before * interval '1 second')) <= (now() at time zone 'utc')
+	WHERE (h.expires_at - (s.reminder_threshold * interval '1 second')) <= (now() at time zone 'utc')
 	AND NOT EXISTS(
 		SELECT 1 FROM notifications n
 		WHERE n.host_id = h.id
-		AND n.due = (h.expires_at - (s.remind_before * interval '1 second'))
+		AND n.due = (h.expires_at - (s.reminder_threshold * interval '1 second'))
 		AND n.delivered_at IS NOT NULL
 		AND n.attempts < 3
 	)
@@ -225,7 +225,7 @@ func (r *Repository) Expiring(ctx context.Context) ([]HostWithUser, error) {
 			&record.User.ID,
 			&record.User.Email,
 			&record.Settings.WebhookURL,
-			&record.Settings.RemindBefore,
+			&record.Settings.ReminderThreshold,
 		)
 		if err != nil {
 			return nil, err

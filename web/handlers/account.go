@@ -21,7 +21,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 	if settings == (users.Settings{}) {
 		sec := notifications.Threshold2Weeks
 		sett, err := h.userService.SaveSettings(u.ID, users.SettingsInput{
-			RemindBefore: &sec,
+			ReminderThreshold: &sec,
 		})
 		if err != nil {
 			h.log.Error("failed to save settings", "error", err.Error())
@@ -54,12 +54,12 @@ func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) UpdateReminders(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
-	seconds, err := strconv.Atoi(r.FormValue("remind_before"))
+	seconds, err := strconv.Atoi(r.FormValue("reminder_threshold"))
 	if err != nil {
 		h.htmxError(w, fmt.Errorf("bad request"))
 		return
 	}
-	if _, err := h.userService.SaveSettings(u.ID, users.SettingsInput{RemindBefore: &seconds}); err != nil {
+	if _, err := h.userService.SaveSettings(u.ID, users.SettingsInput{ReminderThreshold: &seconds}); err != nil {
 		h.log.Error("failed to update settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return

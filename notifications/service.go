@@ -66,7 +66,7 @@ func (s *Service) createReminder(ctx context.Context, record hosts.HostWithUser)
 		return nil
 	}
 	msg := formatReminder(record.Host)
-	diff := time.Duration(record.Settings.RemindBefore) * time.Second
+	diff := time.Duration(record.Settings.ReminderThreshold) * time.Second
 	input := NotificationInput{
 		UserID:       record.User.ID,
 		HostID:       record.Host.ID,

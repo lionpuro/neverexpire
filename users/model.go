@@ -6,11 +6,11 @@ type User struct {
 }
 
 type Settings struct {
-	WebhookURL   string
-	RemindBefore int
+	WebhookURL        string
+	ReminderThreshold int
 }
 
 type SettingsInput struct {
-	WebhookURL   *string
-	RemindBefore *int
+	WebhookURL        *string
+	ReminderThreshold *int
 }

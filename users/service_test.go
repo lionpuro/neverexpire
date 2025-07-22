@@ -53,8 +53,8 @@ func TestSaveSettings(t *testing.T) {
 	wh := "webhook.example.com"
 	th := notifications.ThresholdWeek
 	_, err := service.SaveSettings(currentUser.ID, users.SettingsInput{
-		WebhookURL:   &wh,
-		RemindBefore: &th,
+		WebhookURL:        &wh,
+		ReminderThreshold: &th,
 	})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
