@@ -2,11 +2,9 @@ package web
 
 import (
 	"net/http"
-
-	"github.com/lionpuro/neverexpire/web/handlers"
 )
 
-func NewRouter(h *handlers.Handler) *http.ServeMux {
+func NewRouter(h *Handler) *http.ServeMux {
 	r := http.NewServeMux()
 
 	handle := func(p string, hf http.HandlerFunc) {
