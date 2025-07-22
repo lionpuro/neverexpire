@@ -27,25 +27,3 @@ type Notification struct {
 	Attempts     int              `db:"attempts"`
 	DeletedAfter time.Time        `db:"deleted_after"`
 }
-
-type NotificationInput struct {
-	UserID       string
-	HostID       int
-	Type         NotificationType
-	Body         string
-	Due          time.Time
-	DeliveredAt  *time.Time
-	Attempts     int
-	DeletedAfter time.Time
-}
-
-type NotificationUpdate struct {
-	UserID       *string
-	HostID       *int
-	Type         *NotificationType
-	Body         *string
-	Due          *time.Time
-	DeliveredAt  *time.Time
-	Attempts     *int
-	DeletedAfter *time.Time
-}
