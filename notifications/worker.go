@@ -49,7 +49,7 @@ func (w *Worker) Start(ctx context.Context) {
 	for {
 		select {
 		case <-t.C:
-			if err := w.processNotifications(ctx); err != nil {
+			if err := w.NotifyExpiring(ctx); err != nil {
 				w.log.Error("failed to process notifications", "error", err.Error())
 			}
 		case <-ctx.Done():
@@ -75,7 +75,7 @@ func (w *Worker) notify(notif Notification) error {
 	return w.notifications.Upsert(context.Background(), notif)
 }
 
-func (w *Worker) processNotifications(ctx context.Context) error {
+func (w *Worker) NotifyExpiring(ctx context.Context) error {
 	records, err := w.hosts.Expiring(ctx)
 	if err != nil {
 		return err
