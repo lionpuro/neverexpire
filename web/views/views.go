@@ -11,6 +11,8 @@ import (
 	"github.com/lionpuro/neverexpire/keys"
 	"github.com/lionpuro/neverexpire/notifications"
 	"github.com/lionpuro/neverexpire/users"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 //go:embed templates
@@ -64,6 +66,22 @@ func NewHosts(w io.Writer, ld LayoutData, inputValue string) error {
 }
 
 func Settings(w io.Writer, ld LayoutData, sett users.Settings) error {
+	title := func(s string) string {
+		return cases.Title(language.English, cases.Compact).String(s)
+	}
+	whOpts := []struct {
+		Label string
+		Value notifications.WebhookProvider
+	}{
+		{
+			Label: title(string(notifications.DiscordProvider)),
+			Value: notifications.DiscordProvider,
+		},
+		{
+			Label: title(string(notifications.SlackProvider)),
+			Value: notifications.SlackProvider,
+		},
+	}
 	type reminder struct {
 		Value   int
 		Display string
@@ -78,6 +96,7 @@ func Settings(w io.Writer, ld LayoutData, sett users.Settings) error {
 		"LayoutData":      ld,
 		"ReminderOptions": opts,
 		"Settings":        sett,
+		"WebhookOptions":  whOpts,
 	}
 	return settingsTmpl.render(w, data)
 }

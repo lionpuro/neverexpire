@@ -50,10 +50,12 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestSaveSettings(t *testing.T) {
-	wh := "webhook.example.com"
+	whp := notifications.DiscordProvider
+	whurl := "webhook.example.com"
 	th := notifications.ThresholdWeek
 	_, err := service.SaveSettings(currentUser.ID, users.SettingsInput{
-		WebhookURL:        &wh,
+		WebhookProvider:   &whp,
+		WebhookURL:        &whurl,
 		ReminderThreshold: &th,
 	})
 	if err != nil {

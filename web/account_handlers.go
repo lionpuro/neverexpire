@@ -70,12 +70,13 @@ func (h *Handler) UpdateReminders(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AddWebhook(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
-	url, err := parseWebhookURL(r.FormValue("webhook_url"))
+	provider, url, err := parseWebhook(r.FormValue("webhook_provider"), r.FormValue("webhook_url"))
 	if err != nil {
-		h.htmxError(w, fmt.Errorf("invalid URL"))
+		h.htmxError(w, fmt.Errorf("invalid webhook"))
 		return
 	}
-	if _, err := h.userService.SaveSettings(u.ID, users.SettingsInput{WebhookURL: &url}); err != nil {
+	input := users.SettingsInput{WebhookProvider: provider, WebhookURL: &url}
+	if _, err := h.userService.SaveSettings(u.ID, input); err != nil {
 		h.log.Error("failed to save settings", "error", err.Error())
 		h.htmxError(w, fmt.Errorf("something went wrong"))
 		return
