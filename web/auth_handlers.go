@@ -13,7 +13,7 @@ func (h *Handler) LoginPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
-	sess, err := h.AuthService.Session(r)
+	sess, err := h.Authenticator.Session(r)
 	if err != nil {
 		h.ErrorPage(w, r, "Something went wrong", http.StatusInternalServerError)
 		return
@@ -35,7 +35,7 @@ func (h *Handler) Login(a *auth.Client) http.HandlerFunc {
 			return
 		}
 
-		sess, err := h.AuthService.Session(r)
+		sess, err := h.Authenticator.Session(r)
 		if err != nil {
 			h.log.Error("failed to retrieve session", "error", err.Error())
 			h.ErrorPage(w, r, "Internal server error", http.StatusInternalServerError)
@@ -55,7 +55,7 @@ func (h *Handler) Login(a *auth.Client) http.HandlerFunc {
 
 func (h *Handler) AuthCallback(a *auth.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sess, err := h.AuthService.Session(r)
+		sess, err := h.Authenticator.Session(r)
 		if err != nil {
 			h.log.Error("failed to retrieve session", "error", err.Error())
 			h.ErrorPage(w, r, "Internal server error", http.StatusInternalServerError)

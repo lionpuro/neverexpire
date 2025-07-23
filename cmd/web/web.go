@@ -27,7 +27,7 @@ func main() {
 	us := users.NewService(users.NewRepository(pool))
 	hs := hosts.NewService(hosts.NewRepository(pool))
 	ks := keys.NewService(keys.NewRepository(pool))
-	as, err := auth.NewService(conf)
+	auth, err := auth.NewAuthenticator(conf)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,11 +36,10 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	webh := web.NewHandler(logger, us, hs, ks, as)
+	webh := web.NewHandler(logger, us, hs, ks, auth)
 
 	mux.Handle("/", web.NewRouter(webh))
-	api := api.New(mux, logger, us, hs, ks)
-	api.Register()
+	api.New(mux, logger, us, hs, ks).Register()
 
 	srv := newServer(3000, mux)
 

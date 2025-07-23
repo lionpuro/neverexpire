@@ -12,12 +12,12 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type Service struct {
+type Authenticator struct {
 	GoogleClient *Client
 	sessions     *SessionStore
 }
 
-func NewService(conf *config.Config) (*Service, error) {
+func NewAuthenticator(conf *config.Config) (*Authenticator, error) {
 	googleProvider, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
 	if err != nil {
 		return nil, fmt.Errorf("new google provider: %v", err)
@@ -38,11 +38,11 @@ func NewService(conf *config.Config) (*Service, error) {
 		return nil, err
 	}
 
-	s := &Service{
+	a := &Authenticator{
 		GoogleClient: googleClient,
 		sessions:     sessions,
 	}
-	return s, nil
+	return a, nil
 }
 
 func GenerateRandomState() (string, error) {
@@ -56,6 +56,6 @@ func GenerateRandomState() (string, error) {
 	return state, nil
 }
 
-func (s *Service) Session(r *http.Request) (*Session, error) {
-	return s.sessions.GetSession(r)
+func (a *Authenticator) Session(r *http.Request) (*Session, error) {
+	return a.sessions.GetSession(r)
 }

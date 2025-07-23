@@ -39,7 +39,7 @@ func (h *Handler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("error deleting account"))
 		return
 	}
-	sess, err := h.AuthService.Session(r)
+	sess, err := h.Authenticator.Session(r)
 	if err != nil {
 		h.htmxError(w, fmt.Errorf("error logging out"))
 		return

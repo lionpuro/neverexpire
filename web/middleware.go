@@ -9,7 +9,7 @@ import (
 func (h *Handler) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		sess, err := h.AuthService.Session(r)
+		sess, err := h.Authenticator.Session(r)
 		if err == nil {
 			if u := sess.User(); u != nil {
 				ctx = userToContext(r.Context(), *u)

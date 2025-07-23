@@ -9,11 +9,11 @@ import (
 )
 
 type Handler struct {
-	userService *users.Service
-	hostService *hosts.Service
-	AuthService *auth.Service
-	keyService  *keys.Service
-	log         logging.Logger
+	userService   *users.Service
+	hostService   *hosts.Service
+	keyService    *keys.Service
+	Authenticator *auth.Authenticator
+	log           logging.Logger
 }
 
 func NewHandler(
@@ -21,14 +21,14 @@ func NewHandler(
 	us *users.Service,
 	hs *hosts.Service,
 	ks *keys.Service,
-	as *auth.Service,
+	auth *auth.Authenticator,
 ) *Handler {
 	return &Handler{
-		userService: us,
-		hostService: hs,
-		AuthService: as,
-		keyService:  ks,
-		log:         logger,
+		userService:   us,
+		hostService:   hs,
+		keyService:    ks,
+		Authenticator: auth,
+		log:           logger,
 	}
 }
 
