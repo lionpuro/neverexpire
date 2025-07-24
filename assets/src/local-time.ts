@@ -1,13 +1,14 @@
 class LocalTime extends HTMLElement {
 	public datetime?: string;
 	public dateonly: boolean = false;
+	public short: boolean = false;
 
 	public constructor() {
 		super();
 	}
 
 	public static get observedAttributes(): string[] {
-		return ["datetime", "dateonly"];
+		return ["datetime", "dateonly", "short"];
 	}
 
 	public attributeChangedCallback(
@@ -20,7 +21,10 @@ class LocalTime extends HTMLElement {
 				this.datetime = newValue;
 				break;
 			case "dateonly":
-				this.dateonly = newValue === "true" ? true : false;
+				this.dateonly = newValue === "true";
+				break;
+			case "short":
+				this.short = newValue === "true";
 				break;
 		}
 	}
@@ -37,7 +41,11 @@ class LocalTime extends HTMLElement {
 			}
 			return;
 		}
-		const datestr = localeString(date, this.dateonly);
+		let timeonly = false;
+		if (this.short) {
+			timeonly = true;
+		}
+		const datestr = localeString(date, this.dateonly, timeonly);
 		if (datestr === "Invalid Date") {
 			console.error("local-time: invalid datetime input");
 			return;
@@ -46,7 +54,23 @@ class LocalTime extends HTMLElement {
 	}
 }
 
-function localeString(date: Date, dateonly: boolean): string {
+function localeString(
+	date: Date,
+	dateonly: boolean,
+	timeonly: boolean,
+): string {
+	if (timeonly) {
+		const today = new Date().toLocaleDateString(window.navigator.language);
+		const ts = date.toLocaleTimeString(window.navigator.language, {
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+		const ds = date.toLocaleDateString(window.navigator.language);
+		if (ds === today) {
+			return ts;
+		}
+		return ds;
+	}
 	if (dateonly) {
 		return date.toLocaleDateString(window.navigator.language);
 	}
