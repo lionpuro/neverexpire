@@ -28,15 +28,16 @@ type LayoutData struct {
 }
 
 var (
-	homeTmpl      = parse("pages/index.html")
-	errorPageTmpl = parse("pages/error.html")
-	hostsTmpl     = parse("pages/hosts/hosts.html")
-	hostTmpl      = parse("pages/hosts/host.html")
-	newHostsTmpl  = parse("pages/hosts/new.html")
-	settingsTmpl  = parse("pages/settings.html")
-	apiTmpl       = parse("pages/api.html")
-	loginTmpl     = parse("pages/login.html")
-	partials      = parsePartials()
+	homeTmpl          = parse("pages/index.html")
+	errorPageTmpl     = parse("pages/error.html")
+	hostsTmpl         = parse("pages/hosts/hosts.html")
+	hostTmpl          = parse("pages/hosts/host.html")
+	newHostsTmpl      = parse("pages/hosts/new.html")
+	settingsTmpl      = parse("pages/settings.html")
+	apiTmpl           = parse("pages/api.html")
+	loginTmpl         = parse("pages/login.html")
+	notificationsTmpl = parse("pages/notifications.html")
+	partials          = parsePartials()
 )
 
 func Home(w io.Writer, ld LayoutData) error {
@@ -107,6 +108,14 @@ func API(w io.Writer, ld LayoutData, keys []keys.AccessKey) error {
 
 func Login(w io.Writer) error {
 	return loginTmpl.render(w, nil)
+}
+
+func Notifications(w io.Writer, ld LayoutData, notifs []notifications.AppNotification) error {
+	data := map[string]any{
+		"LayoutData":    ld,
+		"Notifications": notifs,
+	}
+	return notificationsTmpl.render(w, data)
 }
 
 func ErrorBanner(w io.Writer, err error) error {

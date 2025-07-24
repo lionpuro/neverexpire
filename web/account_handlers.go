@@ -4,11 +4,51 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/lionpuro/neverexpire/notifications"
 	"github.com/lionpuro/neverexpire/users"
 	"github.com/lionpuro/neverexpire/web/views"
 )
+
+func (h *Handler) NotificationsPage(w http.ResponseWriter, r *http.Request) {
+	u, _ := userFromContext(r.Context())
+	notifs, err := h.notificationService.AllByUser(r.Context(), u.ID)
+	if err != nil {
+		h.log.Error("failed to retrieve notifications", "error", err.Error())
+		h.htmxError(w, fmt.Errorf("failed to load notifications"))
+		return
+	}
+	h.render(views.Notifications(w, views.LayoutData{User: &u}, notifs))
+}
+
+func (h *Handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
+	u, _ := userFromContext(r.Context())
+	if err := r.ParseForm(); err != nil {
+		h.log.Error("failed to parse form", "error", err.Error())
+		h.htmxError(w, fmt.Errorf("failed to update notifications"))
+	}
+	ids := r.Form["notification_id"]
+	now := time.Now().UTC()
+	var input []notifications.NotificationUpdate
+	for _, idStr := range ids {
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			h.log.Error("failed to convert id to int", "error", err.Error())
+			h.htmxError(w, fmt.Errorf("failed to update notifications"))
+			return
+		}
+		input = append(input, notifications.NotificationUpdate{ID: id, ReadAt: &now})
+	}
+	err := h.notificationService.Update(u.ID, input)
+	if err != nil {
+		h.log.Error("failed to update notifications", "error", err.Error())
+		h.htmxError(w, fmt.Errorf("failed to update notifications"))
+		return
+	}
+	w.Header().Set("HX-Redirect", "/notifications")
+	w.WriteHeader(http.StatusOK)
+}
 
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
