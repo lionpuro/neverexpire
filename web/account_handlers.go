@@ -64,8 +64,8 @@ func (h *Handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("failed to update notifications"))
 		return
 	}
-	w.Header().Set("HX-Redirect", "/notifications")
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("HX-Location", "/notifications")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
