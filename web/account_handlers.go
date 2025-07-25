@@ -22,6 +22,24 @@ func (h *Handler) NotificationsPage(w http.ResponseWriter, r *http.Request) {
 	h.render(views.Notifications(w, views.LayoutData{User: &u}, notifs))
 }
 
+func (h *Handler) NotificationsCount(w http.ResponseWriter, r *http.Request) {
+	u, _ := userFromContext(r.Context())
+	notifs, err := h.notificationService.AllByUser(r.Context(), u.ID)
+	if err != nil {
+		h.log.Error("failed to retrieve notifications", "error", err.Error())
+		h.htmxError(w, fmt.Errorf("failed to load notifications"))
+		return
+	}
+	var unread int
+	for _, n := range notifs {
+		if n.ReadAt == nil {
+			unread++
+		}
+	}
+	data := map[string]any{"Count": fmt.Sprintf("%d", unread)}
+	h.render(views.Component(w, "notification-badge", data))
+}
+
 func (h *Handler) ReadNotifications(w http.ResponseWriter, r *http.Request) {
 	u, _ := userFromContext(r.Context())
 	if err := r.ParseForm(); err != nil {

@@ -1,0 +1,13 @@
+{{define "notification-badge"}}
+	{{if and .Count (not (eq .Count "0"))}}
+		<span
+			class="{{cn
+				"absolute -top-0.25 -right-0.25 flex justify-center items-center"
+				"size-4 rounded-full bg-red-500 text-base-white"
+				"font-semibold text-xs fade-in"
+			}}"
+		>
+			{{.Count}}
+		</span>
+	{{end}}
+{{end}}

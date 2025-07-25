@@ -54,8 +54,19 @@
 				{{if .LayoutData.User}}
 					<a href="/hosts" class="font-medium text-base-600 p-3"> Hosts </a>
 					<a href="/account/api" class="font-medium text-base-600 p-3"> API </a>
-					<a href="/notifications" class="font-medium text-base-600 p-3">
-						{{template "icon-bell" withAttributes "size" "22"}}
+					<a href="/notifications" class="font-medium text-base-600 px-2">
+						<span
+							class="relative flex p-1"
+							hx-get="/partials/notifications/count"
+							hx-trigger="load"
+							hx-target="#notification-badge"
+							hx-swap="innerHTML settle:0.025s"
+						>
+							<span id="notification-badge" class="contents">
+								{{template "notification-badge"}}
+							</span>
+							{{template "icon-bell" withAttributes "size" "24"}}
+						</span>
 					</a>
 					<details id="account-menu" class="ml-2 relative">
 						<summary
