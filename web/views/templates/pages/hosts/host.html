@@ -59,7 +59,7 @@
 			</li>
 			{{template "li" withAttributes
 				"key" "Latency"
-				"val" (sprintf "%d ms" .Host.Certificate.Latency)
+				"val" (printf "%d ms" .Host.Certificate.Latency)
 			}}
 			{{template "li" withAttributes
 				"key" "DNS"

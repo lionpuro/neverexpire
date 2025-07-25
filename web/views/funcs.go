@@ -13,7 +13,6 @@ import (
 func funcMap() template.FuncMap {
 	return template.FuncMap{
 		"datef":          datef,
-		"sprintf":        fmt.Sprintf,
 		"cn":             cn,
 		"statusClass":    statusClass,
 		"statusText":     statusText,
