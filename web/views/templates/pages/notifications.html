@@ -34,14 +34,14 @@
 			{{range $notification := .Notifications}}
 				<li class="flex p-2 border-base-200/50 border-b last:border-none">
 					<div class="flex flex-wrap">
-						{{$classname := ""}}
+						{{$classname := "text-base-700"}}
 						{{if not $notification.ReadAt}}
-							{{$classname = "relative before:absolute before:top-0 before:left-0 before:content-['•'] before:text-2xl/5 before:text-primary-500"}}
+							{{$classname = "text-base-950 relative before:absolute before:top-0 before:left-0 before:content-['•'] before:text-2xl/5 before:text-primary-500"}}
 						{{end}}
-						<span class="{{cn "pl-5" $classname}}">
+						<span class="{{cn "pl-5 font-medium" $classname}}">
 							{{$notification.Body}}
 						</span>
-						<span class="pl-5 w-full text-base-500 text-sm">
+						<span class="pl-5 w-full text-base-400 text-sm font-medium">
 							<local-time
 								datetime="{{datef $notification.CreatedAt "2006-01-02T15:04:05.000Z"}}"
 								short="true"
