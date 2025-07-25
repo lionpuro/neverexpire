@@ -7,17 +7,17 @@ import (
 	"time"
 
 	"github.com/lionpuro/neverexpire/hosts"
-	"github.com/lionpuro/neverexpire/logging"
 )
 
 func funcMap() template.FuncMap {
 	return template.FuncMap{
-		"datef":          datef,
-		"cn":             cn,
-		"statusClass":    statusClass,
-		"statusText":     statusText,
-		"withAttributes": withAttributes,
-		"split":          split,
+		"datef":       datef,
+		"cn":          cn,
+		"statusClass": statusClass,
+		"statusText":  statusText,
+		"split":       split,
+		"kv":          kv,
+		"args":        args,
 	}
 }
 
@@ -79,15 +79,16 @@ func split(s, sep string) []string {
 	return strings.Split(s, sep)
 }
 
-// Use with caution
-func withAttributes(kv ...string) map[string]string {
-	if len(kv)%2 != 0 {
-		logging.DefaultLogger().Error(fmt.Sprintf("missing value for attribute %s", kv[len(kv)-1]))
-		return map[string]string{}
-	}
-	result := make(map[string]string)
-	for i := 0; i < len(kv); i += 2 {
-		result[kv[i]] = kv[i+1]
+func kv(key string, val any) map[string]any {
+	return map[string]any{key: val}
+}
+
+func args(kvs ...map[string]any) map[string]any {
+	result := make(map[string]any)
+	for _, kv := range kvs {
+		for k, v := range kv {
+			result[k] = v
+		}
 	}
 	return result
 }

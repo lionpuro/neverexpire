@@ -28,7 +28,7 @@
 					{{template "header" .}}
 					<div id="banner-container">
 						{{if .LayoutData.Error}}
-							{{template "error-banner" withAttributes "Error" .LayoutData.Error}}
+							{{template "error-banner" kv "Error" .LayoutData.Error}}
 						{{end}}
 					</div>
 					<div
@@ -65,7 +65,7 @@
 							<span id="notification-badge" class="contents">
 								{{template "notification-badge"}}
 							</span>
-							{{template "icon-bell" withAttributes "size" "24"}}
+							{{template "icon-bell" kv "size" "24"}}
 						</span>
 					</a>
 					<details id="account-menu" class="ml-2 relative">
@@ -85,7 +85,7 @@
 									href="/settings"
 									class="flex items-center gap-2 font-medium text-base-600 hover:bg-base-100 px-4 py-2 border-b border-base-200"
 								>
-									{{template "icon-cog" withAttributes "size" "20"}}
+									{{template "icon-cog" kv "size" "20"}}
 									Settings
 								</a>
 							</li>
@@ -95,7 +95,7 @@
 									hx-boost="false"
 									class="whitespace-nowrap flex items-center gap-2 text-red-600/80 hover:bg-base-100 font-medium px-4 py-2"
 								>
-									{{template "icon-logout" withAttributes "size" "20"}}
+									{{template "icon-logout" kv "size" "20"}}
 									Sign out
 								</a>
 							</li>

@@ -2,9 +2,7 @@
 {{define "title"}}Add hosts - neverexpire.xyz{{end}}
 {{define "content"}}
 	<div class="flex flex-col max-w-3xl gap-4 w-full mx-auto">
-		{{template "h1" withAttributes
-			"Text" "Add hosts"
-		}}
+		{{template "h1" kv "Text" "Add hosts"}}
 		<form
 			class="flex flex-col gap-4"
 			action="/hosts"

@@ -3,15 +3,13 @@
 		id="banner"
 		class="mx-4 relative flex items-center p-1 rounded overflow-hidden bg-healthy-light before:content['_'] before:w-1.5 before:h-full before:bg-healthy-dark before:absolute before:left-0 before:top-0"
 	>
-		{{template "icon-success" withAttributes
-			"class" "text-healthy-dark ml-4 mr-3"
-		}}
+		{{template "icon-success" kv "class" "text-healthy-dark ml-4 mr-3"}}
 		<div class="font-medium text-base-800">{{.Message}}</div>
 		<button
 			hx-on:click="htmx.toggleClass(htmx.find('#banner'), 'hidden');"
 			class="ml-auto size-10 flex justify-center items-center text-base-800"
 		>
-			{{template "icon-close" withAttributes "size" "20"}}
+			{{template "icon-close" kv "size" "20"}}
 		</button>
 	</div>
 {{end}}

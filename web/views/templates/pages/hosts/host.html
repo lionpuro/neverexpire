@@ -7,7 +7,7 @@
 			hx-boost="true"
 			class="flex items-center gap-1 font-medium text-primary-500 w-fit"
 		>
-			{{template "icon-arrow-left" withAttributes "size" "20"}}
+			{{template "icon-arrow-left" kv "size" "20"}}
 			Hosts
 		</a>
 		<div class="flex flex-col gap-1">
@@ -37,9 +37,9 @@
 					{{statusText .Host.Certificate}}
 				</span>
 			</li>
-			{{template "li" withAttributes
-				"key" "Issuer"
-				"val" .Host.Certificate.IssuedBy
+			{{template "li" args
+				(kv "key" "Issuer")
+				(kv "val" .Host.Certificate.IssuedBy)
 			}}
 			<li class="contents">
 				<span class="font-medium text-base-800"> Expires </span>
@@ -57,28 +57,28 @@
 					{{end}}
 				</span>
 			</li>
-			{{template "li" withAttributes
-				"key" "Latency"
-				"val" (printf "%d ms" .Host.Certificate.Latency)
+			{{template "li" args
+				(kv "key" "Latency")
+				(kv "val" (printf "%d ms" .Host.Certificate.Latency))
 			}}
-			{{template "li" withAttributes
-				"key" "DNS"
-				"val" .Host.Certificate.DNSNames
+			{{template "li" args
+				(kv "key" "DNS")
+				(kv "val" .Host.Certificate.DNSNames)
 			}}
 			{{$signature := .Host.Certificate.Signature}}
 			{{if eq .Host.Certificate.Signature ""}}
 				{{$signature = "n/a"}}
 			{{end}}
-			{{template "li" withAttributes
-				"key" "Signature"
-				"val" $signature
-				"class" "break-all"
+			{{template "li" args
+				(kv "key" "Signature")
+				(kv "val" $signature)
+				(kv "class" "break-all")
 			}}
 			{{if .Host.Certificate.Error}}
-				{{template "li" withAttributes
-					"key"   "Error"
-					"val"   .Host.Certificate.Error.Error
-					"class" "text-red-600/90 font-normal"
+				{{template "li" args
+					(kv "key"   "Error")
+					(kv "val"   .Host.Certificate.Error.Error)
+					(kv "class" "text-red-600/90 font-normal")
 				}}
 			{{end}}
 			<li class="contents">

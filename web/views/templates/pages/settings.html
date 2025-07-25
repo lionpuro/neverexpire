@@ -2,9 +2,9 @@
 {{define "title"}}Settings - neverexpire.xyz{{end}}
 {{define "content"}}
 	<div class="flex flex-col max-w-3xl w-full mx-auto gap-8">
-		{{template "h1" withAttributes "Text" "Settings"}}
+		{{template "h1" kv "Text" "Settings"}}
 		<div class="flex flex-col gap-4">
-			{{template "h2" withAttributes "Text" "Account"}}
+			{{template "h2" kv "Text" "Account"}}
 			<div class="flex flex-col">
 				<span class="font-semibold text-base-950">Email</span>
 				<div class="flex items-center text-base-600 font-medium">
@@ -45,7 +45,7 @@
 			<script src="/assets/scripts/account.js"></script>
 		</div>
 		<div class="flex flex-col gap-4">
-			{{template "h2" withAttributes "Text" "Notifications"}}
+			{{template "h2" kv "Text" "Notifications"}}
 			<div class="flex flex-col">
 				<h3 class="font-semibold mb-3">Webhook</h3>
 				<p class="text-base-600 font-medium mb-3">
