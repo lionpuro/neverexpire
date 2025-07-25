@@ -52,9 +52,22 @@
 			</a>
 			<div class="ml-auto flex items-center">
 				{{if .LayoutData.User}}
-					<a href="/hosts" class="font-medium text-base-600 p-3"> Hosts </a>
-					<a href="/account/api" class="font-medium text-base-600 p-3"> API </a>
-					<a href="/notifications" class="font-medium text-base-600 px-2">
+					<a
+						href="/hosts"
+						class="font-medium text-base-500 hover:text-base-800 p-3"
+					>
+						Hosts
+					</a>
+					<a
+						href="/account/api"
+						class="font-medium text-base-500 hover:text-base-800 p-3"
+					>
+						API
+					</a>
+					<a
+						href="/notifications"
+						class="font-medium text-base-500 hover:text-base-800 px-2"
+					>
 						<span
 							class="relative flex p-1"
 							hx-get="/partials/notifications/count"
@@ -71,7 +84,7 @@
 					<details id="account-menu" class="ml-2 relative">
 						<summary
 							id="menu-toggle"
-							class="list-none select-none cursor-pointer py-3 flex gap-1 text-base-600 font-medium"
+							class="list-none select-none cursor-pointer py-3 flex gap-1 text-base-500 hover:text-base-800 font-medium"
 						>
 							{{$username := index (split .LayoutData.User.Email "@") 0}}
 							{{$username}}
