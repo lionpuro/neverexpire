@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io"
 	"path/filepath"
+	"time"
 
 	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
@@ -128,6 +129,83 @@ func SuccessBanner(w io.Writer, msg string) error {
 
 func Component(w io.Writer, name string, data any) error {
 	return partials.renderPartial(w, name, data)
+}
+
+func DemoHosts(w io.Writer) error {
+	offset := func(days int) *time.Time {
+		d := time.Duration(days * 24 * int(time.Hour))
+		exp := time.Now().UTC().Add(d)
+		return &exp
+	}
+	now := time.Now().UTC()
+	hosts := []hosts.Host{
+		{
+			ID:       0,
+			Hostname: "google.com",
+			Certificate: hosts.CertificateInfo{
+				IssuedBy:  "Google Trust Services",
+				ExpiresAt: offset(7),
+				Status:    hosts.CertificateStatusHealthy,
+				CheckedAt: now,
+			},
+		},
+		{
+			ID:       1,
+			Hostname: "www.google.com",
+			Certificate: hosts.CertificateInfo{
+				IssuedBy:  "Google Trust Services",
+				ExpiresAt: offset(7),
+				Status:    hosts.CertificateStatusHealthy,
+				CheckedAt: now,
+			},
+		},
+		{
+			ID:       2,
+			Hostname: "go.dev",
+			Certificate: hosts.CertificateInfo{
+				IssuedBy:  "Google Trust Services",
+				ExpiresAt: offset(61),
+				Status:    hosts.CertificateStatusHealthy,
+				CheckedAt: now,
+			},
+		},
+		{
+			ID:       3,
+			Hostname: "neverexpire.xyz",
+			Certificate: hosts.CertificateInfo{
+				IssuedBy:  "Let's Encrypt",
+				ExpiresAt: offset(70),
+				Status:    hosts.CertificateStatusHealthy,
+				CheckedAt: now,
+			},
+		},
+		{
+			ID:       4,
+			Hostname: "www.neverexpire.xyz",
+			Certificate: hosts.CertificateInfo{
+				IssuedBy:  "Let's Encrypt",
+				ExpiresAt: offset(70),
+				Status:    hosts.CertificateStatusHealthy,
+				CheckedAt: now,
+			},
+		},
+		{
+			ID:       5,
+			Hostname: "example.com",
+			Certificate: hosts.CertificateInfo{
+				IssuedBy:  "DigiCert Inc",
+				ExpiresAt: offset(133),
+				Status:    hosts.CertificateStatusHealthy,
+				CheckedAt: now,
+			},
+		},
+	}
+	data := map[string]any{
+		"LayoutData":        LayoutData{User: &users.User{Email: "John Doe"}},
+		"Hosts":             hosts,
+		"NotificationCount": "2",
+	}
+	return hostsTmpl.render(w, data)
 }
 
 func parse(templates ...string) *viewTemplate {

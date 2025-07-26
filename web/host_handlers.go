@@ -126,3 +126,7 @@ func (h *Handler) CreateHosts(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/hosts", http.StatusOK)
 }
+
+func (h *Handler) HostsDemoPage(w http.ResponseWriter, r *http.Request) {
+	h.render(views.DemoHosts(w))
+}

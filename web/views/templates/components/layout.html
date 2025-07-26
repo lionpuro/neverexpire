@@ -76,7 +76,7 @@
 							hx-swap="innerHTML settle:0.025s"
 						>
 							<span id="notification-badge" class="contents">
-								{{template "notification-badge"}}
+								{{template "notification-badge" kv "Count" .NotificationCount}}
 							</span>
 							{{template "icon-bell" kv "size" "22"}}
 						</span>
