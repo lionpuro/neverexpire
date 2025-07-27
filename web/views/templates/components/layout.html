@@ -46,11 +46,11 @@
 
 {{define "header"}}
 	<header class="flex px-4 mb-4 border-b border-base-100">
-		<nav hx-boost="true" class="flex w-full">
-			<a href="/" class="flex items-center py-3">
+		<nav hx-boost="true" class="flex items-center w-full max-sm:flex-wrap">
+			<a href="/" class="flex items-center py-3 max-sm:-order-1">
 				{{template "logo"}}
 			</a>
-			<div class="ml-auto flex items-center">
+			<div class="sm:ml-auto flex items-center max-sm:w-full max-sm:order-3">
 				{{if .LayoutData.User}}
 					<a
 						href="/hosts"
@@ -66,60 +66,68 @@
 					</a>
 					<a
 						href="/notifications"
-						class="font-medium text-base-500 hover:text-base-800 px-2"
+						class="font-medium text-base-500 hover:text-base-800 p-3 sm:px-2"
 					>
 						<span
-							class="relative flex p-1"
+							class="relative flex"
 							hx-get="/partials/notifications/count"
 							hx-trigger="load"
 							hx-target="#notification-badge"
 							hx-swap="innerHTML settle:0.025s"
 						>
+							<span class="sm:hidden">Notifications</span>
 							<span id="notification-badge" class="contents">
 								{{template "notification-badge" kv "Count" .NotificationCount}}
 							</span>
-							{{template "icon-bell" kv "size" "22"}}
+							<span class="max-sm:hidden">
+								{{template "icon-bell" kv "size" "22"}}
+							</span>
 						</span>
-					</a>
-					<details id="account-menu" class="ml-2 relative">
-						<summary
-							id="menu-toggle"
-							class="list-none select-none cursor-pointer py-3 flex gap-1 text-base-500 hover:text-base-800 font-medium"
-						>
-							{{$username := index (split .LayoutData.User.Email "@") 0}}
-							{{$username}}
-							{{template "icon-chevron-down"}}
-						</summary>
-						<ul
-							class="flex flex-col min-w-36 absolute z-[999] right-0 bg-base-white border border-base-200 rounded-md overflow-hidden"
-						>
-							<li>
-								<a
-									href="/settings"
-									class="flex items-center gap-2 font-medium text-base-600 hover:bg-base-100 px-4 py-2 border-b border-base-200"
-								>
-									{{template "icon-cog" kv "size" "20"}}
-									Settings
-								</a>
-							</li>
-							<li>
-								<a
-									href="/logout"
-									hx-boost="false"
-									class="whitespace-nowrap flex items-center gap-2 text-red-600/80 hover:bg-base-100 font-medium px-4 py-2"
-								>
-									{{template "icon-logout" kv "size" "20"}}
-									Sign out
-								</a>
-							</li>
-						</ul>
-					</details>
-				{{else}}
-					<a href="/login" class="ml-auto text-primary-500 font-medium py-3">
-						Log in
 					</a>
 				{{end}}
 			</div>
+			{{if .LayoutData.User}}
+				<details
+					id="account-menu"
+					class="ml-auto sm:ml-2 relative max-sm:order-2"
+				>
+					<summary
+						id="menu-toggle"
+						class="list-none select-none cursor-pointer py-3 flex gap-1 text-base-500 hover:text-base-800 font-medium"
+					>
+						{{$username := index (split .LayoutData.User.Email "@") 0}}
+						{{$username}}
+						{{template "icon-chevron-down"}}
+					</summary>
+					<ul
+						class="flex flex-col min-w-36 absolute z-[999] right-0 bg-base-white border border-base-200 rounded-md overflow-hidden"
+					>
+						<li>
+							<a
+								href="/settings"
+								class="flex items-center gap-2 font-medium text-base-600 hover:bg-base-100 px-4 py-2 border-b border-base-200"
+							>
+								{{template "icon-cog" kv "size" "20"}}
+								Settings
+							</a>
+						</li>
+						<li>
+							<a
+								href="/logout"
+								hx-boost="false"
+								class="whitespace-nowrap flex items-center gap-2 text-red-600/80 hover:bg-base-100 font-medium px-4 py-2"
+							>
+								{{template "icon-logout" kv "size" "20"}}
+								Sign out
+							</a>
+						</li>
+					</ul>
+				</details>
+			{{else}}
+				<a href="/login" class="ml-auto text-primary-500 font-medium py-3">
+					Log in
+				</a>
+			{{end}}
 		</nav>
 	</header>
 {{end}}
