@@ -143,11 +143,10 @@ func formatReminderMsg(d hosts.Host) string {
 		}
 	}
 	msg := fmt.Sprintf(
-		"TLS certificate for %s is expiring in %d %s (at %s UTC)",
+		"TLS certificate for %s will expire in %d %s",
 		d.Hostname,
 		count,
 		unit,
-		d.Certificate.ExpiresAt.Format(time.DateTime),
 	)
 	return msg
 }
