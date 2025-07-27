@@ -13,6 +13,7 @@ func funcMap() template.FuncMap {
 	return template.FuncMap{
 		"datef":       datef,
 		"cn":          cn,
+		"ccn":         ccn,
 		"statusClass": statusClass,
 		"statusText":  statusText,
 		"split":       split,
@@ -77,6 +78,13 @@ func statusText(cert hosts.CertificateInfo) string {
 
 func split(s, sep string) []string {
 	return strings.Split(s, sep)
+}
+
+func ccn(condition bool, cn string) string {
+	if condition {
+		return cn
+	}
+	return ""
 }
 
 func kv(key string, val any) map[string]any {

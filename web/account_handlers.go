@@ -19,7 +19,18 @@ func (h *Handler) NotificationsPage(w http.ResponseWriter, r *http.Request) {
 		h.htmxError(w, fmt.Errorf("failed to load notifications"))
 		return
 	}
-	h.render(views.Notifications(w, views.LayoutData{User: &u}, notifs))
+	tab := "all"
+	if r.URL.Query().Get("filter") == "unread" {
+		tab = "unread"
+		var unread []notifications.AppNotification
+		for _, n := range notifs {
+			if n.ReadAt == nil {
+				unread = append(unread, n)
+			}
+		}
+		notifs = unread
+	}
+	h.render(views.Notifications(w, views.LayoutData{User: &u}, tab, notifs))
 }
 
 func (h *Handler) NotificationsCount(w http.ResponseWriter, r *http.Request) {

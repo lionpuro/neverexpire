@@ -111,9 +111,10 @@ func Login(w io.Writer) error {
 	return loginTmpl.render(w, nil)
 }
 
-func Notifications(w io.Writer, ld LayoutData, notifs []notifications.AppNotification) error {
+func Notifications(w io.Writer, ld LayoutData, tab string, notifs []notifications.AppNotification) error {
 	data := map[string]any{
 		"LayoutData":    ld,
+		"Tab":           tab,
 		"Notifications": notifs,
 	}
 	return notificationsTmpl.render(w, data)

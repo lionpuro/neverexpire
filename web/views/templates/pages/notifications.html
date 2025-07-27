@@ -1,39 +1,72 @@
 {{template "layout" .}}
 {{define "title"}}Notifications - neverexpire.xyz{{end}}
 {{define "content"}}
-	<div class="flex flex-col max-w-3xl w-full mx-auto gap-8">
+	<div class="flex flex-col max-w-3xl w-full mx-auto">
 		{{template "h1" kv "Text" "Notifications"}}
+		<div
+			class="flex gap-2 mt-8 border-base-200/50 border-b"
+			hx-boost="true"
+			hx-push-url="false"
+		>
+			<a
+				href="/notifications"
+				class="{{cn
+					"py-1 px-2 border-b-2"
+					(ccn (ne .Tab "unread") "border-primary-500")
+					(ccn (eq .Tab "unread") "border-transparent")
+				}}"
+			>
+				All
+			</a>
+			<a
+				href="/notifications?filter=unread"
+				class="{{cn
+					"py-1 px-2 border-b-2"
+					(ccn (eq .Tab "unread") "border-primary-500")
+					(ccn (ne .Tab "unread") "border-transparent")
+				}}"
+			>
+				Unread
+			</a>
+			<form
+				action="/notifications/read"
+				method="PUT"
+				hx-boost="true"
+				hx-push-url="false"
+				class="ml-auto"
+			>
+				{{$enabled := false}}
+				{{range $notification := .Notifications}}
+					{{if not $notification.ReadAt}}
+						{{$enabled = true}}
+						<input
+							type="hidden"
+							name="notification_id"
+							value="{{$notification.ID}}"
+						/>
+					{{end}}
+				{{end}}
+				<button
+					type="submit"
+					class="font-medium text-primary-600 py-1 disabled:text-base-500"
+					{{if not $enabled}}
+						disabled
+					{{end}}
+				>
+					Mark all as read
+				</button>
+			</form>
+		</div>
 		<ul class="flex flex-col">
 			{{if not .Notifications}}
-				<div class="text-base-600">No recent notifications</div>
-			{{else}}
-				<form
-					action="/notifications/read"
-					method="PUT"
-					hx-boost="true"
-					hx-push-url="false"
-				>
-					{{$enabled := false}}
-					{{range $notification := .Notifications}}
-						{{if not $notification.ReadAt}}
-							{{$enabled = true}}
-							<input
-								type="hidden"
-								name="notification_id"
-								value="{{$notification.ID}}"
-							/>
-						{{end}}
+				<div class="mt-4 text-base-600">
+					{{if eq .Tab "unread"}}
+						No unread notifications
+					{{else}}
+						No recent notifications
 					{{end}}
-					<button
-						type="submit"
-						class="font-medium text-primary-600 py-1 disabled:text-base-500"
-						{{if not $enabled}}
-							disabled
-						{{end}}
-					>
-						Mark all as read
-					</button>
-				</form>
+				</div>
+			{{else}}
 				{{range $notification := .Notifications}}
 					<li class="flex p-2 border-base-200/50 border-b last:border-none">
 						<div class="flex flex-wrap">
