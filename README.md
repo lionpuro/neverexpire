@@ -2,7 +2,7 @@
 
 Automated TLS certificate status monitoring service for the people who manage their certs manually.
 
-![App screenshot](/assets/static/images/hero.webp)
+![App screenshot](/assets/static/images/screenshot.webp)
 
 ## Features
 
