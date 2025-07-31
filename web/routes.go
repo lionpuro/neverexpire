@@ -24,7 +24,7 @@ func NewRouter(h *Handler) *http.ServeMux {
 	handle("DELETE /hosts/{id}", h.RequireAuth(h.DeleteHost))
 	handle("GET /notifications", h.RequireAuth(h.NotificationsPage))
 	handle("GET /partials/notifications/count", h.RequireAuth(h.NotificationsCount))
-	handle("PUT /notifications/read", h.RequireAuth(h.ReadNotifications))
+	handle("PATCH /notifications/read", h.RequireAuth(h.ReadNotifications))
 	handle("GET /login", h.LoginPage)
 	handle("GET /logout", h.Logout)
 	handle("DELETE /account", h.RequireAuth(h.DeleteAccount))
