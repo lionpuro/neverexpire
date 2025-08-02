@@ -71,6 +71,14 @@ func (w *Worker) send(notif Notification) error {
 }
 
 func (w *Worker) notify(notif Notification) error {
+	// create a notification shown in the app even if the user hasn't configured
+	// a notification channel
+	if notif.Endpoint == "" {
+		if err := w.notifications.Upsert(context.Background(), notif); err != nil {
+			return err
+		}
+		return nil
+	}
 	notif.Attempts++
 	if err := w.send(notif); err != nil {
 		if err := w.notifications.Upsert(context.Background(), notif); err != nil {

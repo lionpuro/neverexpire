@@ -191,7 +191,6 @@ func (r *Repository) Expiring(ctx context.Context) ([]NotifiableHost, error) {
 		ON uh.user_id = u.id
 	INNER JOIN settings s
 		ON u.id = s.user_id
-		AND s.webhook_url != ''
 	LEFT JOIN notifications n
 		ON n.user_id = u.id
 		AND n.host_id = h.id
