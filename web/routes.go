@@ -8,12 +8,12 @@ func NewRouter(h *Handler) *http.ServeMux {
 	r := http.NewServeMux()
 
 	handle := func(method, p string, hf http.HandlerFunc) {
-		r.Handle(method+" "+p, h.Authenticate(
+		r.Handle(method+" "+p, redirectTrailingSlash(h.Authenticate(
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				hf(w, r)
 			}),
-		))
+		)))
 	}
 
 	handle("GET", "/", h.HomePage)

@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"strings"
 )
 
 // Retrieve session from store and save user data to the request context.
@@ -28,4 +29,17 @@ func (h *Handler) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next(w, r)
 	}
+}
+
+func redirectTrailingSlash(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		l := len(path) - 1
+		if l > 0 && strings.HasSuffix(path, "/") {
+			url := path[:l]
+			http.Redirect(w, r, url, http.StatusMovedPermanently)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
