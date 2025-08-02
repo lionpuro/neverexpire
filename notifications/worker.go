@@ -15,7 +15,15 @@ import (
 	"github.com/lionpuro/neverexpire/logging"
 )
 
-var avatarURL string = os.Getenv("WEBHOOK_AVATAR_URL")
+func avatarURL() string {
+	if url := os.Getenv("WEBHOOK_AVATAR_URL"); url != "" {
+		return url
+	}
+	if os.Getenv("APP_ENV") == "production" {
+		return "https://neverexpire.xyz/assets/static/images/webhook-avatar.png"
+	}
+	return ""
+}
 
 type Worker struct {
 	interval      time.Duration
@@ -155,8 +163,8 @@ func sendNotification(logger logging.Logger, client *http.Client, url, msg strin
 	body := map[string]string{}
 	if strings.Contains(url, "discord") {
 		body["content"] = msg
-		if avatarURL != "" {
-			body["avatar_url"] = avatarURL
+		if url := avatarURL(); url != "" {
+			body["avatar_url"] = url
 		}
 	}
 	if strings.Contains(url, "slack") {

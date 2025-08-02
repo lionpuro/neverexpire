@@ -1,14 +1,20 @@
 name: neverexpire
 services:
   web:
-    build: .
-    image: neverexpire:latest
-    env_file: ".env"
+    image: ghcr.io/lionpuro/neverexpire:latest
     command: ["./web"]
     environment:
       - APP_ENV=production
       - POSTGRES_HOST=postgres
+      - POSTGRES_HOST_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
       - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OAUTH_GOOGLE_CLIENT_ID=${OAUTH_GOOGLE_CLIENT_ID}
+      - OAUTH_GOOGLE_CLIENT_SECRET=${OAUTH_GOOGLE_CLIENT_SECRET}
+      - OAUTH_GOOGLE_CALLBACK_URL=${OAUTH_GOOGLE_CALLBACK_URL}
     ports:
       - "3000"
     depends_on:
@@ -22,14 +28,15 @@ services:
       - app
     restart: unless-stopped
   worker:
-    build: .
-    image: neverexpire:latest
+    image: ghcr.io/lionpuro/neverexpire:latest
     command: ["./worker"]
-    env_file: ".env"
     environment:
       - APP_ENV=production
       - POSTGRES_HOST=postgres
-      - REDIS_HOST=redis
+      - POSTGRES_HOST_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -51,11 +58,11 @@ services:
   postgres:
     image: postgres:17.4
     environment:
-      - POSTGRES_USER=$POSTGRES_USER
-      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-      - POSTGRES_DB=$POSTGRES_DB
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     ports:
-      - "${POSTGRES_HOST_PORT}:${POSTGRES_DOCKER_PORT}"
+      - "5432:5432"
     volumes:
       - db:/var/lib/postgres
     healthcheck:
@@ -79,9 +86,26 @@ services:
         "-path",
         "/migrations/",
         "-database",
-        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_DOCKER_PORT}/${POSTGRES_DB}?sslmode=disable",
+        "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable",
         "up",
       ]
+    networks:
+      - app
+  cron:
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DOCKER_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    build:
+      context: ./utils/cron
+      dockerfile: Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
     networks:
       - app
   caddy:
@@ -100,18 +124,6 @@ services:
       - app
     volumes:
       - caddy_data:/data
-  cron:
-    build:
-      context: ./utils/cron
-      dockerfile: Dockerfile
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_healthy
-    networks:
-      - app
-    env_file: ".env"
 
 volumes:
   redis:
