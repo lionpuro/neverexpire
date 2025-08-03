@@ -91,6 +91,12 @@ body {
 	}
 }
 
+@layer components {
+	details summary::-webkit-details-marker {
+		display: none;
+	}
+}
+
 .fade-in.htmx-added {
 	opacity: 0;
 }
