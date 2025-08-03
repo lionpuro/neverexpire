@@ -1,5 +1,11 @@
 {{template "layout" .}}
 {{define "title"}}neverexpire.xyz - TLS certificate monitoring{{end}}
+{{define "head"}}
+	<meta
+		name="description"
+		content="Automated TLS certificate status monitoring with expiration alerts."
+	/>
+{{end}}
 {{define "content"}}
 	<div class="flex flex-col max-w-3xl w-full mx-auto">
 		<h1 class="text-center text-3xl sm:text-4xl font-extrabold mb-4">
