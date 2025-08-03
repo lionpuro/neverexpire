@@ -33,7 +33,7 @@ func NewAuthenticator(conf *config.Config) (*Authenticator, error) {
 		return nil, fmt.Errorf("new google client: %v", err)
 	}
 
-	sessions, err := newSessionStore(conf.RedisURL)
+	sessions, err := newSessionStore(conf.RedisURL, conf.RedisPassword)
 	if err != nil {
 		return nil, err
 	}

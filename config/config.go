@@ -10,6 +10,7 @@ type Config struct {
 	OAuthGoogleClientSecret,
 	OAuthGoogleCallbackURL,
 	RedisURL,
+	RedisPassword,
 	PostgresURL string
 }
 
@@ -28,6 +29,7 @@ func FromEnv() *Config {
 		OAuthGoogleClientSecret: os.Getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
 		OAuthGoogleCallbackURL:  os.Getenv("OAUTH_GOOGLE_CALLBACK_URL"),
 		RedisURL:                rdurl,
+		RedisPassword:           os.Getenv("REDIS_PASSWORD"),
 		PostgresURL:             pgurl,
 	}
 	return conf

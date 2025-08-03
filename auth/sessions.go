@@ -52,10 +52,10 @@ type SessionStore struct {
 	store *redisstore.RedisStore
 }
 
-func newSessionStore(addr string) (*SessionStore, error) {
+func newSessionStore(addr, pw string) (*SessionStore, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
-		Password: "",
+		Password: pw,
 		DB:       0,
 	})
 	store, err := redisstore.NewRedisStore(context.Background(), client)

@@ -12,6 +12,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=$REDIS_PASSWORD
       - OAUTH_GOOGLE_CLIENT_ID=${OAUTH_GOOGLE_CLIENT_ID}
       - OAUTH_GOOGLE_CLIENT_SECRET=${OAUTH_GOOGLE_CLIENT_SECRET}
       - OAUTH_GOOGLE_CALLBACK_URL=${OAUTH_GOOGLE_CALLBACK_URL}
@@ -49,6 +50,7 @@ services:
     restart: unless-stopped
   redis:
     image: redis
+    command: ["--requirepass", "${REDIS_PASSWORD}"]
     ports:
       - "6379:6379"
     volumes:
