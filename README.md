@@ -18,7 +18,7 @@ Start the development containers using the dev helper script:
 ./dev.sh start
 ```
 
-or with docker compose directly:
+or by running docker compose directly:
 
 ```sh
 docker compose -f compose.dev.yaml up
