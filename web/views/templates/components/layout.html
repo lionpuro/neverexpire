@@ -44,28 +44,30 @@
 {{end}}
 
 {{define "header"}}
-	<header class="flex px-4 mb-4 border-b border-base-100">
+	<header class="flex px-3 sm:px-4 mb-4 border-b border-base-100">
 		<nav hx-boost="true" class="flex items-center w-full max-sm:flex-wrap">
-			<a href="/" class="flex items-center py-3 max-sm:-order-1">
+			<a href="/" class="flex items-center px-2 py-2 sm:py-3 max-sm:-order-1">
 				{{template "logo"}}
 			</a>
-			<div class="sm:ml-auto flex items-center max-sm:w-full max-sm:order-3">
+			<div
+				class="sm:ml-auto flex items-center max-sm:w-full max-sm:order-3 gap-1"
+			>
 				{{if .LayoutData.User}}
 					<a
 						href="/hosts"
-						class="font-medium text-base-500 hover:text-base-800 p-3"
+						class="font-medium text-base-500 hover:text-base-800 p-2"
 					>
 						Hosts
 					</a>
 					<a
 						href="/account/api"
-						class="font-medium text-base-500 hover:text-base-800 p-3"
+						class="font-medium text-base-500 hover:text-base-800 p-2"
 					>
 						API
 					</a>
 					<a
 						href="/notifications"
-						class="font-medium text-base-500 hover:text-base-800 p-3 sm:px-2"
+						class="font-medium text-base-500 hover:text-base-800 p-2"
 					>
 						<span
 							class="relative flex"
@@ -92,7 +94,7 @@
 				>
 					<summary
 						id="menu-toggle"
-						class="list-none select-none cursor-pointer py-3 flex gap-1 text-base-500 hover:text-base-800 font-medium"
+						class="list-none select-none cursor-pointer py-2 flex gap-1 text-base-500 hover:text-base-800 font-medium"
 					>
 						{{$username := index (split .LayoutData.User.Email "@") 0}}
 						{{$username}}
