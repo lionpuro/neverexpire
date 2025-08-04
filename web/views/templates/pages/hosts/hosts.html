@@ -1,5 +1,5 @@
 {{template "layout" .}}
-{{define "title"}}My hosts - neverexpire.xyz{{end}}
+{{define "title"}}My hosts - {{.Config.Site}}{{end}}
 {{define "content"}}
 	<div class="flex items-center mb-8 gap-4">
 		{{template "h1" kv

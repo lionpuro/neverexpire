@@ -1,5 +1,5 @@
 {{template "layout" .}}
-{{define "title"}}API - neverexpire.xyz{{end}}
+{{define "title"}}API - {{.Config.Site}}{{end}}
 {{define "content"}}
 	<div class="flex flex-col max-w-3xl w-full mx-auto gap-4">
 		{{template "h1" kv "Text" "API"}}

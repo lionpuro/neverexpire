@@ -28,6 +28,14 @@ type LayoutData struct {
 	Error error
 }
 
+type Config struct {
+	Site string
+}
+
+func defaultConfig() Config {
+	return Config{Site: "neverexpire.xyz"}
+}
+
 var (
 	homeTmpl          = parse("pages/index.html")
 	errorPageTmpl     = parse("pages/error.html")
@@ -42,25 +50,45 @@ var (
 )
 
 func Home(w io.Writer, ld LayoutData) error {
-	return homeTmpl.render(w, map[string]any{"LayoutData": ld})
+	return homeTmpl.render(w, map[string]any{
+		"Config":     defaultConfig(),
+		"LayoutData": ld,
+	})
 }
 
 func Error(w io.Writer, ld LayoutData, code int, msg string) error {
-	data := map[string]any{"LayoutData": ld, "Code": code, "Message": msg}
+	data := map[string]any{
+		"Config":     defaultConfig(),
+		"LayoutData": ld,
+		"Code":       code,
+		"Message":    msg,
+	}
 	return errorPageTmpl.render(w, data)
 }
 
 func Hosts(w io.Writer, ld LayoutData, hosts []hosts.Host) error {
-	data := map[string]any{"LayoutData": ld, "Hosts": hosts}
+	data := map[string]any{
+		"Config":     defaultConfig(),
+		"LayoutData": ld,
+		"Hosts":      hosts,
+	}
 	return hostsTmpl.render(w, data)
 }
 
 func Host(w io.Writer, ld LayoutData, h hosts.Host) error {
-	return hostTmpl.render(w, map[string]any{"LayoutData": ld, "Host": h})
+	return hostTmpl.render(w, map[string]any{
+		"Config":     defaultConfig(),
+		"LayoutData": ld,
+		"Host":       h,
+	})
 }
 
 func NewHosts(w io.Writer, ld LayoutData, inputValue string) error {
-	data := map[string]any{"LayoutData": ld, "InputValue": inputValue}
+	data := map[string]any{
+		"Config":     defaultConfig(),
+		"LayoutData": ld,
+		"InputValue": inputValue,
+	}
 	if inputValue == "" {
 		data["InputValue"] = nil
 	}
@@ -95,6 +123,7 @@ func Settings(w io.Writer, ld LayoutData, sett users.Settings) error {
 		{Value: notifications.Threshold2Weeks, Display: "2 weeks before"},
 	}
 	data := map[string]any{
+		"Config":          defaultConfig(),
 		"LayoutData":      ld,
 		"ReminderOptions": opts,
 		"Settings":        sett,
@@ -104,7 +133,11 @@ func Settings(w io.Writer, ld LayoutData, sett users.Settings) error {
 }
 
 func API(w io.Writer, ld LayoutData, keys []keys.AccessKey) error {
-	return apiTmpl.render(w, map[string]any{"LayoutData": ld, "Keys": keys})
+	return apiTmpl.render(w, map[string]any{
+		"Config":     defaultConfig(),
+		"LayoutData": ld,
+		"Keys":       keys,
+	})
 }
 
 func Login(w io.Writer) error {
@@ -113,6 +146,7 @@ func Login(w io.Writer) error {
 
 func Notifications(w io.Writer, ld LayoutData, tab string, notifs []notifications.AppNotification) error {
 	data := map[string]any{
+		"Config":        defaultConfig(),
 		"LayoutData":    ld,
 		"Tab":           tab,
 		"Notifications": notifs,
@@ -202,6 +236,7 @@ func DemoHosts(w io.Writer) error {
 		},
 	}
 	data := map[string]any{
+		"Config":            defaultConfig(),
 		"LayoutData":        LayoutData{User: &users.User{Email: "John Doe"}},
 		"Hosts":             hosts,
 		"NotificationCount": "2",
