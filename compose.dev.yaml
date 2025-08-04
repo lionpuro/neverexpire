@@ -9,6 +9,7 @@ services:
         GID: ${GROUP_ID}
     env_file: ".env"
     environment:
+      - APP_ENV=development
       - POSTGRES_HOST=postgres
       - REDIS_HOST=redis
       - REDIS_PASSWORD=$REDIS_PASSWORD

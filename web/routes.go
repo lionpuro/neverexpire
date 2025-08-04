@@ -2,9 +2,12 @@ package web
 
 import (
 	"net/http"
+	"os"
 )
 
 func NewRouter(h *Handler) *http.ServeMux {
+	env := os.Getenv("APP_ENV")
+
 	r := http.NewServeMux()
 
 	handle := func(method, p string, hf http.HandlerFunc) {
@@ -35,7 +38,9 @@ func NewRouter(h *Handler) *http.ServeMux {
 	handle("GET", "/account/api", h.RequireAuth(h.APIPage))
 	handle("GET", "/account/tokens/new", h.RequireAuth(h.CreateAPIKey))
 	handle("DELETE", "/account/tokens/{id}", h.RequireAuth(h.DeleteAPIKey))
-	handle("GET", "/demo/hosts", h.HostsDemoPage)
+	if env == "development" {
+		handle("GET", "/demo/hosts", h.HostsDemoPage)
+	}
 	r.HandleFunc("GET /auth/google/login", h.Login(h.Authenticator.GoogleClient))
 	r.HandleFunc("GET /auth/google/callback", h.AuthCallback(h.Authenticator.GoogleClient))
 	r.Handle("GET /assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("assets/public"))))
