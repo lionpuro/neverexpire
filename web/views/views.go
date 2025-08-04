@@ -239,7 +239,7 @@ func DemoHosts(w io.Writer) error {
 		"Config":            defaultConfig(),
 		"LayoutData":        LayoutData{User: &users.User{Email: "John Doe"}},
 		"Hosts":             hosts,
-		"NotificationCount": "2",
+		"NotificationCount": 2,
 	}
 	return hostsTmpl.render(w, data)
 }

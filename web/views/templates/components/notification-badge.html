@@ -1,5 +1,5 @@
 {{define "notification-badge"}}
-	{{if and .Count (not (eq .Count "0"))}}
+	{{if and .Count (not (eq .Count 0))}}
 		<span
 			class="{{cn
 				"absolute -top-1.5 -right-3 sm:-right-1 flex justify-center items-center"

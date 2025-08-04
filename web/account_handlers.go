@@ -47,7 +47,7 @@ func (h *Handler) NotificationsCount(w http.ResponseWriter, r *http.Request) {
 			unread++
 		}
 	}
-	data := map[string]any{"Count": fmt.Sprintf("%d", unread)}
+	data := map[string]any{"Count": unread}
 	h.render(views.Component(w, "notification-badge", data))
 }
 
