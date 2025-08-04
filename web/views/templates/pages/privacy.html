@@ -1,6 +1,69 @@
+{{template "layout" .}}
 {{define "title"}}Privacy Policy - {{.Config.Site}}{{end}}
 {{define "content"}}
-	<section>
-		<h1>Privacy Policy for {{.Domain}}</h1>
+	<section class="flex flex-col gap-4">
+		{{template "h1" kv "Text" "Privacy Policy"}}
+		<span class="text-sm font-semibold text-base-500 mb-4">
+			Last updated 04.08.2025
+		</span>
+		<p>
+			At {{.Config.Site}}, we respect your privacy and are committed to
+			protecting your personal data. This privacy policy explains how we handle
+			your information when you use our services. By using {{.Config.Site}}, you
+			agree to this policy. If you do not agree, please refrain from using our
+			services.
+		</p>
+		{{template "h2" kv "Text" "Information We Collect"}}
+		<p>
+			<strong>Personal Information:</strong>
+			When you visit {{.Config.Site}}, we may collect personal information that
+			you voluntarily provide to us, such as your name, email address, and any
+			other information you choose to provide when contacting us or signing up
+			for our services.
+		</p>
+		<p>
+			<strong>Cookies:</strong>
+			{{.Config.Site}} uses cookies to store information that is necessary for
+			the functionality of the website (for example, to maintain your login
+			state). We never store personally identifiable information in cookies.
+		</p>
+		<p>
+			<strong>Log Files:</strong>
+			Some information such as IP addresses, browser type and timestamps may be
+			collected for diagnostics. Such information is not linked to any
+			personally identifiable information.
+		</p>
+		{{template "h2" kv "Text" "How we use your information"}}
+		<ul class="list-disc list-inside">
+			{{/*prettier-ignore-start*/}}
+			The collected information is used strictly for:
+			<li>
+				<strong>Authentication & Security:</strong> Enabling login and
+				protecting against abuse.
+			</li>
+			<li>
+				<strong>Service Operation:</strong> Ensuring our services function
+				correctly.
+			</li>
+			<li>
+				<strong>Support:</strong> Responding to your inquiries.
+			</li>
+			{{/*prettier-ignore-end*/}}
+		</ul>
+		{{template "h2" kv "Text" "Disclosure of information"}}
+		<p>
+			{{.Config.Site}} does not sell, trade, or otherwise transfer your
+			personally identifiable information to outside parties. This does not
+			include trusted third parties who assist us in operating our website and
+			servicing you, so long as those parties agree to keep this information
+			confidential. We may also release your information when we believe release
+			is appropriate to comply with the law, enforce our site policies, or
+			protect ours or others' rights, property, or safety.
+		</p>
+		{{template "h2" kv "Text" "Changes to this policy"}}
+		<p>
+			This Privacy Policy may change from time to time, and all updates will be
+			posted on this page.
+		</p>
 	</section>
 {{end}}

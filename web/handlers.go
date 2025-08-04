@@ -44,3 +44,11 @@ func (h *Handler) ErrorPage(w http.ResponseWriter, r *http.Request, msg string, 
 	}
 	h.render(views.Error(w, views.LayoutData{User: usr}, code, msg))
 }
+
+func (h *Handler) PrivacyPage(w http.ResponseWriter, r *http.Request) {
+	var usr *users.User
+	if u, ok := userFromContext(r.Context()); ok {
+		usr = &u
+	}
+	h.render(views.Privacy(w, views.LayoutData{User: usr}))
+}

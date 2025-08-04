@@ -38,6 +38,7 @@ func NewRouter(h *Handler) *http.ServeMux {
 	handle("GET", "/account/api", h.RequireAuth(h.APIPage))
 	handle("GET", "/account/tokens/new", h.RequireAuth(h.CreateAPIKey))
 	handle("DELETE", "/account/tokens/{id}", h.RequireAuth(h.DeleteAPIKey))
+	handle("GET", "/privacy", h.PrivacyPage)
 	if env == "development" {
 		handle("GET", "/demo/hosts", h.HostsDemoPage)
 	}

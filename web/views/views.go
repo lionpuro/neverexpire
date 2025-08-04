@@ -46,6 +46,7 @@ var (
 	apiTmpl           = parse("pages/api.html")
 	loginTmpl         = parse("pages/login.html")
 	notificationsTmpl = parse("pages/notifications.html")
+	privacyTmpl       = parse("pages/privacy.html")
 	partials          = parsePartials()
 )
 
@@ -152,6 +153,12 @@ func Notifications(w io.Writer, ld LayoutData, tab string, notifs []notification
 		"Notifications": notifs,
 	}
 	return notificationsTmpl.render(w, data)
+}
+
+func Privacy(w io.Writer, ld LayoutData) error {
+	return privacyTmpl.render(w, map[string]any{
+		"Config":     defaultConfig(),
+		"LayoutData": ld})
 }
 
 func ErrorBanner(w io.Writer, err error) error {
