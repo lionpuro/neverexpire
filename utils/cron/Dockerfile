@@ -1,6 +1,6 @@
 FROM debian:bookworm-slim
 RUN apt-get update
-RUN apt-get -y install curl postgresql-common
+RUN apt-get -y install rclone curl postgresql-common
 RUN /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -i -v 17
 RUN apt-get -y install postgresql-17
 
@@ -14,6 +14,6 @@ RUN curl -fsSLO "$SUPERCRONIC_URL" \
 	&& mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
 	&& ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
 
-COPY crontab clean_up.sh clean_up.sql .
+COPY crontab clean_up.sh clean_up.sql backup.sh .
 
 CMD ["/usr/local/bin/supercronic", "crontab"]

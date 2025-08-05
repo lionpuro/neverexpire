@@ -1,2 +1,4 @@
 # every 2 hours
 0 */2 * * * /clean_up.sh
+# everyday at 5:00
+0 5 * * * /backup.sh
