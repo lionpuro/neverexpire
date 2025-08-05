@@ -1,5 +1,8 @@
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get -y install curl postgresql
+RUN apt-get update
+RUN apt-get -y install curl postgresql-common
+RUN /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -i -v 17
+RUN apt-get -y install postgresql-17
 
 ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.33/supercronic-linux-amd64 \
 	SUPERCRONIC_SHA1SUM=71b0d58cc53f6bd72cf2f293e09e294b79c666d8 \
