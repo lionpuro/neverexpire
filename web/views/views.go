@@ -142,7 +142,7 @@ func API(w io.Writer, ld LayoutData, keys []keys.AccessKey) error {
 }
 
 func Login(w io.Writer) error {
-	return loginTmpl.render(w, nil)
+	return loginTmpl.render(w, map[string]any{"Config": defaultConfig()})
 }
 
 func Notifications(w io.Writer, ld LayoutData, tab string, notifs []notifications.AppNotification) error {
