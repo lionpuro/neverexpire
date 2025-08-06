@@ -6,6 +6,7 @@ import (
 
 	"github.com/lionpuro/neverexpire/hosts"
 	"github.com/lionpuro/neverexpire/keys"
+	"github.com/lionpuro/neverexpire/notifications"
 	"github.com/lionpuro/neverexpire/users"
 	"github.com/lionpuro/neverexpire/web/views"
 )
@@ -63,14 +64,44 @@ func TestRender(t *testing.T) {
 	// Settings
 	t.Run("settings", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		err := views.Settings(&buf, views.LayoutData{User: testUser}, users.Settings{})
+		err := views.Settings(
+			&buf,
+			views.LayoutData{User: testUser},
+			users.Settings{},
+		)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 	})
 	// API
 	t.Run("api", func(t *testing.T) {
-		err := views.API(&bytes.Buffer{}, views.LayoutData{User: testUser}, []keys.AccessKey{})
+		err := views.API(
+			&bytes.Buffer{},
+			views.LayoutData{User: testUser},
+			[]keys.AccessKey{},
+		)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+	// Notifications
+	t.Run("notifications", func(t *testing.T) {
+		err := views.Notifications(
+			&bytes.Buffer{},
+			views.LayoutData{User: testUser},
+			"",
+			[]notifications.AppNotification{},
+		)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+	// Privacy
+	t.Run("privacy", func(t *testing.T) {
+		err := views.Privacy(
+			&bytes.Buffer{},
+			views.LayoutData{User: testUser},
+		)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
