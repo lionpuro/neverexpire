@@ -1,4 +1,4 @@
-# NeverExpire
+# neverexpire
 
 Automated TLS certificate status monitoring service for the people who manage their certs manually.
 
