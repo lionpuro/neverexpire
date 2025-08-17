@@ -20,7 +20,7 @@ func avatarURL() string {
 		return url
 	}
 	if os.Getenv("APP_ENV") == "production" {
-		return "https://neverexpire.xyz/assets/static/images/webhook-avatar.png"
+		return "https://neverexpire.xyz/assets/images/webhook-avatar.png"
 	}
 	return ""
 }
