@@ -2,6 +2,8 @@
 .gitignore
 .github
 .dockerignore
+.env
+.env.*
 Dockerfile
 compose*.yaml
 Makefile
