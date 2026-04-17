@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.24.4
+ARG GO_VERSION=1.25
 
 # Assets
 FROM node:22 AS assets
