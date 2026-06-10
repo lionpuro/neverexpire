@@ -1,8 +1,4 @@
-www.neverexpire.xyz {
-	redir https://neverexpire.xyz{uri} permanent
-}
-
-neverexpire.xyz {
+neverexpire.lionpuro.com {
 	reverse_proxy web:3000
 	encode gzip
 }

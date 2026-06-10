@@ -25,7 +25,7 @@ type services struct {
 }
 
 func New(mux *http.ServeMux, logger logging.Logger, u *users.Service, h *hosts.Service, k *keys.Service) *API {
-	conf := huma.DefaultConfig("neverexpire.xyz", "1.0.0")
+	conf := huma.DefaultConfig("neverexpire.lionpuro.com", "1.0.0")
 	conf.DocsPath = ""
 	conf.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
 		"bearer": {

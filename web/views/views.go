@@ -33,7 +33,7 @@ type Config struct {
 }
 
 func defaultConfig() Config {
-	return Config{Site: "neverexpire.xyz"}
+	return Config{Site: "neverexpire.lionpuro.com"}
 }
 
 var (
@@ -213,7 +213,7 @@ func DemoHosts(w io.Writer) error {
 		},
 		{
 			ID:       3,
-			Hostname: "neverexpire.xyz",
+			Hostname: "neverexpire.lionpuro.com",
 			Certificate: hosts.CertificateInfo{
 				IssuedBy:  "Let's Encrypt",
 				ExpiresAt: offset(70),
@@ -223,7 +223,7 @@ func DemoHosts(w io.Writer) error {
 		},
 		{
 			ID:       4,
-			Hostname: "www.neverexpire.xyz",
+			Hostname: "neverexpire.lionpuro.com",
 			Certificate: hosts.CertificateInfo{
 				IssuedBy:  "Let's Encrypt",
 				ExpiresAt: offset(70),

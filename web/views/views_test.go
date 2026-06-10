@@ -13,12 +13,12 @@ import (
 
 func TestRender(t *testing.T) {
 	testUser := &users.User{
-		Email: "tester@neverexpire.xyz",
+		Email: "tester@neverexpire.lionpuro.com",
 	}
 	testHosts := []hosts.Host{
 		{
 			ID:          1,
-			Hostname:    "neverexpire.xyz",
+			Hostname:    "neverexpire.lionpuro.com",
 			Certificate: hosts.CertificateInfo{},
 		},
 	}
